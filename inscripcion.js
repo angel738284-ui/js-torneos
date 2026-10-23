@@ -10,6 +10,16 @@ const config=window.JS_CONFIG||{};
 const base=String(config.supabaseUrl||"").replace(/\/$/,"");
 const endpoint=base+"/functions/v1/torneo";
 if(!base)tell("El organizador todavía no configuró la conexión a Supabase.",true);
+function setRulesExpanded(open){
+ $("rulesWindow").classList.toggle("is-collapsed",!open);
+ $("rulesToggle").setAttribute("aria-expanded",String(open));
+ $("rulesToggle").textContent=open?"▲ Ocultar reglas":"▼ Ver todas las reglas";
+}
+$("rulesToggle").onclick=()=>{
+ const opening=$("rulesWindow").classList.contains("is-collapsed");
+ setRulesExpanded(opening);
+ if(!opening)$("rulesSection").scrollIntoView({behavior:"smooth",block:"start"});
+};
 const params=new URLSearchParams(location.search);
 const code=params.get("codigo")||"";
 if(code){$("code").value=code;setTimeout(loadTournament,100)}
@@ -145,8 +155,14 @@ async function loadTournament(){
   $("slots").textContent=data.registered+" / "+data.max_teams+" equipos";
   $("date").textContent=data.starts_at?"Fecha: "+new Date(data.starts_at).toLocaleString("es-AR"):"Fecha por confirmar";
   $("rulesSection").dataset.mode=data.mode||"";
-  show("rulesSection",Boolean(data.rules && data.rules.trim()));
+  const hasRules=Boolean(data.rules && data.rules.trim());
+  show("rulesSection",hasRules);
   window.JSRuleFormat.render($("rules"),data.rules||"");
+  // El reglamento se despliega con una flecha clara, sin recortar su parte inferior.
+  setRulesExpanded(false);
+  show("rulesToggle",hasRules);
+  const finalMentioned=/al mejor de 3 solo ultima ronda\(\s*final\s*\)/i.test(data.rules||"");
+  show("finalPublicInfo",!finalMentioned);
   const n=Number(data.prize_quantity)||0;
   const unit=data.prize_kind==="diamantes"?"diamantes 💎":data.prize_kind==="pases"?"pase(s) 🎟️":"premio(s)";
   $("prizePublic").textContent=data.prize_kind&&data.prize_kind!=="ninguno"&&n>0?

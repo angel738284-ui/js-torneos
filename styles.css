@@ -60,7 +60,7 @@ button,.button{cursor:pointer;display:inline-flex;justify-content:center;align-i
 .tournament-rules .rule-bullet::before{color:var(--rule-accent)}
 .rule-bestof{display:inline-block;border:1px solid var(--rule-accent);border-radius:20px;
  font-weight:900;padding:5px 13px;margin-top:12px;color:var(--rule-accent)!important}
-#rules{max-height:350px;min-height:240px;resize:vertical;line-height:1.45}
+#createScreen textarea#rules{max-height:350px;min-height:240px;resize:vertical;line-height:1.45}
 #detailRules{min-height:280px;resize:vertical;line-height:1.45}
 
 /* Final al mejor de tres - marcador visible y registro de partidas */
@@ -101,3 +101,18 @@ button,.button{cursor:pointer;display:inline-flex;justify-content:center;align-i
 .room-fields{padding:7px 0 12px}
 .room-fields label{font-size:13px}
 .room-fields input,.room-fields select{font-size:16px}
+
+
+/* JS Torneos v0.3.4 — El reglamento de inscripción nunca se recorta inadvertidamente.
+   Mostrar/ocultar con un botón visible, no con una caja con alto fijo sin scroll. */
+#rulesSection .rule-lines{max-height:none!important;min-height:0!important;height:auto!important;resize:none!important}
+#rulesSection .rules-window{position:relative;overflow:visible;max-height:none}
+#rulesSection .rules-window.is-collapsed{max-height:275px;overflow:hidden}
+#rulesSection .rules-window.is-collapsed::after{
+ content:"";position:absolute;left:0;right:0;bottom:0;height:86px;pointer-events:none;
+ background:linear-gradient(to bottom,rgba(19,35,44,0),rgba(18,34,43,.96));
+}
+#rulesSection .rules-toggle{margin:13px 0 1px;background:#254237;
+ border-color:#58c29b;color:#caffeb;font-weight:900;min-height:47px}
+#rulesSection .rules-toggle:focus-visible{outline:2px solid #72f0c2;outline-offset:2px}
+#rulesSection{overflow:hidden}

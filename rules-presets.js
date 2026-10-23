@@ -15,7 +15,7 @@ window.JS_RULE_PRESETS = Object.freeze({
   "• ALTURAS VALE TODO *SIN LÍMITES*",
   "• Solo una M590 por equipo.",
   "",
-  "> SOLO FINAL"
+  "> AL MEJOR DE 3 SOLO ULTIMA RONDA( FINAL)"
  ].join("\n"),
  PVP: [
   "> REGLAS PVP",

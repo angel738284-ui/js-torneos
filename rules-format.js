@@ -29,7 +29,7 @@
       if(quote&&/^by\s/i.test(content))node.classList.add("rule-subtitle");
       if(!quote&&/^\*[^*]+\*\s*$/.test(content))node.classList.add("rule-section-title");
       if(!quote&&/^\*[^*]+:\*/.test(content))node.classList.add("rule-keyline");
-      if(quote&&/^(solo final|al mejor de\s*\d+)$/i.test(content))node.classList.add("rule-bestof");
+      if(quote&&/^(solo final|al mejor de\s*\d+|al mejor de 3 solo ultima ronda\(\s*final\s*\))$/i.test(content))node.classList.add("rule-bestof");
       addBold(content,node);
       destination.append(node);
     }
