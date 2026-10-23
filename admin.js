@@ -156,7 +156,62 @@ async function checkUser(){
  show("login",false);show("app",true);show("logout",true);navigate("homeScreen");await loadTours();
 }
 $("detailPrizeKind").onchange=()=>prizeFormState("detailPrizeKind","detailPrizeQty","detailPrizeDetails");
-$("tourMode").onchange=()=>{const custom=$("tourMode").value==="OTRA";$("customLabel").classList.toggle("hidden",!custom);$("customMode").classList.toggle("hidden",!custom);};
+
+const modeRuleDrafts=Object.create(null);
+let currentRulesMode="BY";
+function defaultRules(mode){return window.JS_RULE_PRESETS?.[mode]||""}
+function refreshRulesPreview(){
+ const text=$("rules").value;
+ const box=$("rulesPreview");
+ window.JSRuleFormat.render(box,text);
+ if(!text.trim())box.textContent="No se especificaron reglas. Podés agregar unas desde Modificar reglas.";
+}
+function changeModeRules(){
+ const next=$("tourMode").value;
+ modeRuleDrafts[currentRulesMode]=$("rules").value;
+ currentRulesMode=next;
+ $("rules").value=Object.prototype.hasOwnProperty.call(modeRuleDrafts,next)?
+                  modeRuleDrafts[next]:defaultRules(next);
+ $("rulesPreviewBox").dataset.mode=next;
+ const custom=next==="OTRA";
+ $("customLabel").classList.toggle("hidden",!custom);
+ $("customMode").classList.toggle("hidden",!custom);
+ if(next==="VV2")$("teamSize").value="2";
+ else if(next==="PVP")$("teamSize").value="1";
+ else if(next==="BY")$("teamSize").value="6";
+ refreshRulesPreview();
+}
+$("tourMode").onchange=changeModeRules;
+$("editRules").onclick=()=>{
+ show("rulesEditor",true);
+ $("editRules").classList.add("hidden");
+ $("rules").focus();
+};
+$("finishRules").onclick=()=>{
+ show("rulesEditor",false);
+ $("editRules").classList.remove("hidden");
+ refreshRulesPreview();
+};
+$("restoreRules").onclick=async()=>{
+ if(!await askConfirm("¿Restaurar las reglas predeterminadas de "+$("tourMode").value+"? Las modificaciones de este modo serán reemplazadas."))return;
+ $("rules").value=defaultRules($("tourMode").value);
+ modeRuleDrafts[$("tourMode").value]=$("rules").value;
+ refreshRulesPreview();
+};
+$("rules").oninput=()=>{
+ modeRuleDrafts[currentRulesMode]=$("rules").value;
+ refreshRulesPreview();
+};
+function resetNewTournamentRules(){
+ for(const key of Object.keys(modeRuleDrafts))delete modeRuleDrafts[key];
+ currentRulesMode=$("tourMode").value;
+ $("rules").value=defaultRules(currentRulesMode);
+ $("rulesPreviewBox").dataset.mode=currentRulesMode;
+ show("rulesEditor",false);
+ $("editRules").classList.remove("hidden");
+ refreshRulesPreview();
+}
+
 $("saveConfig").onclick=()=>{
  const url=$("sbUrl").value.trim(),key=$("sbKey").value.trim(),site=$("siteUrl").value.trim();
  if(!/^https:\/\/[a-z\d-]+\.supabase\.co\/?$/.test(url)||key.length<20){message("Revisá la URL y la clave pública de Supabase.",true);return;}
@@ -185,7 +240,7 @@ $("create").onclick=async()=>{
  const row={name,team_size:Number($("teamSize").value),max_teams:Number($("maxTeams").value),mode:$("tourMode").value==="OTRA"?$("customMode").value.trim().slice(0,60):$("tourMode").value,starts_at:start?start.toISOString():null,rules:$("rules").value.trim().slice(0,1500),created_by:user.id};
  $("create").disabled=true;
  try{const {data,error}=await db.from("js_tournaments").insert(row).select().single();if(error)throw error;
-  $("tourName").value="";initializeDayPicker();message("Torneo creado. Código: "+data.code);await loadTours();await openTour(data.id,true);
+  $("tourName").value="";initializeDayPicker();resetNewTournamentRules();message("Torneo creado. Código: "+data.code);await loadTours();await openTour(data.id,true);
  }catch(e){message("No se pudo crear: "+e.message,true);}finally{$("create").disabled=false}
 };
 
@@ -230,6 +285,12 @@ async function openTour(id,resetTab=false){
  $("restoreTour").classList.toggle("hidden",!t.archived_at||t.status==="finished");
  $("detailPrizeKind").value=t.prize_kind||"ninguno";
  $("detailPrizeQty").value=t.prize_quantity>0?t.prize_quantity:1;
+ $("detailRulesPreview").parentElement.dataset.mode=t.mode||"";
+ $("detailRules").value=t.rules||"";
+ window.JSRuleFormat.render($("detailRulesPreview"),t.rules||"");
+ if(!t.rules)$("detailRulesPreview").textContent="Este torneo todavía no tiene reglas.";
+ show("existingRulesEditor",false);
+ $("editExistingRules").classList.remove("hidden");
  $("detailPrizeDetails").value=t.prize_details||"";
  prizeFormState("detailPrizeKind","detailPrizeQty","detailPrizeDetails");
  $("prizeBanner").textContent=prizeText(t);
@@ -273,6 +334,33 @@ $("toggleOpen").onclick=async()=>{
  if(error)return message(error.message,true);await openTour(opened.id);
 };
 
+$("editExistingRules").onclick=()=>{
+ show("existingRulesEditor",true);
+ $("editExistingRules").classList.add("hidden");
+ $("detailRules").focus();
+};
+$("detailRules").oninput=()=>window.JSRuleFormat.render($("detailRulesPreview"),$("detailRules").value);
+$("restoreExistingRules").onclick=async()=>{
+ if(!opened)return;
+ const defaults=defaultRules(opened.mode);
+ if(!defaults)return message("No hay reglas predeterminadas para esta modalidad. Podés escribir unas personalizadas.",true);
+ if(!await askConfirm("¿Reemplazar las reglas editadas por las predeterminadas de "+opened.mode+"?"))return;
+ $("detailRules").value=defaults;
+ window.JSRuleFormat.render($("detailRulesPreview"),defaults);
+};
+$("saveExistingRules").onclick=async()=>{
+ if(!opened)return;
+ const id=opened.id;
+ const rules=$("detailRules").value.trim();
+ const b=$("saveExistingRules");b.disabled=true;
+ try{
+  const {error}=await db.from("js_tournaments").update({rules}).eq("id",id);
+  if(error)throw error;
+  await openTour(id);
+  message("✓ Reglas guardadas. El enlace de inscripción ya mostrará los cambios.");
+ }catch(e){message("No se pudieron guardar las reglas: "+e.message,true);}
+ finally{b.disabled=false;}
+};
 $("savePrize").onclick=async()=>{
  if(!opened)return;
  let award;try{award=prizeInput("detailPrizeKind","detailPrizeQty","detailPrizeDetails")}catch(e){return message(e.message,true)}
@@ -378,10 +466,6 @@ async function chooseWinner(match,winner){
  const {error}=await db.rpc("js_report_winner",{p_match:match.id,p_winner:winner});
  if(error)return message(error.message,true);await openTour(opened.id);await loadTours();
 }
-$("rules").addEventListener("input",()=>{
- const text=$("rules").value;
- show("rulesPreviewBox",Boolean(text.trim()));
- window.JSRuleFormat.render($("rulesPreview"),text);
-});
+resetNewTournamentRules();
 initializeDayPicker();
 launch();

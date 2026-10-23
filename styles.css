@@ -36,3 +36,29 @@ button,.button{cursor:pointer;display:inline-flex;justify-content:center;align-i
 .rule-bullet{position:relative;margin:6px 0;padding-left:19px}
 .rule-bullet::before{content:"•";position:absolute;left:0;color:#63e5bc;font-weight:900}
 #rulesPreviewBox{margin-bottom:12px}
+
+/* JS Family — reglamentos por modalidad */
+.tournament-rules{--rule-accent:#54e2bc;border-color:#3a5660;
+ background:linear-gradient(155deg,#14272e,#141c2c);position:relative;overflow:hidden}
+.tournament-rules::before{content:"";position:absolute;top:0;left:0;right:0;height:4px;
+ background:linear-gradient(90deg,var(--rule-accent),transparent)}
+.tournament-rules[data-mode="PVP"]{--rule-accent:#ffa4ae;border-color:#66424e;
+ background:linear-gradient(155deg,#2a1b28,#151c2b)}
+.tournament-rules[data-mode="VV2"]{--rule-accent:#9bb8ff;border-color:#394b75;
+ background:linear-gradient(155deg,#1a223b,#101d30)}
+.tournament-rules h3,.tournament-rules .rule-main-title{color:var(--rule-accent)}
+.rule-main-title{background:rgba(255,255,255,.045);padding:10px 12px;margin:4px -3px 3px;
+ border:1px solid rgba(255,255,255,.09);border-left:4px solid var(--rule-accent);border-radius:10px}
+.rule-subtitle{font-size:12px;margin:0 0 10px;letter-spacing:.12em;text-transform:uppercase;
+ border-left:0!important;padding-left:5px!important}
+.rule-section-title{background:rgba(255,255,255,.045);border-left:3px solid var(--rule-accent);
+ padding:9px 11px;margin:14px 0 8px;border-radius:7px;color:#fff;font-weight:850}
+.rule-section-title strong{color:var(--rule-accent)}
+.rule-keyline{margin:9px 0;padding:9px 11px;border:1px solid rgba(255,255,255,.08);
+ border-radius:9px;background:rgba(255,255,255,.035)}
+.rule-keyline strong{color:var(--rule-accent)}
+.tournament-rules .rule-bullet::before{color:var(--rule-accent)}
+.rule-bestof{display:inline-block;border:1px solid var(--rule-accent);border-radius:20px;
+ font-weight:900;padding:5px 13px;margin-top:12px;color:var(--rule-accent)!important}
+#rules{max-height:350px;min-height:240px;resize:vertical;line-height:1.45}
+#detailRules{min-height:280px;resize:vertical;line-height:1.45}

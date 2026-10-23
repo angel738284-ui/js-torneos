@@ -1,0 +1,61 @@
+"use strict";
+// Reglas base de JS Family. Se copian al formulario: el administrador puede editarlas.
+window.JS_RULE_PRESETS = Object.freeze({
+ BY: [
+  "> REGLAS BY",
+  "> by JS FAMILY",
+  "",
+  "*Habilidad permitida:* TATSUYA.",
+  "*Habilidades pasivas prohibidas:* Rin, Wolfra, Otho, Kairo, Sonia.",
+  "",
+  "*Armas permitidas:* AWM, Woodpecker, M590, M1887, XM8, MP40, Mini Uzi.",
+  "",
+  "*ACLARACIONES:*",
+  "- 1 soporte por equipo y solamente el soporte puede llevar doble AWM. Si lleva 1 AWM y otra arma que no sea AWM o Mini Uzi, la sala será ganada para el rival.",
+  "• ALTURAS VALE TODO *SIN LÍMITES*",
+  "• Solo una M590 por equipo.",
+  "",
+  "> Al mejor de 3"
+ ].join("\n"),
+ PVP: [
+  "> REGLAS PVP",
+  "> by JS FAMILY",
+  "",
+  "*VIDA Y CONFIGURACIÓN:*",
+  "• 500 de vida.",
+  "• Solo rojo.",
+  "• Sin aditamentos.",
+  "• Sin atributos.",
+  "",
+  "*HABILIDADES PERMITIDAS:*",
+  "• Alok, Kelly, Hayato y Caroline.",
+  "",
+  "*REGLAS DEL ENFRENTAMIENTO:*",
+  "• Respetar el 1vs1.",
+  "• Prohibido usar alturas, revivir o encerrarse.",
+  "",
+  "*ARMAS PERMITIDAS:*",
+  "• Desert Eagle: solo en la primera ronda.",
+  "• M1014: sin chispear.",
+  "• M1887."
+ ].join("\n"),
+ VV2: [
+  "> REGLAS VV2",
+  "> by JS FAMILY",
+  "",
+  "*HABILIDADES PERMITIDAS:*",
+  "• Alok.",
+  "• Maxi.",
+  "• Moco.",
+  "• Kelly.",
+  "",
+  "*ARMAS PERMITIDAS:*",
+  "• UMP.",
+  "• M1014: máximo 1 por escuadra.",
+  "• Desert Eagle: solo en la primera ronda.",
+  "",
+  "*PROHIBIDO:*",
+  "• Alturas.",
+  "• Emotes."
+ ].join("\n")
+});

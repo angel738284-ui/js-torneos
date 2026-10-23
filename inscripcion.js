@@ -139,6 +139,7 @@ async function loadTournament(){
   $("mode").textContent=(data.mode||"PVP")+" · "+data.team_size+" vs "+data.team_size;
   $("slots").textContent=data.registered+" / "+data.max_teams+" equipos";
   $("date").textContent=data.starts_at?"Fecha: "+new Date(data.starts_at).toLocaleString("es-AR"):"Fecha por confirmar";
+  $("rulesSection").dataset.mode=data.mode||"";
   show("rulesSection",Boolean(data.rules && data.rules.trim()));
   window.JSRuleFormat.render($("rules"),data.rules||"");
   const n=Number(data.prize_quantity)||0;
