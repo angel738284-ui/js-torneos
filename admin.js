@@ -445,7 +445,7 @@ $("startBracket").onclick=async()=>{
    if(!data||!data.ok)throw new Error("El servidor no confirmó los cruces.");
    await openTour(tid);
    message("✓ Cruces creados: "+data.teams+" equipos, "+data.rounds+" rondas"+(data.automatic_passes?" y "+data.automatic_passes+" pases directos":"")+".");
-   $("matchList").scrollIntoView({behavior:"smooth",block:"start"});
+   $("bracketOverview").scrollIntoView({behavior:"smooth",block:"start"});
  }catch(e){
    message("No se pudieron generar los cruces: "+(e.message||String(e)),true);
  }finally{
@@ -455,6 +455,18 @@ $("startBracket").onclick=async()=>{
 };
 function drawMatches(){
  const area=$("matchList");area.replaceChildren();
+ window.JSBracket.render($("bracketVisual"),{
+   rounds:opened?.rounds||0,matches:matchCache,teams:teamCache,
+   onMatchSelect:m=>{
+     $("matchDetails").open=true;
+     const target=document.getElementById("match-editor-"+m.id);
+     if(target){
+       target.scrollIntoView({behavior:"smooth",block:"center"});
+       target.classList.add("champ-match-selected");
+       setTimeout(()=>target.classList.remove("champ-match-selected"),2200);
+     }
+   }
+ });
  if(!matchCache.length){area.textContent="Todavía no hay cruces.";return;}
  const names=Object.fromEntries(teamCache.map(t=>[t.id,t.name]));
  for(let round=1;round<=opened.rounds;round++){
@@ -469,6 +481,7 @@ function drawMatches(){
   }
   for(const m of matchCache.filter(x=>x.round===round)){
    const el=document.createElement("div");
+   el.id="match-editor-"+m.id;
    el.className=isFinal?"match final-series":"match";
    if(!isFinal){
     const p=document.createElement("div");p.className="small";
@@ -573,6 +586,24 @@ async function chooseWinner(match,winner){
  const {error}=await db.rpc("js_report_winner",{p_match:match.id,p_winner:winner});
  if(error)return message(error.message,true);await openTour(opened.id);await loadTours();
 }
+// Visor horizontal: avanzar ronda a ronda sin perder la pantalla del torneo.
+function moveBracket(direction){
+ const viewport=$("bracketVisual").querySelector(".champ-scroll");
+ if(!viewport)return;
+ viewport.scrollBy({left:direction*306,behavior:"smooth"});
+}
+$("bracketPrev").onclick=()=>moveBracket(-1);
+$("bracketNext").onclick=()=>moveBracket(1);
+$("bracketFinal").onclick=()=>{
+ const viewport=$("bracketVisual").querySelector(".champ-scroll");
+ if(viewport)viewport.scrollTo({left:viewport.scrollWidth,behavior:"smooth"});
+};
+$("copyBracketLink").onclick=()=>{
+ if(!opened)return;
+ if(!currentConfig.siteUrl&&location.protocol==="file:")
+  return message("Configurá la URL pública antes de compartir las llaves.",true);
+ copy(siteRoot()+"/llaves.html?codigo="+encodeURIComponent(opened.code));
+};
 resetNewTournamentRules();
 initializeDayPicker();
 launch();

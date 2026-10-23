@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="es"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0b111c"><title>JS Family · Llaves del torneo</title>
+<link rel="stylesheet" href="styles.css"><link rel="stylesheet" href="bracket-view.css?v=0.3.5">
+</head><body><div class="wrap">
+<header><div class="brand"><div class="logo">JS</div><div><div class="eyebrow">JS FAMILY · TORNEOS</div><h1>🏆 Llaves públicas</h1><p class="small">Camino a la gran final</p></div></div></header>
+<div id="notice" class="status" role="status"></div>
+<div class="panel">
+<label for="publicCode">Código del torneo</label>
+<div class="row wraprow">
+<input id="publicCode" class="grow" placeholder="JS-XXXXXXXX" maxlength="11" autocapitalize="characters" autocomplete="off" spellcheck="false">
+<button type="button" id="publicFind" class="secondary">Buscar</button>
+</div>
+<p class="small">Esta página es pública. Muestra los equipos, enfrentamientos y ganadores; nunca revela contraseñas de las salas ni datos de jugadores.</p>
+</div>
+<div id="publicContent" class="hidden">
+<section class="panel">
+<div class="eyebrow">CAMPEONATO JS FAMILY</div>
+<h2 id="publicTitle"></h2><div class="row wraprow">
+<span id="publicMode" class="tag"></span><span id="publicStatus" class="tag"></span>
+</div>
+<div class="champ-panel">
+<div class="champ-panel-head"><h3>🏆 Cuadro de eliminatorias</h3>
+<div class="champ-controls"><button id="publicPrev" type="button" class="secondary">←</button>
+<button id="publicNext" type="button" class="secondary">→</button>
+<button id="publicFinal" type="button" class="secondary">🏆 Final</button></div></div>
+<p class="champ-hint">Deslizá para ver cómo avanzan los ganadores hasta la final. El cuadro se actualiza con los resultados oficiales.</p>
+<div id="publicBracket"></div>
+</div>
+<button id="publicRefresh" type="button" class="secondary full">↻ Actualizar resultados</button>
+<p class="small">Los horarios y contraseñas son privados: solo los capitanes acceden con su código de equipo.</p>
+</section>
+</div>
+<div class="panel"><p class="small"><a class="link" href="inscripcion.html">← Inscripciones</a> ·
+<a class="link" href="equipo.html">🔐 Mi equipo</a></p></div>
+</div>
+<script src="config.js"></script><script src="bracket-view.js?v=0.3.5"></script>
+<script src="llaves.js?v=0.3.5"></script></body></html>

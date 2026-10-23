@@ -1,0 +1,56 @@
+
+/* JS Family — campeonato visual (solo presenta equipos, no datos privados de sala) */
+.champ-panel{margin:17px 0 20px;padding:13px 12px 12px;
+  border:1px solid #34596a;border-radius:17px;
+  background:linear-gradient(145deg,#121f32,#122b30);}
+.champ-panel-head{display:flex;justify-content:space-between;align-items:center;gap:9px;flex-wrap:wrap}
+.champ-panel-head h3{margin:0;color:#a3f1d7}
+.champ-controls{display:flex;gap:6px;flex-wrap:wrap}
+.champ-controls button{min-height:37px;padding:7px 10px;font-size:12px}
+.champ-hint{margin:9px 0 11px;color:#abbdd2;font-size:12px;line-height:1.5}
+.champ-scroll{width:100%;overflow-x:auto;overflow-y:visible;touch-action:pan-x pan-y;
+  border-radius:12px;border:1px solid #2e4a5e;background:linear-gradient(120deg,#101c2e,#102127);
+  -webkit-overflow-scrolling:touch;scrollbar-width:thin;scrollbar-color:#437a71 #142132}
+.champ-scroll:focus-visible{outline:2px solid #80eacc;outline-offset:2px}
+.champ-canvas{position:relative;min-height:240px;background-image:
+  linear-gradient(90deg,rgba(68,102,121,.08) 1px,transparent 1px);
+  background-size:306px 100%;isolation:isolate}
+.champ-connector-lines{position:absolute;inset:0;z-index:0;pointer-events:none}
+.champ-column-title{position:absolute;top:14px;width:238px;text-align:center;
+  color:#9fead2;font-size:12px;font-weight:900;letter-spacing:.09em;text-transform:uppercase}
+.champ-match{position:absolute;z-index:1;width:238px;height:112px;box-sizing:border-box;
+  border:1px solid #3d536b;border-radius:12px;padding:9px 10px;
+  background:linear-gradient(155deg,#20314a,#101c2b);box-shadow:0 7px 20px #0004;
+  display:flex;flex-direction:column;gap:4px;overflow:hidden}
+.champ-match-header{font-size:10px;letter-spacing:.06em;color:#a6b8c9;font-weight:850;
+  text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.champ-contender{display:flex;align-items:center;gap:6px;min-width:0;flex:1;
+  font-weight:700;font-size:12px;color:#e9f2f7;border-radius:6px;padding:0 4px}
+.champ-team-marker{color:#8ba3b8;font-size:10px;flex:0 0 11px}
+.champ-team-name{min-width:0;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.champ-team-winner{background:#145344;color:#a4f9d9}
+.champ-team-missing{color:#8097a6}
+.champ-team-wins{font-size:17px;color:#fff;font-variant-numeric:tabular-nums;font-weight:950;padding:0 3px}
+.champ-win-icon{font-size:16px;color:#a1f3d5;font-weight:950;padding:0 2px}
+.champ-match-final{border-color:#bfa46b;background:linear-gradient(145deg,#2b2933,#132837)}
+.champ-match-bye{border-color:#496c80}
+.champ-match-done{box-shadow:0 0 0 1px #32785a66,0 7px 20px #0004}
+.champ-match-footer{text-align:center;font-size:10px;color:#dbbd79;font-weight:800;margin:0 0 -2px}
+.champ-clickable{cursor:pointer;transition:transform .12s,border-color .12s}
+.champ-clickable:hover,.champ-clickable:focus-visible{border-color:#6ff1c6;outline:2px solid #4dbb94;outline-offset:1px;transform:scale(1.025)}
+.champ-trophy{position:absolute;z-index:1;width:188px;min-height:126px;border-radius:15px;
+ border:1px solid #998655;background:linear-gradient(155deg,#37321f,#152a31);
+ display:flex;flex-direction:column;justify-content:center;align-items:center;
+ text-align:center;gap:5px;padding:10px;box-sizing:border-box;overflow:hidden}
+.champ-trophy-icon{font-size:28px}
+.champ-trophy-caption{font-size:10px;font-weight:950;letter-spacing:.08em;color:#e8d08f}
+.champ-trophy-team{font-size:15px;line-height:1.4;font-weight:900;color:white;overflow-wrap:anywhere}
+.champ-trophy-score{font-size:11px;color:#a2dabb}
+.champ-editor-link{color:#95eacc!important}
+@media(max-width:480px){.champ-panel{padding:11px 8px}.champ-controls button{padding:6px 8px}
+ .champ-hint{font-size:11px}}
+
+.champ-match-detail{margin:16px 0 5px;border:1px solid #31485c;border-radius:13px;padding:12px 13px;
+background:#111b2a}
+.champ-match-detail summary{cursor:pointer;color:#b4dcd7;font-weight:850;padding:7px 0;line-height:1.4}
+.champ-match-selected{outline:2px solid #6be9bc;outline-offset:3px;background:#1b3140!important}
