@@ -194,7 +194,10 @@ $("form").addEventListener("submit",async event=>{
   });
   const data=await res.json();
   if(!res.ok)throw Error(data.error||"No se pudo inscribir el equipo");
+  if(!/^JS-EQ-[A-HJ-NP-Z2-9]{20}$/.test(data.team_access_code||""))
+    throw Error("La inscripción fue recibida pero el servidor no devolvió el código. Contactá al administrador, no vuelvas a inscribirte.");
   show("form",false);show("success",true);$("teamSuccess").textContent="Equipo: "+team;
+  $("teamCode").value=data.team_access_code;
   const list=$("playersSuccess");list.replaceChildren();
   for(const p of data.players||[]){
     const li=document.createElement("li");
@@ -215,3 +218,14 @@ if(config.turnstileSiteKey){
  script.onload=()=>window.turnstile.render("#captcha",{sitekey:config.turnstileSiteKey});
  document.head.append(script);
 }
+
+$("copyTeamCode").onclick=async()=>{
+ const code=$("teamCode").value;
+ if(!code)return;
+ try{await navigator.clipboard.writeText(code);tell("Código privado de equipo copiado.");}
+ catch{
+  $("teamCode").focus();$("teamCode").select();
+  const ok=document.execCommand("copy");
+  tell(ok?"Código de equipo copiado.":"Seleccioná y copiá manualmente tu código.",!ok);
+ }
+};

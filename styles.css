@@ -81,3 +81,23 @@ button,.button{cursor:pointer;display:inline-flex;justify-content:center;align-i
 
 .final-public-info{background:#142d2a;border:1px solid #3c796f;border-radius:12px;
  padding:11px 13px;color:#bff8e5;line-height:1.5;font-size:13px;margin:14px 0}
+
+
+/* Portal de los equipos, sala y contraseña privada por enfrentamiento */
+.team-code-box{margin:16px 0;padding:17px;border:1px solid #52c6a0;border-radius:15px;
+ background:linear-gradient(140deg,#142e2c,#162137)}
+.team-code-box h3{color:#7fe7bf;margin:0}
+.team-code-box p{color:#c1d7d5;font-size:13px;line-height:1.6}
+.team-code-box input{letter-spacing:.03em;font-weight:900;margin:6px 0 13px}
+.team-private-match{margin:12px 0;padding:17px}
+.team-private-match h3{margin:12px 0;overflow-wrap:anywhere}
+.team-round{color:#77e8bc;font-size:12px;font-weight:900;letter-spacing:.1em}
+.team-detail-row{border-top:1px solid #34445b;padding:12px 0}
+.team-detail-value{display:flex;justify-content:space-between;align-items:center;gap:7px;margin-top:7px;overflow-wrap:anywhere}
+.team-detail-value strong{font-size:15px}
+.team-detail-value button{min-height:32px;font-size:12px}
+.room-editor{margin-top:17px;border-top:1px solid #354763;padding-top:14px}
+.room-editor summary{cursor:pointer;color:#9fe7ca;font-weight:800;padding:7px 0}
+.room-fields{padding:7px 0 12px}
+.room-fields label{font-size:13px}
+.room-fields input,.room-fields select{font-size:16px}

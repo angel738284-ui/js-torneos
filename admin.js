@@ -2,7 +2,7 @@
 const $=id=>document.getElementById(id);
 const show=(id,on)=>$(id).classList.toggle("hidden",!on);
 const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c]));
-let db=null,user=null,opened=null,teamCache=[],matchCache=[],finalGameCache=[],currentConfig=null,currentTourTab="teams",savingFinalGame=false;
+let db=null,user=null,opened=null,teamCache=[],matchCache=[],finalGameCache=[],roomCache=new Map(),currentConfig=null,currentTourTab="teams",savingFinalGame=false;
 const message=(txt,bad=false)=>{let n=$("notice");n.textContent=txt;n.className="status show"+(bad?" error":"");n.scrollIntoView({behavior:"smooth",block:"nearest"});};
 // Confirmación dentro de la página: Android WebView no tiene que implementar window.confirm().
 function askConfirm(question){
@@ -315,6 +315,13 @@ async function loadTeamsMatches(){if(!opened)return;
    if(gamesError)return message("No se pudo cargar el historial de la final: "+gamesError.message,true);
    finalGameCache=games||[];
  }
+ roomCache=new Map();
+ if(matchCache.length){
+   const {data:rooms,error:roomsError}=await db.from("js_match_rooms")
+     .select("match_id,starts_at,room_id,room_password").in("match_id",matchCache.map(m=>m.id));
+   if(roomsError)return message("No se pudieron cargar las salas: "+roomsError.message,true);
+   for(const room of rooms||[])roomCache.set(room.match_id,room);
+ }
  const playerByTeam={};for(const p of b.data)(playerByTeam[p.team_id]??=[]).push(p);
  const approved=a.data.filter(t=>t.status==="registered");$("teamCount").textContent=approved.length+" / "+opened.max_teams;
  $("teamList").replaceChildren();
@@ -324,6 +331,11 @@ async function loadTeamsMatches(){if(!opened)return;
  el.innerHTML=`<div class="row"><strong>${esc(t.name)}</strong><span class="tag ${t.status!=="registered"?"closed":""}">${esc(t.status)}</span></div><ul class="checks">${roster}</ul>`;
  if(opened.rounds===0){const del=document.createElement("button");del.className="ghost";del.textContent=t.status==="registered"?"Descalificar equipo":"Restablecer equipo";
  del.onclick=()=>updateTeam(t.id,t.status==="registered"?"disqualified":"registered");el.append(del);}
+ const accessBtn=document.createElement("button");
+ accessBtn.type="button";accessBtn.className="secondary";accessBtn.style.marginTop="10px";
+ accessBtn.textContent=t.access_code_hash?"🔐 Renovar código del equipo":"🔐 Generar código del equipo";
+ accessBtn.onclick=()=>generateTeamCode(t);
+ el.append(accessBtn);
  $("teamList").append(el);
  }
  drawMatches();
@@ -520,6 +532,7 @@ function drawMatches(){
       el.append(hist);
     }
    }
+   appendRoomEditor(m,el);
    area.append(el);
   }
  }
