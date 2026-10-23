@@ -23,6 +23,37 @@ function askConfirm(question){
  });
 }
 
+
+function confirmDeleteCode(code){
+ return new Promise(resolve=>{
+  const overlay=document.createElement("div");overlay.style.cssText="position:fixed;inset:0;z-index:1000000;background:#03050bee;display:flex;align-items:center;justify-content:center;padding:18px";
+  const panel=document.createElement("div");panel.style.cssText="padding:21px;background:#192237;border:1px solid #a85462;border-radius:16px;color:white;max-width:420px;width:100%";
+  const h=document.createElement("h3");h.textContent="🗑️ Eliminar torneo definitivamente";
+  const info=document.createElement("p");info.textContent="Se borrarán todos los equipos, participantes, cruces y resultados. NO se puede deshacer. Escribí el código: "+code;
+  const inp=document.createElement("input");inp.autocomplete="off";inp.placeholder=code;inp.style.width="100%";
+  const actions=document.createElement("div");actions.style.cssText="display:flex;gap:10px;margin-top:14px";
+  const cancel=document.createElement("button");cancel.textContent="Cancelar";cancel.className="secondary";
+  const confirm=document.createElement("button");confirm.textContent="Eliminar definitivamente";confirm.disabled=true;confirm.style.background="#e04b63";
+  const done=v=>{overlay.remove();resolve(v)};
+  inp.oninput=()=>confirm.disabled=inp.value.trim()!==code;
+  cancel.onclick=()=>done(false);confirm.onclick=()=>done(true);
+  actions.append(cancel,confirm);panel.append(h,info,inp,actions);overlay.append(panel);document.body.append(overlay);inp.focus();
+ });
+}
+function prizeText(t){
+ const n=Number(t.prize_quantity)||0;
+ if(!t.prize_kind||t.prize_kind==="ninguno"||n<=0)return "Sin premio anunciado";
+ const unit=t.prize_kind==="diamantes"?"diamantes 💎":t.prize_kind==="pases"?(n===1?"pase 🎟️":"pases 🎟️"):"premio(s)";
+ return "Premio: "+n.toLocaleString("es-AR")+" "+unit+(t.prize_details?" · "+t.prize_details:"");
+}
+function prizeInput(kindId,qtyId,detailsId){
+ const kind=$(kindId).value, n=kind==="ninguno"?0:Number($(qtyId).value);
+ if(kind!=="ninguno"&&(!Number.isSafeInteger(n)||n<1||n>10000000))throw new Error("Cantidad de premio inválida (1 a 10.000.000).");
+ return {prize_kind:kind,prize_quantity:n,prize_details:$(detailsId).value.trim().slice(0,160)};
+}
+function prizeFormState(kindId,qtyId,detailsId){
+ const enabled=$(kindId).value!=="ninguno";$(qtyId).disabled=!enabled;$(detailsId).disabled=!enabled;
+}
 const cfg=()=>{const defaults=window.JS_CONFIG||{};try{return {...defaults,...JSON.parse(localStorage.getItem("js_torneo_cfg")||"{}")}}catch{return defaults}};
 function launch(){
  currentConfig=cfg();
@@ -42,6 +73,8 @@ async function checkUser(){
  if(err||!a){show("login",true);show("app",false);show("logout",true);message("Cuenta creada, pero todavía no autorizada. Agregá tu correo a js_admins desde Supabase SQL Editor.",true);return;}
  show("login",false);show("app",true);show("logout",true);await loadTours();
 }
+$("prizeKind").onchange=()=>prizeFormState("prizeKind","prizeQty","prizeDetails");
+$("detailPrizeKind").onchange=()=>prizeFormState("detailPrizeKind","detailPrizeQty","detailPrizeDetails");
 $("tourMode").onchange=()=>{const custom=$("tourMode").value==="OTRA";$("customLabel").classList.toggle("hidden",!custom);$("customMode").classList.toggle("hidden",!custom);};
 $("saveConfig").onclick=()=>{
  const url=$("sbUrl").value.trim(),key=$("sbKey").value.trim(),site=$("siteUrl").value.trim();
@@ -64,20 +97,35 @@ $("create").onclick=async()=>{
  const name=$("tourName").value.trim();if(name.length<4)return message("Poné el nombre del torneo.",true);
  if($("tourMode").value==="OTRA" && !$("customMode").value.trim())return message("Escribí el nombre de la dinámica.",true);
  const start=$("startAt").value;
- const row={name,team_size:Number($("teamSize").value),max_teams:Number($("maxTeams").value),mode:$("tourMode").value==="OTRA"?$("customMode").value.trim().slice(0,60):$("tourMode").value,starts_at:start?new Date(start).toISOString():null,rules:$("rules").value.trim().slice(0,1500),created_by:user.id};
+ let award;try{award=prizeInput("prizeKind","prizeQty","prizeDetails")}catch(e){return message(e.message,true)}
+ const row={...award,name,team_size:Number($("teamSize").value),max_teams:Number($("maxTeams").value),mode:$("tourMode").value==="OTRA"?$("customMode").value.trim().slice(0,60):$("tourMode").value,starts_at:start?new Date(start).toISOString():null,rules:$("rules").value.trim().slice(0,1500),created_by:user.id};
  $("create").disabled=true;
  try{const {data,error}=await db.from("js_tournaments").insert(row).select().single();if(error)throw error;
-  $("tourName").value="";message("Torneo creado. Código: "+data.code);await loadTours();await openTour(data.id);
+  $("tourName").value="";$("prizeKind").value="ninguno";$("prizeQty").value="1";$("prizeDetails").value="";prizeFormState("prizeKind","prizeQty","prizeDetails");message("Torneo creado. Código: "+data.code);await loadTours();await openTour(data.id);
  }catch(e){message("No se pudo crear: "+e.message,true);}finally{$("create").disabled=false}
 };
+
+function drawTournamentCard(t,history){
+ const el=document.createElement("div");el.className="item";
+ const header=document.createElement("div");header.className="row";
+ const left=document.createElement("div");
+ const name=document.createElement("strong");name.textContent=t.name;
+ const code=document.createElement("div");code.className="code";code.textContent=t.code;
+ const meta=document.createElement("div");meta.className="small";meta.textContent=t.team_size+" vs "+t.team_size+" · "+t.max_teams+" equipos · "+(t.mode||"PVP");
+ const award=document.createElement("div");award.className="small";award.textContent=prizeText(t);
+ left.append(name,code,meta,award);
+ const tag=document.createElement("span");tag.className="tag "+(history?"closed":"");tag.textContent=t.status==="finished"?"🏆 Jugado":t.archived_at?"Archivado":t.status==="open"?"Abierto":"Cerrado";
+ header.append(left,tag);el.append(header);
+ const btn=document.createElement("button");btn.className="secondary full";btn.style.marginTop="11px";btn.textContent=history?"Ver resultados / administrar →":"Ver inscripciones →";
+ btn.onclick=()=>openTour(t.id);el.append(btn);return el;
+}
 async function loadTours(){
  const {data,error}=await db.from("js_tournaments").select("*").eq("created_by",user.id).order("created_at",{ascending:false});
  if(error)return message(error.message,true);
- $("tours").replaceChildren();if(!data.length){$("tours").textContent="Todavía no creaste torneos.";return;}
- for(const t of data){const el=document.createElement("div");el.className="item";
- el.innerHTML=`<div class="row"><div><strong>${esc(t.name)}</strong><div class="code">${esc(t.code)}</div><span class="small">${t.team_size} vs ${t.team_size} · ${t.max_teams} equipos · ${esc(t.mode||"PVP")}</span></div><span class="tag ${t.status!=="open"?"closed":""}">${esc(t.status)}</span></div>`;
- const btn=document.createElement("button");btn.className="secondary full";btn.style.marginTop="11px";btn.textContent="Ver inscripciones →";btn.onclick=()=>openTour(t.id);el.append(btn);$("tours").append(el);
- }
+ const active=$("tours"),history=$("historyTours");active.replaceChildren();history.replaceChildren();
+ for(const t of data)(t.status==="finished"||t.archived_at?history:active).append(drawTournamentCard(t,t.status==="finished"||!!t.archived_at));
+ if(!active.children.length)active.textContent="No hay torneos activos.";
+ if(!history.children.length)history.textContent="Todavía no hay torneos jugados ni archivados.";
 }
 async function openTour(id){
  const {data:t,error}=await db.from("js_tournaments").select("*").eq("id",id).single();if(error)return message(error.message,true);
@@ -88,6 +136,14 @@ async function openTour(id){
  $("toggleOpen").textContent=t.status==="open"?"Cerrar inscripciones":"Abrir inscripciones";
  $("toggleOpen").disabled=t.rounds>0||t.status==="finished";
  $("startBracket").disabled=t.rounds>0||t.status==="finished";
+ $("archiveTour").classList.toggle("hidden",t.status==="finished"||!!t.archived_at);
+ $("restoreTour").classList.toggle("hidden",!t.archived_at||t.status==="finished");
+ $("detailPrizeKind").value=t.prize_kind||"ninguno";
+ $("detailPrizeQty").value=t.prize_quantity>0?t.prize_quantity:1;
+ $("detailPrizeDetails").value=t.prize_details||"";
+ prizeFormState("detailPrizeKind","detailPrizeQty","detailPrizeDetails");
+ $("prizeBanner").textContent=prizeText(t);
+ $("championBox").classList.add("hidden");
  await loadTeamsMatches();$("detail").scrollIntoView({behavior:"smooth",block:"start"});
 }
 async function loadTeamsMatches(){if(!opened)return;
@@ -125,6 +181,39 @@ $("toggleOpen").onclick=async()=>{
  const next=opened.status==="open"?"closed":"open";
  const {error}=await db.from("js_tournaments").update({status:next}).eq("id",opened.id);
  if(error)return message(error.message,true);await openTour(opened.id);
+};
+
+$("savePrize").onclick=async()=>{
+ if(!opened)return;
+ let award;try{award=prizeInput("detailPrizeKind","detailPrizeQty","detailPrizeDetails")}catch(e){return message(e.message,true)}
+ const {error}=await db.from("js_tournaments").update(award).eq("id",opened.id);
+ if(error)return message("No se pudo guardar el premio: "+error.message,true);
+ const id=opened.id;await openTour(id);await loadTours();message("✓ Premio actualizado.");
+};
+$("archiveTour").onclick=async()=>{
+ if(!opened||opened.status==="finished")return;
+ if(!await askConfirm("¿Archivar "+opened.name+"? Pasará al Historial. Si está abierto, se cerrarán sus inscripciones."))return;
+ const id=opened.id,update={archived_at:new Date().toISOString()};
+ if(opened.status==="open")update.status="closed";
+ const {error}=await db.from("js_tournaments").update(update).eq("id",id);
+ if(error)return message(error.message,true);
+ await loadTours();await openTour(id);message("✓ Torneo archivado en Historial.");
+};
+$("restoreTour").onclick=async()=>{
+ if(!opened||!opened.archived_at||opened.status==="finished")return;
+ const {error}=await db.from("js_tournaments").update({archived_at:null}).eq("id",opened.id);
+ if(error)return message(error.message,true);
+ const id=opened.id;await loadTours();await openTour(id);message("✓ Torneo restaurado a activos.");
+};
+$("deleteTour").onclick=async()=>{
+ if(!opened)return;
+ const id=opened.id;
+ if(!await confirmDeleteCode(opened.code))return;
+ const {data,error}=await db.from("js_tournaments").delete().eq("id",id).select("id");
+ if(error)return message("No se pudo borrar: "+error.message,true);
+ if(!data||data.length!==1)return message("No se confirmó el borrado; revisá permisos.",true);
+ opened=null;teamCache=[];matchCache=[];show("detail",false);await loadTours();
+ message("Torneo eliminado definitivamente junto con sus jugadores y cruces.");
 };
 $("startBracket").onclick=async()=>{
  if(!opened||opened.rounds>0)return;
@@ -169,12 +258,20 @@ function drawMatches(){
    }area.append(el);
   }
  }
- if(opened.status==="finished")message("🏆 El torneo ya tiene campeón. Se completaron todas las rondas.");
+ const finalMatch=matchCache.find(x=>x.round===opened.rounds&&x.winner);
+ const box=$("championBox");
+ if(finalMatch&&finalMatch.winner){
+  box.classList.remove("hidden");box.replaceChildren();
+  const heading=document.createElement("div");heading.style.cssText="font-size:13px;letter-spacing:2px;color:#9fe9d2;font-weight:800";heading.textContent="🏆 CAMPEÓN DEL TORNEO";
+  const name=document.createElement("div");name.style.cssText="font-size:29px;font-weight:900;margin:8px 0;overflow-wrap:anywhere";name.textContent=names[finalMatch.winner]||"Equipo ganador";
+  const prize=document.createElement("div");prize.style.cssText="color:#b3ddce;font-size:14px";prize.textContent=prizeText(opened);
+  box.append(heading,name,prize);
+ }else box.classList.add("hidden");
 }
 async function chooseWinner(match,winner){
  const name=teamCache.find(t=>t.id===winner)?.name||"este equipo";
  if(!await askConfirm("¿Confirmás que ganó "+name+"? No se puede modificar desde esta pantalla."))return;
  const {error}=await db.rpc("js_report_winner",{p_match:match.id,p_winner:winner});
- if(error)return message(error.message,true);await openTour(opened.id);
+ if(error)return message(error.message,true);await openTour(opened.id);await loadTours();
 }
 launch();

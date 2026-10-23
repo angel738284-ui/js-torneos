@@ -15,10 +15,13 @@ async function loadTournament(){
  try{const res=await fetch(endpoint+"?code="+encodeURIComponent(code));const data=await res.json();
  if(!res.ok)throw Error(data.error||"No se pudo buscar el torneo");
  tournament=data;show("tournament",true);show("form",data.status==="open"&&data.registered<data.max_teams);show("success",false);
- $("name").textContent=data.name;$("mode").textContent=data.team_size+" vs "+data.team_size;
+ $("name").textContent=data.name;$("mode").textContent=(data.mode||"PVP")+" · "+data.team_size+" vs "+data.team_size;
  $("slots").textContent=data.registered+" / "+data.max_teams+" equipos";
  $("date").textContent=data.starts_at?"Fecha: "+new Date(data.starts_at).toLocaleString("es-AR"):"Fecha por confirmar";
  $("rules").textContent=data.rules?"Reglas: "+data.rules:"";
+ const n=Number(data.prize_quantity)||0;
+ const unit=data.prize_kind==="diamantes"?"diamantes 💎":data.prize_kind==="pases"?"pase(s) 🎟️":"premio(s)";
+ $("prizePublic").textContent=data.prize_kind&&data.prize_kind!=="ninguno"&&n>0?"🏆 Premio anunciado: "+n.toLocaleString("es-AR")+" "+unit+(data.prize_details?" · "+data.prize_details:""):"";
  $("players").replaceChildren();
  for(let i=0;i<data.team_size;i++){
   const label=document.createElement("label");label.textContent="ID de Free Fire · Jugador "+(i+1);
