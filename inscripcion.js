@@ -19,7 +19,10 @@ function updateSubButton(){
  const count=substituteRows.length;
  const b=$("addSub");
  b.disabled=count>=2||!tournament||tournament.status!=="open";
- b.textContent=count>=2?"✓ 2 suplentes agregados":"＋ Agregar suplente ("+count+"/2)";
+ b.textContent=count>=2?"✓ Suplentes completos (2/2)":"＋ Agregar segundo suplente (opcional)";
+ substituteRows.forEach((row,i)=>{
+   row.remove?.classList.toggle("hidden",i===0);
+ });
 }
 function everyRow(){return [...starterRows,...substituteRows]}
 function resetRoster(){
@@ -34,7 +37,7 @@ function makePlayerRow(number,isSubstitute){
  wrapper.style.cssText="border:1px solid #36465d;border-radius:14px;padding:14px;margin:12px 0";
  const label=document.createElement("div");
  label.style.cssText="font-weight:800;margin-bottom:10px";
- label.textContent=(isSubstitute?"🔁 Suplente ":"Titular ")+number;
+ label.textContent=isSubstitute?(number===1?"🔁 Suplente 1 — OBLIGATORIO":"🔁 Suplente 2 — opcional"):"Titular "+number;
  const input=document.createElement("input");
  input.type="text";input.inputMode="numeric";input.maxLength=16;input.autocomplete="off";
  input.placeholder="ID numérico de Free Fire";input.className="player-id";input.required=!isSubstitute;
@@ -52,6 +55,7 @@ function makePlayerRow(number,isSubstitute){
  remove.textContent="Quitar suplente";remove.style.cssText="min-width:110px";
  if(isSubstitute)buttons.append(verify,correct,remove);
  else buttons.append(verify,correct);
+ if(isSubstitute&&number===1)remove.classList.add("hidden");
  wrapper.append(label,input,status,buttons);
  const state={element:wrapper,input,status,verify,correct,remove,verified:null,role:isSubstitute?"suplente":"titular"};
  function invalidate(){
@@ -67,12 +71,12 @@ function makePlayerRow(number,isSubstitute){
    input.readOnly=false;input.value="";invalidate();input.focus();
  };
  remove.onclick=()=>{
-   if(!isSubstitute)return;
+   if(!isSubstitute||substituteRows.length<=1)return;
    const idx=substituteRows.indexOf(state);
    if(idx>=0)substituteRows.splice(idx,1);
    wrapper.remove();
    substituteRows.forEach((v,i)=>{
-     const d=v.element.firstChild;if(d)d.textContent="🔁 Suplente "+(i+1);
+     const d=v.element.firstChild;if(d)d.textContent=i===0?"🔁 Suplente 1 — OBLIGATORIO":"🔁 Suplente 2 — opcional";
    });
    updateSubButton();
  };
@@ -115,13 +119,14 @@ function makePlayerRow(number,isSubstitute){
  return state;
 }
 
-$("addSub").onclick=()=>{
+function addSubstitute(){
  if(!tournament||substituteRows.length>=2)return;
  const state=makePlayerRow(substituteRows.length+1,true);
  substituteRows.push(state);
  $("substitutes").append(state.element);
  updateSubButton();
-};
+}
+$("addSub").onclick=addSubstitute;
 
 async function loadTournament(){
  let code=$("code").value.trim().toUpperCase();
@@ -151,9 +156,10 @@ async function loadTournament(){
     const row=makePlayerRow(i+1,false);
     starterRows.push(row);$("players").append(row.element);
   }
-  updateSubButton();
+  if(available)addSubstitute();
+  else updateSubButton();
   if(!available)tell("El torneo está cerrado o ya no tiene cupos.",true);
-  else tell("Torneo encontrado. Verificá los "+data.team_size+" titulares y agregá hasta 2 suplentes si querés.");
+  else tell("Torneo encontrado. Inscripción obligatoria: verificá los "+data.team_size+" titulares y al menos 1 suplente (máximo 2).");
  }catch(e){
   tournament=null;resetRoster();show("form",false);show("tournament",false);
   tell(e.message,true);
@@ -165,10 +171,12 @@ $("form").addEventListener("submit",async event=>{
  if(!tournament)return;
  const team=$("team").value.trim(),rows=everyRow();
  if(team.length<2||team.length>45)return tell("Ingresá el nombre del equipo.",true);
+ if(starterRows.length!==tournament.team_size || substituteRows.length<1 || substituteRows.length>2)
+    return tell("La escuadra debe tener "+tournament.team_size+" titulares completos y al menos 1 suplente (máximo 2).",true);
  const missing=rows.filter(row=>!row.verified||row.verified.id!==row.input.value.trim());
  if(missing.length){
    missing[0].element.scrollIntoView({behavior:"smooth",block:"center"});
-   return tell("Primero verificá todos los titulares y suplentes. Podés borrar y corregir cualquier ID.",true);
+   return tell("Faltan jugadores por verificar. Son obligatorios los "+tournament.team_size+" titulares y al menos 1 suplente. Revisá sus ID.",true);
  }
  const ids=rows.map(x=>x.verified.id);
  if(new Set(ids).size!==ids.length)return tell("Hay ID repetidos entre titulares y suplentes.",true);
