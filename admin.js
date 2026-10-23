@@ -4,6 +4,25 @@ const show=(id,on)=>$(id).classList.toggle("hidden",!on);
 const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c]));
 let db=null,user=null,opened=null,teamCache=[],matchCache=[],currentConfig=null;
 const message=(txt,bad=false)=>{let n=$("notice");n.textContent=txt;n.className="status show"+(bad?" error":"");n.scrollIntoView({behavior:"smooth",block:"nearest"});};
+// Confirmación dentro de la página: Android WebView no tiene que implementar window.confirm().
+function askConfirm(question){
+ return new Promise(resolve=>{
+   const overlay=document.createElement("div");
+   overlay.style.cssText="position:fixed;inset:0;z-index:999999;background:rgba(0,0,0,.78);display:flex;align-items:center;justify-content:center;padding:20px";
+   const panel=document.createElement("div");
+   panel.style.cssText="background:#172132;color:#f4f7ff;border:1px solid #45536b;border-radius:18px;padding:22px;width:100%;max-width:420px;box-shadow:0 12px 40px #0009";
+   const heading=document.createElement("h3");heading.textContent="Confirmar acción";heading.style.margin="0 0 14px";
+   const description=document.createElement("p");description.textContent=question;description.style.cssText="white-space:pre-wrap;line-height:1.5;font-size:15px";
+   const buttons=document.createElement("div");buttons.style.cssText="display:flex;gap:10px;justify-content:flex-end;margin-top:20px";
+   const cancel=document.createElement("button");cancel.type="button";cancel.textContent="Cancelar";cancel.className="secondary";
+   const agree=document.createElement("button");agree.type="button";agree.textContent="Confirmar";agree.className="good";
+   const done=value=>{overlay.remove();resolve(value);};
+   cancel.onclick=()=>done(false);
+   agree.onclick=()=>done(true);
+   buttons.append(cancel,agree);panel.append(heading,description,buttons);overlay.append(panel);document.body.append(overlay);
+ });
+}
+
 const cfg=()=>{const defaults=window.JS_CONFIG||{};try{return {...defaults,...JSON.parse(localStorage.getItem("js_torneo_cfg")||"{}")}}catch{return defaults}};
 function launch(){
  currentConfig=cfg();
@@ -92,7 +111,7 @@ async function loadTeamsMatches(){if(!opened)return;
  }
  drawMatches();
 }
-async function updateTeam(teamId,status){if(!confirm("¿Cambiar el estado de este equipo?"))return;
+async function updateTeam(teamId,status){if(!await askConfirm("¿Cambiar el estado de este equipo?"))return;
  const {error}=await db.from("js_teams").update({status}).eq("id",teamId);if(error)return message(error.message,true);await loadTeamsMatches();}
 $("refresh").onclick=async()=>{await loadTours();if(opened)await openTour(opened.id);message("Inscripciones actualizadas.")};
 $("closeDetail").onclick=()=>show("detail",false);
@@ -109,20 +128,27 @@ $("toggleOpen").onclick=async()=>{
 };
 $("startBracket").onclick=async()=>{
  if(!opened||opened.rounds>0)return;
- const teams=teamCache.filter(t=>t.status==="registered");
- if(teams.length<2)return message("Necesitás al menos dos equipos.",true);
- if(!confirm("¿Generar cruces y cerrar las inscripciones del torneo?"))return;
- const shuffled=[...teams];for(let i=shuffled.length-1;i>0;i--){const a=new Uint32Array(1);crypto.getRandomValues(a);const j=a[0]%(i+1);[shuffled[i],shuffled[j]]=[shuffled[j],shuffled[i]];}
- const size=2**Math.ceil(Math.log2(shuffled.length)),rounds=Math.log2(size),entries=[];
- for(let r=1;r<=rounds;r++)for(let slot=1;slot<=size/(2**r);slot++)entries.push({tournament_id:opened.id,round:r,slot,team_a:r===1?shuffled[(slot-1)*2]?.id||null:null,team_b:r===1?shuffled[(slot-1)*2+1]?.id||null:null});
- const {error:statusError}=await db.from("js_tournaments").update({status:"closed",rounds}).eq("id",opened.id).eq("rounds",0);
- if(statusError)return message(statusError.message,true);
- const {data, error}=await db.from("js_matches").insert(entries).select("id,round,slot,team_a,team_b");
- if(error)return message("Torneo cerrado, pero fallaron los cruces. No vuelvas a generarlos: "+error.message,true);
- for(const m of data.filter(x=>x.round===1&&x.team_a&&!x.team_b)){
-  const result=await db.rpc("js_report_winner",{p_match:m.id,p_winner:m.team_a});if(result.error)message("Fallo avance automático: "+result.error.message,true);
+ const count=teamCache.filter(t=>t.status==="registered").length;
+ if(count<2)return message("Necesitás al menos dos equipos.",true);
+ if(!await askConfirm("¿Sortear los cruces entre "+count+" equipos y cerrar las inscripciones? Una vez creadas las llaves no podrás volver a sortearlas."))return;
+ const tid=opened.id;
+ const button=$("startBracket");
+ button.disabled=true;
+ button.textContent="Generando…";
+ try{
+   // Una operación atómica: o guarda todos los cruces y cierra, o no modifica nada.
+   const {data,error}=await db.rpc("js_generate_bracket",{p_tournament:tid});
+   if(error)throw error;
+   if(!data||!data.ok)throw new Error("El servidor no confirmó los cruces.");
+   await openTour(tid);
+   message("✓ Cruces creados: "+data.teams+" equipos, "+data.rounds+" rondas"+(data.automatic_passes?" y "+data.automatic_passes+" pases directos":"")+".");
+   $("matchList").scrollIntoView({behavior:"smooth",block:"start"});
+ }catch(e){
+   message("No se pudieron generar los cruces: "+(e.message||String(e)),true);
+ }finally{
+   button.textContent="Generar cruces";
+   button.disabled=Boolean(opened&&opened.rounds>0);
  }
- message("Cruces creados correctamente.");await openTour(opened.id);
 };
 function drawMatches(){
  const area=$("matchList");area.replaceChildren();if(!matchCache.length){area.textContent="Todavía no hay cruces.";return;}
@@ -136,7 +162,7 @@ function drawMatches(){
     const row=document.createElement("div");row.className="names";row.style.marginTop="9px";
     const name=document.createElement("span");name.textContent=(label+" · ")+(m[key]?names[m[key]]||"Equipo":"Pendiente");
     if(m.winner===m[key]&&m[key])name.classList.add("champion");row.append(name);
-    if(m[key]&&!m.winner&&opened.status!=="finished"){
+    if(m[key]&&m.team_a&&m.team_b&&!m.winner&&opened.status!=="finished"){
      const btn=document.createElement("button");btn.className="good";btn.textContent="Ganó";btn.onclick=()=>chooseWinner(m,m[key]);row.append(btn);
     }
     el.append(row);
@@ -147,7 +173,7 @@ function drawMatches(){
 }
 async function chooseWinner(match,winner){
  const name=teamCache.find(t=>t.id===winner)?.name||"este equipo";
- if(!confirm("¿Confirmás que ganó "+name+"? No se puede modificar desde esta pantalla."))return;
+ if(!await askConfirm("¿Confirmás que ganó "+name+"? No se puede modificar desde esta pantalla."))return;
  const {error}=await db.rpc("js_report_winner",{p_match:match.id,p_winner:winner});
  if(error)return message(error.message,true);await openTour(opened.id);
 }
