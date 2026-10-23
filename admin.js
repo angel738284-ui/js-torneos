@@ -167,7 +167,7 @@ async function loadTeamsMatches(){if(!opened)return;
  $("teamList").replaceChildren();
  if(!a.data.length)$("teamList").textContent="Ningún equipo inscrito todavía.";
  for(const t of a.data){const el=document.createElement("div");el.className="item";
- const roster=(playerByTeam[t.id]||[]).map(p=>`<li><strong>${esc(p.nickname)}</strong> <span class="idcell">${esc(p.game_id)}</span> <span class="small">${esc(p.region)}</span></li>`).join("");
+ const roster=(playerByTeam[t.id]||[]).sort((a,b)=>(a.player_role==='suplente')-(b.player_role==='suplente')||(a.roster_order||0)-(b.roster_order||0)).map(p=>`<li>${p.player_role==='suplente'?'<strong style="color:#82e4bd">🔁 SUPLENTE</strong> ':''}<strong>${esc(p.nickname)}</strong> <span class="idcell">${esc(p.game_id)}</span> <span class="small">${esc(p.region)}</span></li>`).join("");
  el.innerHTML=`<div class="row"><strong>${esc(t.name)}</strong><span class="tag ${t.status!=="registered"?"closed":""}">${esc(t.status)}</span></div><ul class="checks">${roster}</ul>`;
  if(opened.rounds===0){const del=document.createElement("button");del.className="ghost";del.textContent=t.status==="registered"?"Descalificar equipo":"Restablecer equipo";
  del.onclick=()=>updateTeam(t.id,t.status==="registered"?"disqualified":"registered");el.append(del);}

@@ -1,51 +1,207 @@
 "use strict";
 const $=id=>document.getElementById(id);
 const show=(id,on)=>$(id).classList.toggle("hidden",!on);
-const tell=(text,bad=false)=>{const n=$("notice");n.textContent=text;n.className="status show"+(bad?" error":"");};
-let tournament=null;const config=window.JS_CONFIG||{};
+const tell=(text,bad=false)=>{
+ const n=$("notice");n.textContent=text;n.className="status show"+(bad?" error":"");
+};
+let tournament=null;
+let starterRows=[],substituteRows=[];
+const config=window.JS_CONFIG||{};
 const base=String(config.supabaseUrl||"").replace(/\/$/,"");
 const endpoint=base+"/functions/v1/torneo";
 if(!base)tell("El organizador todavía no configuró la conexión a Supabase.",true);
-const params=new URLSearchParams(location.search);const code=params.get("codigo")||"";
+const params=new URLSearchParams(location.search);
+const code=params.get("codigo")||"";
 if(code){$("code").value=code;setTimeout(loadTournament,100)}
 $("find").onclick=loadTournament;
-async function loadTournament(){
- let code=$("code").value.trim().toUpperCase();$("code").value=code;
- if(!/^JS-[A-F0-9]{8}$/.test(code))return tell("Código inválido. Ejemplo: JS-A12B34CD",true);
- try{const res=await fetch(endpoint+"?code="+encodeURIComponent(code));const data=await res.json();
- if(!res.ok)throw Error(data.error||"No se pudo buscar el torneo");
- tournament=data;show("tournament",true);show("form",data.status==="open"&&data.registered<data.max_teams);show("success",false);
- $("name").textContent=data.name;$("mode").textContent=(data.mode||"PVP")+" · "+data.team_size+" vs "+data.team_size;
- $("slots").textContent=data.registered+" / "+data.max_teams+" equipos";
- $("date").textContent=data.starts_at?"Fecha: "+new Date(data.starts_at).toLocaleString("es-AR"):"Fecha por confirmar";
- $("rules").textContent=data.rules?"Reglas: "+data.rules:"";
- const n=Number(data.prize_quantity)||0;
- const unit=data.prize_kind==="diamantes"?"diamantes 💎":data.prize_kind==="pases"?"pase(s) 🎟️":"premio(s)";
- $("prizePublic").textContent=data.prize_kind&&data.prize_kind!=="ninguno"&&n>0?"🏆 Premio anunciado: "+n.toLocaleString("es-AR")+" "+unit+(data.prize_details?" · "+data.prize_details:""):"";
- $("players").replaceChildren();
- for(let i=0;i<data.team_size;i++){
-  const label=document.createElement("label");label.textContent="ID de Free Fire · Jugador "+(i+1);
-  const input=document.createElement("input");input.className="player-id";input.type="text";input.inputMode="numeric";input.maxLength=16;input.autocomplete="off";input.placeholder="UID numérico";input.required=true;input.addEventListener("input",()=>input.value=input.value.replace(/\D/g,""));
-  $("players").append(label,input);
- }
- if(data.status!=="open"||data.registered>=data.max_teams)tell("El torneo está cerrado o ya no tiene cupos.",true);
- else tell("Torneo encontrado. Anotá a los "+data.team_size+" jugadores.");
- }catch(e){tournament=null;show("form",false);show("tournament",false);tell(e.message,true)}
+
+function updateSubButton(){
+ const count=substituteRows.length;
+ const b=$("addSub");
+ b.disabled=count>=2||!tournament||tournament.status!=="open";
+ b.textContent=count>=2?"✓ 2 suplentes agregados":"＋ Agregar suplente ("+count+"/2)";
 }
+function everyRow(){return [...starterRows,...substituteRows]}
+function resetRoster(){
+ starterRows=[];substituteRows=[];
+ $("players").replaceChildren();
+ $("substitutes").replaceChildren();
+ updateSubButton();
+}
+function makePlayerRow(number,isSubstitute){
+ const wrapper=document.createElement("div");
+ wrapper.className="item";
+ wrapper.style.cssText="border:1px solid #36465d;border-radius:14px;padding:14px;margin:12px 0";
+ const label=document.createElement("div");
+ label.style.cssText="font-weight:800;margin-bottom:10px";
+ label.textContent=(isSubstitute?"🔁 Suplente ":"Titular ")+number;
+ const input=document.createElement("input");
+ input.type="text";input.inputMode="numeric";input.maxLength=16;input.autocomplete="off";
+ input.placeholder="ID numérico de Free Fire";input.className="player-id";input.required=!isSubstitute;
+ const status=document.createElement("div");status.className="small";
+ status.style.cssText="margin:10px 0;white-space:normal;overflow-wrap:anywhere";
+ status.textContent="Sin verificar";
+ const buttons=document.createElement("div");
+ buttons.style.cssText="display:flex;gap:10px;flex-wrap:wrap;margin-top:9px";
+ const verify=document.createElement("button");verify.type="button";verify.className="secondary";
+ verify.textContent="🔍 Verificar ID";verify.style.cssText="flex:1;min-width:120px";
+ const correct=document.createElement("button");correct.type="button";correct.className="ghost";
+ correct.textContent="Borrar / Corregir ID";correct.style.cssText="flex:1;min-width:120px";
+ correct.classList.add("hidden");
+ const remove=document.createElement("button");remove.type="button";remove.className="ghost";
+ remove.textContent="Quitar suplente";remove.style.cssText="min-width:110px";
+ if(isSubstitute)buttons.append(verify,correct,remove);
+ else buttons.append(verify,correct);
+ wrapper.append(label,input,status,buttons);
+ const state={element:wrapper,input,status,verify,correct,remove,verified:null,role:isSubstitute?"suplente":"titular"};
+ function invalidate(){
+  state.verified=null;status.textContent="Sin verificar";status.style.color="";
+  verify.classList.remove("hidden");correct.classList.add("hidden");
+ }
+ input.addEventListener("input",()=>{
+  const clean=input.value.replace(/\D/g,"");
+  if(input.value!==clean)input.value=clean;
+  invalidate();
+ });
+ correct.onclick=()=>{
+   input.readOnly=false;input.value="";invalidate();input.focus();
+ };
+ remove.onclick=()=>{
+   if(!isSubstitute)return;
+   const idx=substituteRows.indexOf(state);
+   if(idx>=0)substituteRows.splice(idx,1);
+   wrapper.remove();
+   substituteRows.forEach((v,i)=>{
+     const d=v.element.firstChild;if(d)d.textContent="🔁 Suplente "+(i+1);
+   });
+   updateSubButton();
+ };
+ verify.onclick=async()=>{
+   const id=input.value.trim();
+   if(!tournament)return tell("Primero buscá el torneo.",true);
+   if(!/^[0-9]{5,16}$/.test(id)){
+     status.textContent="Ingresá un ID numérico válido.";
+     status.style.color="#ffa9ae";return;
+   }
+   if(everyRow().some(row=>row!==state&&row.input.value.trim()===id)){
+     status.textContent="Ese ID ya está cargado en este equipo.";
+     status.style.color="#ffa9ae";return;
+   }
+   input.readOnly=true;verify.disabled=true;verify.textContent="Verificando…";
+   status.textContent="Consultando el nombre en Free Fire…";
+   const token=window.turnstile?.getResponse?.()||"";
+   try{
+      const res=await fetch(endpoint,{
+        method:"POST",headers:{"content-type":"application/json"},
+        body:JSON.stringify({action:"verify",code:tournament.code,player_id:id,turnstile_token:token})
+      });
+      const data=await res.json();
+      if(!res.ok)throw new Error(data.error||"No se pudo verificar el ID");
+      if(String(data.id)!==id||!data.nickname||data.verified!==true)
+        throw new Error("La respuesta del verificador no coincide con el ID.");
+      state.verified={id,nickname:data.nickname,region:data.region||"SAC"};
+      status.style.color="#7ee9c0";
+      status.textContent="✓ "+data.nickname+" · "+id+" · "+state.verified.region;
+      verify.classList.add("hidden");correct.classList.remove("hidden");
+   }catch(e){
+      state.verified=null;input.readOnly=false;status.style.color="#ffa9ae";
+      status.textContent="No verificado: "+(e.message||"error de red");
+      verify.classList.remove("hidden");correct.classList.add("hidden");
+      window.turnstile?.reset?.();
+   }finally{
+      verify.disabled=false;verify.textContent="🔍 Verificar ID";
+   }
+ };
+ return state;
+}
+
+$("addSub").onclick=()=>{
+ if(!tournament||substituteRows.length>=2)return;
+ const state=makePlayerRow(substituteRows.length+1,true);
+ substituteRows.push(state);
+ $("substitutes").append(state.element);
+ updateSubButton();
+};
+
+async function loadTournament(){
+ let code=$("code").value.trim().toUpperCase();
+ $("code").value=code;
+ if(!/^JS-[A-F0-9]{8}$/.test(code))return tell("Código inválido. Ejemplo: JS-A12B34CD",true);
+ try{
+  const res=await fetch(endpoint+"?code="+encodeURIComponent(code));
+  const data=await res.json();
+  if(!res.ok)throw Error(data.error||"No se pudo buscar el torneo");
+  tournament=data;
+  show("tournament",true);
+  const available=data.status==="open"&&data.registered<data.max_teams;
+  show("form",available);show("success",false);
+  $("name").textContent=data.name;
+  $("mode").textContent=(data.mode||"PVP")+" · "+data.team_size+" vs "+data.team_size;
+  $("slots").textContent=data.registered+" / "+data.max_teams+" equipos";
+  $("date").textContent=data.starts_at?"Fecha: "+new Date(data.starts_at).toLocaleString("es-AR"):"Fecha por confirmar";
+  $("rules").textContent=data.rules?"Reglas: "+data.rules:"";
+  const n=Number(data.prize_quantity)||0;
+  const unit=data.prize_kind==="diamantes"?"diamantes 💎":data.prize_kind==="pases"?"pase(s) 🎟️":"premio(s)";
+  $("prizePublic").textContent=data.prize_kind&&data.prize_kind!=="ninguno"&&n>0?
+      "🏆 Premio anunciado: "+n.toLocaleString("es-AR")+" "+unit+(data.prize_details?" · "+data.prize_details:""):"";
+  resetRoster();
+  for(let i=0;i<data.team_size;i++){
+    const row=makePlayerRow(i+1,false);
+    starterRows.push(row);$("players").append(row.element);
+  }
+  updateSubButton();
+  if(!available)tell("El torneo está cerrado o ya no tiene cupos.",true);
+  else tell("Torneo encontrado. Verificá los "+data.team_size+" titulares y agregá hasta 2 suplentes si querés.");
+ }catch(e){
+  tournament=null;resetRoster();show("form",false);show("tournament",false);
+  tell(e.message,true);
+ }
+}
+
 $("form").addEventListener("submit",async event=>{
- event.preventDefault();if(!tournament)return;
- const team=$("team").value.trim();const ids=[...document.querySelectorAll(".player-id")].map(x=>x.value.trim());
- if(team.length<2||ids.some(id=>!/^[0-9]{5,16}$/.test(id))||new Set(ids).size!==ids.length)return tell("Revisá el nombre y los UID; no pueden repetirse.",true);
- const btn=$("register");btn.disabled=true;btn.textContent="Verificando nombres con Epinby…";
+ event.preventDefault();
+ if(!tournament)return;
+ const team=$("team").value.trim(),rows=everyRow();
+ if(team.length<2||team.length>45)return tell("Ingresá el nombre del equipo.",true);
+ const missing=rows.filter(row=>!row.verified||row.verified.id!==row.input.value.trim());
+ if(missing.length){
+   missing[0].element.scrollIntoView({behavior:"smooth",block:"center"});
+   return tell("Primero verificá todos los titulares y suplentes. Podés borrar y corregir cualquier ID.",true);
+ }
+ const ids=rows.map(x=>x.verified.id);
+ if(new Set(ids).size!==ids.length)return tell("Hay ID repetidos entre titulares y suplentes.",true);
+ const btn=$("register");btn.disabled=true;btn.textContent="Inscribiendo equipo…";
  try{
   const token=window.turnstile?.getResponse?.()||"";
-  const res=await fetch(endpoint,{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({code:tournament.code,team_name:team,player_ids:ids,turnstile_token:token})});
-  const data=await res.json();if(!res.ok)throw Error(data.error||"No se pudo inscribir el equipo");
+  const res=await fetch(endpoint,{
+    method:"POST",headers:{"content-type":"application/json"},
+    body:JSON.stringify({
+      action:"register",code:tournament.code,team_name:team,
+      player_ids:starterRows.map(r=>r.verified.id),
+      substitute_ids:substituteRows.map(r=>r.verified.id),
+      turnstile_token:token
+    })
+  });
+  const data=await res.json();
+  if(!res.ok)throw Error(data.error||"No se pudo inscribir el equipo");
   show("form",false);show("success",true);$("teamSuccess").textContent="Equipo: "+team;
-  const list=$("playersSuccess");list.replaceChildren();for(const p of data.players||[]){const li=document.createElement("li");li.textContent=p.nickname+" · ID "+p.id+" · "+p.region;list.append(li)}
-  tell("¡Inscripción confirmada!");
- }catch(e){tell(e.message,true);window.turnstile?.reset?.();}
- finally{btn.disabled=false;btn.textContent="Inscribir equipo";}
+  const list=$("playersSuccess");list.replaceChildren();
+  for(const p of data.players||[]){
+    const li=document.createElement("li");
+    li.textContent=(p.role==="suplente"?"🔁 Suplente · ":"Titular · ")+p.nickname+" · ID "+p.id+" · "+p.region;
+    list.append(li);
+  }
+  tell("¡Inscripción confirmada! "+starterRows.length+" titulares y "+substituteRows.length+" suplentes.");
+ }catch(e){
+  tell(e.message||"Error al inscribir el equipo",true);
+  window.turnstile?.reset?.();
+ }finally{btn.disabled=false;btn.textContent="Inscribir equipo";}
 });
-// Turnstile requiere una clave pública en config.js y TURNSTILE_SECRET en Supabase.
-if(config.turnstileSiteKey){const script=document.createElement("script");script.src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit";script.onload=()=>window.turnstile.render("#captcha",{sitekey:config.turnstileSiteKey});document.head.append(script)}
+
+// Protección adicional opcional para inscripciones públicas con Cloudflare Turnstile.
+if(config.turnstileSiteKey){
+ const script=document.createElement("script");
+ script.src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit";
+ script.onload=()=>window.turnstile.render("#captcha",{sitekey:config.turnstileSiteKey});
+ document.head.append(script);
+}
