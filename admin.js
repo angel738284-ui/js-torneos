@@ -318,7 +318,7 @@ async function loadTeamsMatches(){if(!opened)return;
  roomCache=new Map();
  if(matchCache.length){
    const {data:rooms,error:roomsError}=await db.from("js_match_rooms")
-     .select("match_id,starts_at,room_id,room_password").in("match_id",matchCache.map(m=>m.id));
+     .select("match_id,room_id,room_password,sent_at").in("match_id",matchCache.map(m=>m.id));
    if(roomsError)return message("No se pudieron cargar las salas: "+roomsError.message,true);
    for(const room of rooms||[])roomCache.set(room.match_id,room);
  }

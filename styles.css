@@ -116,3 +116,10 @@ button,.button{cursor:pointer;display:inline-flex;justify-content:center;align-i
  border-color:#58c29b;color:#caffeb;font-weight:900;min-height:47px}
 #rulesSection .rules-toggle:focus-visible{outline:2px solid #72f0c2;outline-offset:2px}
 #rulesSection{overflow:hidden}
+
+/* JS Family: aviso de entrega inmediata, sin fecha programada */
+.room-send-status{padding:12px 14px;margin:8px 0 17px;background:#18283b;border:1px solid #53677b;
+ color:#cddce8;border-radius:11px;line-height:1.5;font-weight:800}
+.room-send-live{background:#123c33;border-color:#3cc698;color:#9af7cb}
+.room-send-expired{background:#443021;border-color:#bd9061;color:#ffdbb0}
+.room-fields button.good{background:#14775d;color:#fff;border-color:#279b7a;min-height:48px}

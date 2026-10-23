@@ -35,65 +35,93 @@ async function generateTeamCode(team){
   await loadTeamsMatches();
  }catch(e){message("No se pudo generar el código del equipo: "+(e.message||String(e)),true)}
 }
-function pickRoomDay(savedIso){
- const s=document.createElement("select");
- const none=document.createElement("option");none.textContent="Sin fecha definida";none.value="";s.append(none);
- const today=new Date();today.setHours(0,0,0,0);
- const stored=savedIso?new Date(savedIso):null;
- const format=new Intl.DateTimeFormat("es-AR",{weekday:"long",day:"numeric",month:"long",year:"numeric"});
- const values=new Set();
- const dateCode=d=>[d.getFullYear(),String(d.getMonth()+1).padStart(2,"0"),String(d.getDate()).padStart(2,"0")].join("-");
- const append=d=>{
-  const value=dateCode(d);if(values.has(value))return;
-  values.add(value);const opt=document.createElement("option");opt.value=value;opt.textContent=format.format(d);s.append(opt);
- };
- if(stored&&!Number.isNaN(stored.getTime()))append(stored);
- for(let offset=0;offset<91;offset++)append(new Date(today.getFullYear(),today.getMonth(),today.getDate()+offset,12));
- s.value=stored&&!Number.isNaN(stored.getTime())?dateCode(stored):"";
- return s;
+// Vista de administración de sala: no programa fechas. Enviar AHORA habilita
+// la sala durante 10 minutos, luego el servidor la oculta automáticamente.
+const ROOM_WINDOW_MS=10*60*1000;
+function roomCountLabel(ms){
+ const s=Math.max(0,Math.ceil(ms/1000));
+ return String(Math.floor(s/60)).padStart(2,"0")+":"+String(s%60).padStart(2,"0");
 }
 function appendRoomEditor(match,card){
- const saved=roomCache.get(match.id)||{};
- const details=document.createElement("details");details.className="room-editor";
+ const stored=roomCache.get(match.id)||{};
+ const details=document.createElement("details");
+ details.className="room-editor";
  const summary=document.createElement("summary");
- summary.textContent=saved.room_id||saved.starts_at?"⚙️ Sala configurada · Editar":"＋ Configurar sala y horario";
+ summary.textContent="📨 Enviar sala a los dos equipos";
  details.append(summary);
  const panel=document.createElement("div");panel.className="room-fields";
- const dayLabel=document.createElement("label");dayLabel.textContent="Día del enfrentamiento";
- const day=pickRoomDay(saved.starts_at);
- const timeLabel=document.createElement("label");timeLabel.textContent="Hora (Argentina)";
- const time=document.createElement("input");time.type="time";
- const old=saved.starts_at?new Date(saved.starts_at):null;
- time.value=old&&!Number.isNaN(old.getTime())?
-   String(old.getHours()).padStart(2,"0")+":"+String(old.getMinutes()).padStart(2,"0"):"20:00";
- const roomLabel=document.createElement("label");roomLabel.textContent="ID de la sala";
- const room=document.createElement("input");room.value=saved.room_id||"";room.maxLength=60;room.placeholder="Ej.: 123456789";
- const passLabel=document.createElement("label");passLabel.textContent="Contraseña";
- const pass=document.createElement("input");pass.value=saved.room_password||"";pass.maxLength=80;pass.placeholder="Contraseña de la sala";
- const btn=document.createElement("button");btn.type="button";btn.className="secondary full";btn.style.marginTop="13px";btn.textContent="Guardar sala y horario";
- const note=document.createElement("p");note.className="small";note.textContent="Estos datos solo serán visibles para los equipos de este cruce que tengan su código privado.";
+ const status=document.createElement("div");
+ status.className="room-send-status";
+ const label=document.createElement("label");label.textContent="ID de la sala";
+ const id=document.createElement("input");
+ id.type="text";id.value=stored.room_id||"";id.maxLength=60;
+ id.autocomplete="off";id.placeholder="Número o código de la sala";
+ const passwordLabel=document.createElement("label");passwordLabel.textContent="Contraseña";
+ const password=document.createElement("input");
+ password.type="text";password.value=stored.room_password||"";password.maxLength=80;
+ password.autocomplete="off";password.placeholder="Contraseña de la sala";
+ const btn=document.createElement("button");btn.type="button";btn.className="good full";
+ btn.textContent="📨 Guardar y enviar ahora";
+ btn.style.marginTop="13px";
+ const close=document.createElement("button");close.type="button";close.className="ghost full";
+ close.textContent="🔒 Cerrar sala ahora";close.style.marginTop="10px";
+ const note=document.createElement("p");note.className="small";
+ note.textContent="Se publica en el mismo momento para los dos capitanes. Espera máxima: 10 minutos. Después se ocultan los datos; no se descalifica automáticamente a nadie.";
+ const sentAt=stored.sent_at?Date.parse(stored.sent_at):0;
+ const expiry=sentAt?sentAt+ROOM_WINDOW_MS:0;
+ function updateState(){
+   const remaining=expiry-Date.now();
+   if(sentAt&&remaining>0){
+     status.textContent="🟢 Sala enviada · quedan "+roomCountLabel(remaining)+" de los 10 minutos";
+     status.className="room-send-status room-send-live";
+     close.classList.remove("hidden");
+   }else if(sentAt){
+     status.textContent="⌛ Espera de 10 minutos vencida. Si necesitás otra sala, enviá datos nuevos.";
+     status.className="room-send-status room-send-expired";
+     close.classList.add("hidden");
+   }else{
+     status.textContent=stored.room_id?"🔒 Sala guardada anteriormente, todavía no enviada con este sistema.":"🔒 Sala pendiente de envío";
+     status.className="room-send-status";
+     close.classList.add("hidden");
+   }
+ }
+ updateState();
+ if(sentAt&&expiry>Date.now()){
+   const ticker=setInterval(()=>{
+     if(!card.isConnected){clearInterval(ticker);return;}
+     updateState();
+     if(Date.now()>=expiry)clearInterval(ticker);
+   },1000);
+ }
  btn.onclick=async()=>{
-  const roomId=room.value.trim(),password=pass.value.trim();
-  if(password&&!roomId)return message("Primero ingresá el ID de la sala.",true);
-  if(roomId.length>60||password.length>80)return message("ID de sala o contraseña demasiado largos.",true);
-  let starts=null;
-  if(day.value){
-    const date=new Date(day.value+"T"+(time.value||"20:00")+":00");
-    if(!Number.isFinite(date.getTime()))return message("Fecha u hora inválidas.",true);
-    starts=date.toISOString();
-  }
-  btn.disabled=true;
-  try{
-   const {error}=await db.from("js_match_rooms").upsert({
-    match_id:match.id,room_id:roomId,room_password:password,starts_at:starts,
-    updated_at:new Date().toISOString()
-   },{onConflict:"match_id"});
-   if(error)throw error;
-   await openTour(opened.id);
-   message("✓ Sala y horario guardados. Los equipos podrán consultarlos con su código privado.");
-  }catch(e){message("No se pudo guardar la sala: "+(e.message||String(e)),true)}
-  finally{btn.disabled=false;}
+   const room=id.value.trim(),pass=password.value.trim();
+   if(!room||!pass)return message("Necesitás el ID y la contraseña para enviar la sala.",true);
+   if(room.length>60||pass.length>80)return message("El ID o la contraseña superan el máximo permitido.",true);
+   if(!match.team_a||!match.team_b)return message("Primero tienen que estar definidos los dos equipos del cruce.",true);
+   if(sentAt&&expiry>Date.now()&&!(await askConfirm("La sala anterior sigue activa. ¿Querés enviar nuevamente y reiniciar los 10 minutos?")))return;
+   if(!(await askConfirm("¿Enviar AHORA la sala a los dos equipos? Tendrán un máximo de 10 minutos para ingresar.")))return;
+   btn.disabled=true;btn.textContent="Enviando…";
+   try{
+     const {data,error}=await db.rpc("js_send_match_room",{p_match:match.id,p_room_id:room,p_room_password:pass});
+     if(error)throw error;
+     if(!data?.ok)throw Error("El servidor no confirmó el envío");
+     await openTour(opened.id);
+     message("✅ Sala enviada ahora a ambos equipos. Tienen 10 minutos para entrar; el acceso caduca automáticamente.");
+   }catch(e){
+     message("No se pudo enviar la sala: "+(e.message||String(e)),true);
+     btn.disabled=false;btn.textContent="📨 Guardar y enviar ahora";
+   }
  };
- panel.append(dayLabel,day,timeLabel,time,roomLabel,room,passLabel,pass,btn,note);
+ close.onclick=async()=>{
+   if(!(await askConfirm("¿Cerrar esta sala ahora? Los capitanes dejarán de ver la contraseña.")))return;
+   close.disabled=true;
+   try{
+     const {data,error}=await db.rpc("js_close_match_room",{p_match:match.id});
+     if(error||data!==true)throw error||Error("No se confirmó el cierre");
+     await openTour(opened.id);
+     message("Sala cerrada. Las credenciales ya no se muestran a los capitanes.");
+   }catch(e){message("No se pudo cerrar la sala: "+(e.message||String(e)),true);close.disabled=false}
+ };
+ panel.append(status,label,id,passwordLabel,password,btn,close,note);
  details.append(panel);card.append(details);
 }
