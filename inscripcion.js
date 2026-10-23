@@ -139,7 +139,8 @@ async function loadTournament(){
   $("mode").textContent=(data.mode||"PVP")+" · "+data.team_size+" vs "+data.team_size;
   $("slots").textContent=data.registered+" / "+data.max_teams+" equipos";
   $("date").textContent=data.starts_at?"Fecha: "+new Date(data.starts_at).toLocaleString("es-AR"):"Fecha por confirmar";
-  $("rules").textContent=data.rules?"Reglas: "+data.rules:"";
+  show("rulesSection",Boolean(data.rules && data.rules.trim()));
+  window.JSRuleFormat.render($("rules"),data.rules||"");
   const n=Number(data.prize_quantity)||0;
   const unit=data.prize_kind==="diamantes"?"diamantes 💎":data.prize_kind==="pases"?"pase(s) 🎟️":"premio(s)";
   $("prizePublic").textContent=data.prize_kind&&data.prize_kind!=="ninguno"&&n>0?

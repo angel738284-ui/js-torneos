@@ -21,3 +21,18 @@ button,.button{cursor:pointer;display:inline-flex;justify-content:center;align-i
 .tour-tab-body{padding-top:4px;min-height:90px}
 #detailSettings>h3{margin-top:16px}
 @media(max-width:540px){#newTournament{flex:1 1 100%;width:100%}.tour-tabs{top:3px}#closeDetail{white-space:nowrap}.home-banner .row{gap:14px}}
+
+/* Reglas legibles en la inscripción: respeta saltos de párrafo y negritas sin HTML inseguro. */
+.tournament-rules{border:1px solid #3c5964;border-radius:15px;padding:15px;margin:18px 0 6px;background:linear-gradient(150deg,#112a2b,#111e30)}
+.tournament-rules h3{margin:0 0 13px;color:#92efd0;font-weight:900}
+.rule-lines{font-size:14px;color:#e5eaf2;line-height:1.65;overflow-wrap:anywhere;white-space:normal}
+.rule-lines strong{font-weight:850;color:#fff}
+.rule-line{margin:5px 0}
+.rule-gap{height:12px}
+.rule-quote{font-weight:750;border-left:3px solid #56dbb0;padding:3px 0 3px 11px;margin:7px 0;color:#d7f4ea}
+.rule-main-title{font-weight:900;font-size:18px;letter-spacing:.04em;color:#6aefc2}
+.rule-subtitle{font-size:12px;color:#b1c4ce}
+.rule-section-title{margin-top:8px;font-weight:800}
+.rule-bullet{position:relative;margin:6px 0;padding-left:19px}
+.rule-bullet::before{content:"•";position:absolute;left:0;color:#63e5bc;font-weight:900}
+#rulesPreviewBox{margin-bottom:12px}

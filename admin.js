@@ -75,6 +75,67 @@ $("cancelCreate").onclick=()=>navigate("homeScreen");
 $("tabTeams").onclick=()=>chooseTourTab("teams");
 $("tabBrackets").onclick=()=>chooseTourTab("brackets");
 $("tabSettings").onclick=()=>chooseTourTab("settings");
+
+// En vez del calendario numérico de Android, usar nombres de día + semana.
+const weekdayDateFormat=new Intl.DateTimeFormat("es-AR",{weekday:"long",day:"numeric",month:"long",year:"numeric"});
+const weekLabelFormat=new Intl.DateTimeFormat("es-AR",{day:"numeric",month:"long",year:"numeric"});
+function dateYMD(date){
+ return [date.getFullYear(),String(date.getMonth()+1).padStart(2,"0"),String(date.getDate()).padStart(2,"0")].join("-");
+}
+function capitalized(str){return str.charAt(0).toLocaleUpperCase("es-AR")+str.slice(1);}
+function mondayOfWeek(today){
+ const d=new Date(today.getFullYear(),today.getMonth(),today.getDate(),12,0,0,0);
+ d.setDate(d.getDate()-(d.getDay()+6)%7);
+ return d;
+}
+function updateDayPicker(){
+ const weekOffset=Number($("tourWeek").value||0);
+ const monday=mondayOfWeek(new Date());
+ monday.setDate(monday.getDate()+weekOffset*7);
+ const dropdown=$("tourDay");
+ const previous=dropdown.value;
+ dropdown.replaceChildren();
+ const none=document.createElement("option");none.value="";none.textContent="Sin fecha por ahora";dropdown.append(none);
+ const startToday=new Date();startToday.setHours(0,0,0,0);
+ for(let day=0;day<7;day++){
+  const d=new Date(monday.getFullYear(),monday.getMonth(),monday.getDate()+day,12);
+  if(d<startToday)continue;
+  const opt=document.createElement("option");
+  opt.value=dateYMD(d);
+  opt.textContent=capitalized(weekdayDateFormat.format(d));
+  dropdown.append(opt);
+ }
+ if([...dropdown.options].some(opt=>opt.value===previous))dropdown.value=previous;
+ else dropdown.value="";
+ updateDatePreview();
+}
+function updateDatePreview(){
+ const date=$("tourDay").value;
+ const time=$("tourTime");
+ time.disabled=!date;
+ if(!date){
+  $("tourDatePreview").textContent="Sin fecha programada: podés crear el torneo ahora.";
+  return;
+ }
+ const d=new Date(date+"T12:00:00");
+ const clock=time.value||"20:00";
+ $("tourDatePreview").textContent="📅 "+capitalized(weekdayDateFormat.format(d))+" · "+clock+" hs";
+}
+function initializeDayPicker(){
+ const select=$("tourWeek");select.replaceChildren();
+ const monday=mondayOfWeek(new Date());
+ for(let week=0;week<26;week++){
+  const d=new Date(monday.getFullYear(),monday.getMonth(),monday.getDate()+week*7,12);
+  const o=document.createElement("option");o.value=String(week);
+  o.textContent=(week===0?"Esta semana":week===1?"Próxima semana":"Semana del "+weekLabelFormat.format(d));
+  select.append(o);
+ }
+ select.value="0";
+ select.onchange=updateDayPicker;
+ $("tourDay").onchange=updateDatePreview;
+ $("tourTime").onchange=updateDatePreview;
+ updateDayPicker();
+}
 const cfg=()=>{const defaults=window.JS_CONFIG||{};try{return {...defaults,...JSON.parse(localStorage.getItem("js_torneo_cfg")||"{}")}}catch{return defaults}};
 function launch(){
  currentConfig=cfg();
@@ -116,11 +177,15 @@ $("logout").onclick=async()=>{await db?.auth.signOut();user=null;show("detail",f
 $("create").onclick=async()=>{
  const name=$("tourName").value.trim();if(name.length<4)return message("Poné el nombre del torneo.",true);
  if($("tourMode").value==="OTRA" && !$("customMode").value.trim())return message("Escribí el nombre de la dinámica.",true);
- const start=$("startAt").value;
- const row={name,team_size:Number($("teamSize").value),max_teams:Number($("maxTeams").value),mode:$("tourMode").value==="OTRA"?$("customMode").value.trim().slice(0,60):$("tourMode").value,starts_at:start?new Date(start).toISOString():null,rules:$("rules").value.trim().slice(0,1500),created_by:user.id};
+ const day=$("tourDay").value;
+ const clock=$("tourTime").value||"20:00";
+ const start=day?new Date(day+"T"+clock+":00"):null;
+ if(start && (!Number.isFinite(start.getTime()) || start.getTime()<Date.now()))
+  return message("Elegí un día y una hora futuros.",true);
+ const row={name,team_size:Number($("teamSize").value),max_teams:Number($("maxTeams").value),mode:$("tourMode").value==="OTRA"?$("customMode").value.trim().slice(0,60):$("tourMode").value,starts_at:start?start.toISOString():null,rules:$("rules").value.trim().slice(0,1500),created_by:user.id};
  $("create").disabled=true;
  try{const {data,error}=await db.from("js_tournaments").insert(row).select().single();if(error)throw error;
-  $("tourName").value="";message("Torneo creado. Código: "+data.code);await loadTours();await openTour(data.id,true);
+  $("tourName").value="";initializeDayPicker();message("Torneo creado. Código: "+data.code);await loadTours();await openTour(data.id,true);
  }catch(e){message("No se pudo crear: "+e.message,true);}finally{$("create").disabled=false}
 };
 
@@ -313,4 +378,10 @@ async function chooseWinner(match,winner){
  const {error}=await db.rpc("js_report_winner",{p_match:match.id,p_winner:winner});
  if(error)return message(error.message,true);await openTour(opened.id);await loadTours();
 }
+$("rules").addEventListener("input",()=>{
+ const text=$("rules").value;
+ show("rulesPreviewBox",Boolean(text.trim()));
+ window.JSRuleFormat.render($("rulesPreview"),text);
+});
+initializeDayPicker();
 launch();
