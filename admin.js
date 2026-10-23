@@ -2,7 +2,7 @@
 const $=id=>document.getElementById(id);
 const show=(id,on)=>$(id).classList.toggle("hidden",!on);
 const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c]));
-let db=null,user=null,opened=null,teamCache=[],matchCache=[],currentConfig=null,currentTourTab="teams";
+let db=null,user=null,opened=null,teamCache=[],matchCache=[],finalGameCache=[],currentConfig=null,currentTourTab="teams",savingFinalGame=false;
 const message=(txt,bad=false)=>{let n=$("notice");n.textContent=txt;n.className="status show"+(bad?" error":"");n.scrollIntoView({behavior:"smooth",block:"nearest"});};
 // Confirmación dentro de la página: Android WebView no tiene que implementar window.confirm().
 function askConfirm(question){
@@ -305,6 +305,16 @@ async function loadTeamsMatches(){if(!opened)return;
  ]);
  if(a.error||b.error||c.error)return message("No se pudieron cargar datos: "+(a.error||b.error||c.error).message,true);
  teamCache=a.data;matchCache=c.data;
+ // Las victorias parciales de la final se consultan aparte y solo las ve el administrador.
+ finalGameCache=[];
+ const final=m=>m.round===opened.rounds&&m.slot===1;
+ const finalMatch=opened.rounds>0?c.data.find(final):null;
+ if(finalMatch){
+   const {data:games,error:gamesError}=await db.from("js_final_games")
+     .select("match_id,game_number,winner").eq("match_id",finalMatch.id).order("game_number");
+   if(gamesError)return message("No se pudo cargar el historial de la final: "+gamesError.message,true);
+   finalGameCache=games||[];
+ }
  const playerByTeam={};for(const p of b.data)(playerByTeam[p.team_id]??=[]).push(p);
  const approved=a.data.filter(t=>t.status==="registered");$("teamCount").textContent=approved.length+" / "+opened.max_teams;
  $("teamList").replaceChildren();
@@ -432,22 +442,85 @@ $("startBracket").onclick=async()=>{
  }
 };
 function drawMatches(){
- const area=$("matchList");area.replaceChildren();if(!matchCache.length){area.textContent="Todavía no hay cruces.";return;}
+ const area=$("matchList");area.replaceChildren();
+ if(!matchCache.length){area.textContent="Todavía no hay cruces.";return;}
  const names=Object.fromEntries(teamCache.map(t=>[t.id,t.name]));
  for(let round=1;round<=opened.rounds;round++){
-  const heading=document.createElement("h3");heading.textContent=round===opened.rounds?"Final":round===opened.rounds-1?"Semifinales":"Ronda "+round;heading.style.marginTop="18px";area.append(heading);
+  const isFinal=round===opened.rounds;
+  const heading=document.createElement("h3");
+  heading.textContent=isFinal?"🏆 Final — al mejor de 3":round===opened.rounds-1?"Semifinales":"Ronda "+round;
+  heading.style.marginTop="18px";area.append(heading);
+  if(isFinal){
+   const help=document.createElement("p");help.className="small";
+   help.textContent="Gana la final el primer equipo que consiga 2 victorias. Registrá quién ganó cada partida.";
+   area.append(help);
+  }
   for(const m of matchCache.filter(x=>x.round===round)){
-   const el=document.createElement("div");el.className="match";
-   const p=document.createElement("div");p.className="small";p.textContent="Partida #"+m.slot+(m.winner?" · Resultado confirmado":"");el.append(p);
-   for(const [key,label] of [["team_a","A"],["team_b","B"]]){
-    const row=document.createElement("div");row.className="names";row.style.marginTop="9px";
-    const name=document.createElement("span");name.textContent=(label+" · ")+(m[key]?names[m[key]]||"Equipo":"Pendiente");
-    if(m.winner===m[key]&&m[key])name.classList.add("champion");row.append(name);
-    if(m[key]&&m.team_a&&m.team_b&&!m.winner&&opened.status!=="finished"){
-     const btn=document.createElement("button");btn.className="good";btn.textContent="Ganó";btn.onclick=()=>chooseWinner(m,m[key]);row.append(btn);
+   const el=document.createElement("div");
+   el.className=isFinal?"match final-series":"match";
+   if(!isFinal){
+    const p=document.createElement("div");p.className="small";
+    p.textContent="Partida #"+m.slot+(m.winner?" · Resultado confirmado":"");el.append(p);
+    for(const [key,label] of [["team_a","A"],["team_b","B"]]){
+     const row=document.createElement("div");row.className="names";row.style.marginTop="9px";
+     const name=document.createElement("span");
+     name.textContent=label+" · "+(m[key]?names[m[key]]||"Equipo":"Pendiente");
+     if(m.winner===m[key]&&m[key])name.classList.add("champion");
+     row.append(name);
+     if(m[key]&&m.team_a&&m.team_b&&!m.winner&&opened.status!=="finished"){
+      const btn=document.createElement("button");btn.className="good";btn.textContent="Ganó";
+      btn.onclick=()=>chooseWinner(m,m[key]);row.append(btn);
+     }
+     el.append(row);
     }
-    el.append(row);
-   }area.append(el);
+   }else{
+    const scoreA=Number(m.final_wins_a)||0,scoreB=Number(m.final_wins_b)||0;
+    const played=scoreA+scoreB;
+    const legacy=Boolean(m.winner)&&played===0;
+    const title=document.createElement("div");
+    title.className="final-label";
+    title.textContent=legacy?"🏆 Final histórica — resultado registrado":
+       m.winner?"🏆 FINAL TERMINADA":
+       m.team_a&&m.team_b?"🔥 Partida "+(played+1)+" de hasta 3":"Esperando finalistas";
+    el.append(title);
+    const score=document.createElement("div");score.className="final-scoreboard";
+    for(const [key,label,wins] of [["team_a","A",scoreA],["team_b","B",scoreB]]){
+      const col=document.createElement("div");col.className="final-side";
+      const name=document.createElement("div");name.className="final-team";
+      name.textContent=m[key]?names[m[key]]||"Equipo":"Pendiente";
+      const number=document.createElement("div");number.className="final-score";
+      number.textContent=legacy?(m.winner===m[key]?"🏆":"—"):String(wins);
+      const tag=document.createElement("div");tag.className="small";tag.textContent="Equipo "+label;
+      if(m.winner===m[key]&&m[key])col.classList.add("final-victor");
+      col.append(tag,name,number);
+      if(m[key]&&m.team_a&&m.team_b&&!m.winner&&opened.status!=="finished"){
+        const btn=document.createElement("button");btn.className="good";
+        btn.textContent="Ganó partida "+(played+1);
+        btn.disabled=savingFinalGame;
+        btn.onclick=()=>recordFinalGame(m,m[key]);
+        col.append(btn);
+      }
+      score.append(col);
+    }
+    el.append(score);
+    if(!legacy){
+      const line=document.createElement("div");line.className="final-progress";
+      line.textContent=m.winner?"✅ Campeón definido por 2 victorias":
+       m.team_a&&m.team_b?"Marcador "+scoreA+" – "+scoreB+" · Primer equipo en llegar a 2 gana":"Los dos finalistas aparecerán al terminar las semifinales";
+      el.append(line);
+    }
+    const history=finalGameCache.filter(g=>g.match_id===m.id);
+    if(history.length){
+      const hist=document.createElement("div");hist.className="final-game-history";
+      const h=document.createElement("strong");h.textContent="Partidas registradas";hist.append(h);
+      for(const g of history){
+        const l=document.createElement("div");l.textContent="✓ Partida "+g.game_number+": ganó "+(names[g.winner]||"Equipo");
+        hist.append(l);
+      }
+      el.append(hist);
+    }
+   }
+   area.append(el);
   }
  }
  const finalMatch=matchCache.find(x=>x.round===opened.rounds&&x.winner);
@@ -456,9 +529,30 @@ function drawMatches(){
   box.classList.remove("hidden");box.replaceChildren();
   const heading=document.createElement("div");heading.style.cssText="font-size:13px;letter-spacing:2px;color:#9fe9d2;font-weight:800";heading.textContent="🏆 CAMPEÓN DEL TORNEO";
   const name=document.createElement("div");name.style.cssText="font-size:29px;font-weight:900;margin:8px 0;overflow-wrap:anywhere";name.textContent=names[finalMatch.winner]||"Equipo ganador";
+  const score=document.createElement("div");score.style.cssText="color:#d9e9fa;font-size:16px;font-weight:800;margin-bottom:7px";
+  const hasScores=(Number(finalMatch.final_wins_a)||0)+(Number(finalMatch.final_wins_b)||0)>0;
+  score.textContent=hasScores?"Ganó la final "+finalMatch.final_wins_a+" – "+finalMatch.final_wins_b+" (mejor de 3)":"Final registrada anteriormente";
   const prize=document.createElement("div");prize.style.cssText="color:#b3ddce;font-size:14px";prize.textContent=prizeText(opened);
-  box.append(heading,name,prize);
+  box.append(heading,name,score,prize);
  }else box.classList.add("hidden");
+}
+async function recordFinalGame(match,winner){
+ if(savingFinalGame||!opened)return;
+ savingFinalGame=true;
+ const name=teamCache.find(t=>t.id===winner)?.name||"Equipo";
+ const n=(Number(match.final_wins_a)||0)+(Number(match.final_wins_b)||0)+1;
+ const tournamentId=opened.id;
+ try{
+  if(!await askConfirm("¿Confirmás que "+name+" ganó la PARTIDA "+n+" de la final?\nSe sumará 1 victoria. La final termina cuando alguien gana 2 partidas."))return;
+  const {data,error}=await db.rpc("js_report_final_game",{p_match:match.id,p_winner:winner});
+  if(error)throw error;
+  if(!data?.ok)throw new Error("El servidor no confirmó la partida");
+  await openTour(tournamentId);
+  if(data.finished)await loadTours();
+  message(data.finished?"🏆 ¡Tenemos campeón! "+name+" ganó la final "+data.wins_a+" – "+data.wins_b+".":"✓ Partida "+data.game_number+" registrada. Marcador: "+data.wins_a+" – "+data.wins_b+".");
+ }catch(e){
+  message("No se pudo registrar la partida: "+(e.message||String(e)),true);
+ }finally{savingFinalGame=false;}
 }
 async function chooseWinner(match,winner){
  const name=teamCache.find(t=>t.id===winner)?.name||"este equipo";

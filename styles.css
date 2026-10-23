@@ -62,3 +62,22 @@ button,.button{cursor:pointer;display:inline-flex;justify-content:center;align-i
  font-weight:900;padding:5px 13px;margin-top:12px;color:var(--rule-accent)!important}
 #rules{max-height:350px;min-height:240px;resize:vertical;line-height:1.45}
 #detailRules{min-height:280px;resize:vertical;line-height:1.45}
+
+/* Final al mejor de tres - marcador visible y registro de partidas */
+.final-series{background:linear-gradient(150deg,#19273b,#121d2b);border:1px solid #4d637c;padding:16px}
+.final-label{text-align:center;text-transform:uppercase;letter-spacing:.08em;font-weight:900;color:#76e6c4;margin:5px 0 13px;font-size:13px}
+.final-scoreboard{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.final-side{display:flex;flex-direction:column;align-items:center;justify-content:center;
+ gap:8px;border-radius:14px;background:#101a29;border:1px solid #33465d;min-width:0;padding:14px 7px}
+.final-side.final-victor{border-color:#51d9aa;background:#11352e}
+.final-team{font-weight:850;max-width:100%;font-size:15px;overflow-wrap:anywhere;text-align:center;min-height:25px}
+.final-score{font-size:43px;line-height:1.1;font-weight:950;color:#f6fbff;font-variant-numeric:tabular-nums}
+.final-victor .final-score{color:#69e6c0}
+.final-side button{font-size:12px;white-space:normal;padding:9px 8px;max-width:100%}
+.final-progress{text-align:center;color:#b6cadd;font-size:12px;font-weight:700;margin:15px 2px 8px}
+.final-game-history{background:#0d1724;border-radius:11px;padding:12px;margin:12px 0 2px;color:#d2e4e4;font-size:13px;line-height:1.85}
+.final-game-history strong{color:#75e3c3}
+@media(max-width:540px){.final-scoreboard{gap:7px}.final-side{padding:11px 5px}.final-team{font-size:13px}.final-score{font-size:36px}}
+
+.final-public-info{background:#142d2a;border:1px solid #3c796f;border-radius:12px;
+ padding:11px 13px;color:#bff8e5;line-height:1.5;font-size:13px;margin:14px 0}
