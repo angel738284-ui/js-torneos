@@ -604,6 +604,20 @@ $("copyBracketLink").onclick=()=>{
   return message("Configurá la URL pública antes de compartir las llaves.",true);
  copy(siteRoot()+"/llaves.html?codigo="+encodeURIComponent(opened.code));
 };
+function updateMaxTeamsHint(){
+ const n=Number($("maxTeams").value);
+ const hint={
+   2:"2 equipos: final directa al mejor de 3.",
+   4:"4 equipos: semifinales y final al mejor de 3.",
+   6:"6 equipos: 4 juegan la ronda previa y 2 pasan directamente a semifinales. La final es al mejor de 3.",
+   8:"8 equipos: cuartos de final, semifinales y final.",
+   16:"16 equipos: octavos, cuartos, semifinales y final.",
+   32:"32 equipos: eliminatorias de 5 rondas, con final al mejor de 3."
+ };
+ $("maxTeamsHint").textContent=hint[n]||"Formato eliminatorio";
+}
+$("maxTeams").onchange=updateMaxTeamsHint;
+updateMaxTeamsHint();
 resetNewTournamentRules();
 initializeDayPicker();
 launch();
