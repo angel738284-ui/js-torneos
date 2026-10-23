@@ -2,7 +2,7 @@
 const $=id=>document.getElementById(id);
 const show=(id,on)=>$(id).classList.toggle("hidden",!on);
 const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c]));
-let db=null,user=null,opened=null,teamCache=[],matchCache=[],currentConfig=null;
+let db=null,user=null,opened=null,teamCache=[],matchCache=[],currentConfig=null,currentTourTab="teams";
 const message=(txt,bad=false)=>{let n=$("notice");n.textContent=txt;n.className="status show"+(bad?" error":"");n.scrollIntoView({behavior:"smooth",block:"nearest"});};
 // Confirmación dentro de la página: Android WebView no tiene que implementar window.confirm().
 function askConfirm(question){
@@ -56,6 +56,25 @@ function prizeInput(kindId,qtyId,detailsId){
 function prizeFormState(kindId,qtyId,detailsId){
  const enabled=$(kindId).value!=="ninguno";$(qtyId).disabled=!enabled;$(detailsId).disabled=!enabled;
 }
+function navigate(view){
+  for(const key of ["homeScreen","createScreen","detail"])show(key,key===view);
+  $("notice").classList.remove("show");
+  window.scrollTo({top:0,behavior:"instant"});
+}
+function chooseTourTab(tab){
+  currentTourTab=tab;
+  for(const value of ["teams","brackets","settings"]){
+    show("detail"+value.charAt(0).toUpperCase()+value.slice(1),value===tab);
+    const b=$("tab"+value.charAt(0).toUpperCase()+value.slice(1));
+    b.classList.toggle("active",value===tab);
+    b.setAttribute("aria-pressed",String(value===tab));
+  }
+}
+$("newTournament").onclick=()=>navigate("createScreen");
+$("cancelCreate").onclick=()=>navigate("homeScreen");
+$("tabTeams").onclick=()=>chooseTourTab("teams");
+$("tabBrackets").onclick=()=>chooseTourTab("brackets");
+$("tabSettings").onclick=()=>chooseTourTab("settings");
 const cfg=()=>{const defaults=window.JS_CONFIG||{};try{return {...defaults,...JSON.parse(localStorage.getItem("js_torneo_cfg")||"{}")}}catch{return defaults}};
 function launch(){
  currentConfig=cfg();
@@ -73,9 +92,8 @@ async function checkUser(){
  if(error||!user){show("login",true);show("app",false);show("logout",false);return;}
  const {data:a,error:err}=await db.from("js_admins").select("uid").eq("uid",user.id).maybeSingle();
  if(err||!a){show("login",true);show("app",false);show("logout",true);message("Cuenta creada, pero todavía no autorizada. Agregá tu correo a js_admins desde Supabase SQL Editor.",true);return;}
- show("login",false);show("app",true);show("logout",true);await loadTours();
+ show("login",false);show("app",true);show("logout",true);navigate("homeScreen");await loadTours();
 }
-$("prizeKind").onchange=()=>prizeFormState("prizeKind","prizeQty","prizeDetails");
 $("detailPrizeKind").onchange=()=>prizeFormState("detailPrizeKind","detailPrizeQty","detailPrizeDetails");
 $("tourMode").onchange=()=>{const custom=$("tourMode").value==="OTRA";$("customLabel").classList.toggle("hidden",!custom);$("customMode").classList.toggle("hidden",!custom);};
 $("saveConfig").onclick=()=>{
@@ -99,11 +117,10 @@ $("create").onclick=async()=>{
  const name=$("tourName").value.trim();if(name.length<4)return message("Poné el nombre del torneo.",true);
  if($("tourMode").value==="OTRA" && !$("customMode").value.trim())return message("Escribí el nombre de la dinámica.",true);
  const start=$("startAt").value;
- let award;try{award=prizeInput("prizeKind","prizeQty","prizeDetails")}catch(e){return message(e.message,true)}
- const row={...award,name,team_size:Number($("teamSize").value),max_teams:Number($("maxTeams").value),mode:$("tourMode").value==="OTRA"?$("customMode").value.trim().slice(0,60):$("tourMode").value,starts_at:start?new Date(start).toISOString():null,rules:$("rules").value.trim().slice(0,1500),created_by:user.id};
+ const row={name,team_size:Number($("teamSize").value),max_teams:Number($("maxTeams").value),mode:$("tourMode").value==="OTRA"?$("customMode").value.trim().slice(0,60):$("tourMode").value,starts_at:start?new Date(start).toISOString():null,rules:$("rules").value.trim().slice(0,1500),created_by:user.id};
  $("create").disabled=true;
  try{const {data,error}=await db.from("js_tournaments").insert(row).select().single();if(error)throw error;
-  $("tourName").value="";$("prizeKind").value="ninguno";$("prizeQty").value="1";$("prizeDetails").value="";prizeFormState("prizeKind","prizeQty","prizeDetails");message("Torneo creado. Código: "+data.code);await loadTours();await openTour(data.id);
+  $("tourName").value="";message("Torneo creado. Código: "+data.code);await loadTours();await openTour(data.id,true);
  }catch(e){message("No se pudo crear: "+e.message,true);}finally{$("create").disabled=false}
 };
 
@@ -120,7 +137,7 @@ function drawTournamentCard(t,history){
  header.append(left,tag);el.append(header);
  const actions=document.createElement("div");actions.style.cssText="display:flex;flex-wrap:wrap;gap:9px;margin-top:12px;align-items:stretch";
  const btn=document.createElement("button");btn.className="secondary";btn.style.cssText="flex:1;min-width:135px";btn.textContent=history?"Ver resultados →":"Ver inscripciones →";
- btn.onclick=()=>openTour(t.id);
+ btn.onclick=()=>openTour(t.id,true);
  const remove=document.createElement("button");remove.type="button";remove.className="ghost";
  remove.style.cssText="color:#ffb5c1;border-color:#865268;min-width:105px;flex:0 0 auto";
  remove.textContent="🗑️ Eliminar torneo";
@@ -135,9 +152,9 @@ async function loadTours(){
  if(!active.children.length)active.textContent="No hay torneos activos.";
  if(!history.children.length)history.textContent="Todavía no hay torneos jugados ni archivados.";
 }
-async function openTour(id){
+async function openTour(id,resetTab=false){
  const {data:t,error}=await db.from("js_tournaments").select("*").eq("id",id).single();if(error)return message(error.message,true);
- opened=t;show("detail",true);$("detailName").textContent=t.name;$("detailCode").textContent=t.code;
+ opened=t;navigate("detail");chooseTourTab(resetTab?"teams":currentTourTab);$("detailName").textContent=t.name;$("detailCode").textContent=t.code;
  $("detailStatus").textContent={open:"Inscripción abierta",closed:"Inscripción cerrada",finished:"Torneo finalizado"}[t.status];
  $("detailStatus").className="tag"+(t.status!=="open"?" closed":"");
  $("detailMeta").textContent=`${t.team_size}vs${t.team_size} · máximo ${t.max_teams} equipos`+(t.starts_at?" · "+new Date(t.starts_at).toLocaleString("es-AR"):"");
@@ -152,7 +169,7 @@ async function openTour(id){
  prizeFormState("detailPrizeKind","detailPrizeQty","detailPrizeDetails");
  $("prizeBanner").textContent=prizeText(t);
  $("championBox").classList.add("hidden");
- await loadTeamsMatches();$("detail").scrollIntoView({behavior:"smooth",block:"start"});
+ await loadTeamsMatches();
 }
 async function loadTeamsMatches(){if(!opened)return;
  const [a,b,c]=await Promise.all([
@@ -178,7 +195,7 @@ async function loadTeamsMatches(){if(!opened)return;
 async function updateTeam(teamId,status){if(!await askConfirm("¿Cambiar el estado de este equipo?"))return;
  const {error}=await db.from("js_teams").update({status}).eq("id",teamId);if(error)return message(error.message,true);await loadTeamsMatches();}
 $("refresh").onclick=async()=>{await loadTours();if(opened)await openTour(opened.id);message("Inscripciones actualizadas.")};
-$("closeDetail").onclick=()=>show("detail",false);
+$("closeDetail").onclick=()=>{opened=null;navigate("homeScreen");};
 $("copyCode").onclick=()=>copy(opened.code);
 const siteRoot=()=>String(currentConfig.siteUrl||location.href.replace(/\/admin\.html.*$/,"")).replace(/\/$/,"");
 const enrollmentLink=()=>siteRoot()+"/inscripcion.html?codigo="+encodeURIComponent(opened.code);
@@ -223,7 +240,7 @@ async function deleteTournament(t,button){
    if(error)throw error;
    if(!data||data.length!==1)throw new Error("No se pudo confirmar el borrado. Revisá los permisos.");
    if(opened&&opened.id===t.id){
-      opened=null;teamCache=[];matchCache=[];show("detail",false);
+      opened=null;teamCache=[];matchCache=[];navigate("homeScreen");
    }
    await loadTours();
    message("✓ Torneo eliminado: "+t.name+". También se borraron sus inscripciones y enfrentamientos.");
