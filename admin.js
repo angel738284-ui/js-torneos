@@ -24,20 +24,22 @@ function askConfirm(question){
 }
 
 
-function confirmDeleteCode(code){
+function confirmDeleteYesNo(t){
  return new Promise(resolve=>{
-  const overlay=document.createElement("div");overlay.style.cssText="position:fixed;inset:0;z-index:1000000;background:#03050bee;display:flex;align-items:center;justify-content:center;padding:18px";
-  const panel=document.createElement("div");panel.style.cssText="padding:21px;background:#192237;border:1px solid #a85462;border-radius:16px;color:white;max-width:420px;width:100%";
-  const h=document.createElement("h3");h.textContent="🗑️ Eliminar torneo definitivamente";
-  const info=document.createElement("p");info.textContent="Se borrarán todos los equipos, participantes, cruces y resultados. NO se puede deshacer. Escribí el código: "+code;
-  const inp=document.createElement("input");inp.autocomplete="off";inp.placeholder=code;inp.style.width="100%";
-  const actions=document.createElement("div");actions.style.cssText="display:flex;gap:10px;margin-top:14px";
-  const cancel=document.createElement("button");cancel.textContent="Cancelar";cancel.className="secondary";
-  const confirm=document.createElement("button");confirm.textContent="Eliminar definitivamente";confirm.disabled=true;confirm.style.background="#e04b63";
-  const done=v=>{overlay.remove();resolve(v)};
-  inp.oninput=()=>confirm.disabled=inp.value.trim()!==code;
-  cancel.onclick=()=>done(false);confirm.onclick=()=>done(true);
-  actions.append(cancel,confirm);panel.append(h,info,inp,actions);overlay.append(panel);document.body.append(overlay);inp.focus();
+  const overlay=document.createElement("div");
+  overlay.setAttribute("role","dialog");overlay.setAttribute("aria-modal","true");
+  overlay.style.cssText="position:fixed;inset:0;z-index:1000000;background:#03050bee;display:flex;align-items:center;justify-content:center;padding:18px";
+  const panel=document.createElement("div");
+  panel.style.cssText="padding:22px;background:#192237;border:1px solid #a85462;border-radius:16px;color:white;max-width:420px;width:100%;box-shadow:0 14px 45px #0009";
+  const heading=document.createElement("h3");heading.textContent="🗑️ ¿Estás seguro de eliminar este torneo?";
+  const name=document.createElement("p");name.style.cssText="font-weight:800;font-size:18px;overflow-wrap:anywhere";name.textContent=t.name;
+  const warning=document.createElement("p");warning.style.cssText="line-height:1.5;color:#c5cddc";warning.textContent="Se eliminarán también los equipos, jugadores, cruces y resultados. Esta acción no se puede deshacer.";
+  const buttons=document.createElement("div");buttons.style.cssText="display:flex;flex-wrap:wrap;gap:10px;margin-top:18px";
+  const no=document.createElement("button");no.textContent="No, cancelar";no.type="button";no.className="secondary";no.style.cssText="flex:1;min-width:125px";
+  const yes=document.createElement("button");yes.textContent="Sí, eliminar";yes.type="button";yes.style.cssText="flex:1;min-width:125px;background:#cf415b;color:white";
+  const done=value=>{overlay.remove();resolve(value)};
+  no.onclick=()=>done(false);yes.onclick=()=>done(true);
+  buttons.append(no,yes);panel.append(heading,name,warning,buttons);overlay.append(panel);document.body.append(overlay);no.focus();
  });
 }
 function prizeText(t){
@@ -116,8 +118,14 @@ function drawTournamentCard(t,history){
  left.append(name,code,meta,award);
  const tag=document.createElement("span");tag.className="tag "+(history?"closed":"");tag.textContent=t.status==="finished"?"🏆 Jugado":t.archived_at?"Archivado":t.status==="open"?"Abierto":"Cerrado";
  header.append(left,tag);el.append(header);
- const btn=document.createElement("button");btn.className="secondary full";btn.style.marginTop="11px";btn.textContent=history?"Ver resultados / administrar →":"Ver inscripciones →";
- btn.onclick=()=>openTour(t.id);el.append(btn);return el;
+ const actions=document.createElement("div");actions.style.cssText="display:flex;flex-wrap:wrap;gap:9px;margin-top:12px;align-items:stretch";
+ const btn=document.createElement("button");btn.className="secondary";btn.style.cssText="flex:1;min-width:135px";btn.textContent=history?"Ver resultados →":"Ver inscripciones →";
+ btn.onclick=()=>openTour(t.id);
+ const remove=document.createElement("button");remove.type="button";remove.className="ghost";
+ remove.style.cssText="color:#ffb5c1;border-color:#865268;min-width:105px;flex:0 0 auto";
+ remove.textContent="🗑️ Eliminar torneo";
+ remove.onclick=()=>deleteTournament(t,remove);
+ actions.append(btn,remove);el.append(actions);return el;
 }
 async function loadTours(){
  const {data,error}=await db.from("js_tournaments").select("*").eq("created_by",user.id).order("created_at",{ascending:false});
@@ -205,15 +213,29 @@ $("restoreTour").onclick=async()=>{
  if(error)return message(error.message,true);
  const id=opened.id;await loadTours();await openTour(id);message("✓ Torneo restaurado a activos.");
 };
+async function deleteTournament(t,button){
+ if(!t||!user)return;
+ if(!await confirmDeleteYesNo(t))return;
+ if(button){button.disabled=true;button.textContent="Eliminando…";}
+ try{
+   const {data,error}=await db.from("js_tournaments").delete()
+     .eq("id",t.id).eq("created_by",user.id).select("id");
+   if(error)throw error;
+   if(!data||data.length!==1)throw new Error("No se pudo confirmar el borrado. Revisá los permisos.");
+   if(opened&&opened.id===t.id){
+      opened=null;teamCache=[];matchCache=[];show("detail",false);
+   }
+   await loadTours();
+   message("✓ Torneo eliminado: "+t.name+". También se borraron sus inscripciones y enfrentamientos.");
+ }catch(e){
+   message("No se pudo eliminar el torneo: "+(e.message||String(e)),true);
+ }finally{
+   if(button){button.disabled=false;button.textContent="🗑️ Eliminar torneo";}
+ }
+}
 $("deleteTour").onclick=async()=>{
  if(!opened)return;
- const id=opened.id;
- if(!await confirmDeleteCode(opened.code))return;
- const {data,error}=await db.from("js_tournaments").delete().eq("id",id).select("id");
- if(error)return message("No se pudo borrar: "+error.message,true);
- if(!data||data.length!==1)return message("No se confirmó el borrado; revisá permisos.",true);
- opened=null;teamCache=[];matchCache=[];show("detail",false);await loadTours();
- message("Torneo eliminado definitivamente junto con sus jugadores y cruces.");
+ await deleteTournament(opened,$("deleteTour"));
 };
 $("startBracket").onclick=async()=>{
  if(!opened||opened.rounds>0)return;
