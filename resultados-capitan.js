@@ -49,7 +49,7 @@
       match.ai_status==='review'?'⚠️ Gemini detectó dudas. El administrador debe revisar las pruebas.':
       match.ai_status==='unavailable'?'⚠️ No se pudo usar Gemini. Resultado pendiente de revisión.':
       '🤖 Ambos informes coinciden. Esperando verificación de Gemini.')
-    :'✅ Enviamos nuestro resultado y captura. Esperando al rival.';
+    :'✅ Enviamos nuestro resultado y captura. Si el rival no responde, tras 10 minutos el administrador puede revisar la prueba y decidir. No necesitás que el perdedor confirme.';
    container.append(el('p',label,match.ai_status==='review'||match.ai_status==='unavailable'?'results-conflict':'results-success'));
    if(match.ai_summary&&match.reported_by_opponent)
      container.append(el('p',match.ai_summary,'small'));

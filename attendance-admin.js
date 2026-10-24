@@ -19,9 +19,31 @@
      members.append(el);statuses.push({id:match[key],name:teamName,el});
    }
    const note=make("p","El contador comienza cuando enviás la sala. No se aplica descalificación automática.","small");
-   box.append(heading,remaining,members,note);
+   const noShow=make("button","⚖️ Dar victoria por ausencia (W.O.)","secondary");
+   noShow.type="button";noShow.classList.add("hidden");
+   noShow.style.cssText="width:100%;margin:12px 0;min-height:46px";
+   noShow.onclick=async()=>{
+     const current=model.get(match.id);
+     if(!current||!opened||noShow.disabled)return;
+     const confirmed=current.statuses.filter(x=>current.rows.some(a=>a.team_id===x.id&&Date.parse(a.room_sent_at)===Date.parse(roomCache.get(match.id)?.sent_at||"")));
+     if(confirmed.length!==1)return;
+     const winner=confirmed[0];
+     if(!await askConfirm("¿Dar victoria por ausencia a "+winner.name+"?\\n\\nSe agotaron los 10 minutos y solo este equipo confirmó asistencia. Asegurate de que la partida NO se haya jugado. Si existe una captura del resultado, revisala en la sección de capturas en su lugar. La decisión quedará registrada."))return;
+     noShow.disabled=true;noShow.textContent="Registrando W.O.…";
+     try{
+       const {data,error}=await db.rpc("js_adjudicate_absence",{p_match:match.id,p_winner:winner.id});
+       if(error||!data?.ok)throw Error(error?.message||"No se pudo guardar la ausencia");
+       const tid=opened.id;
+       await openTour(tid);await loadTours();
+       message("✅ Victoria por ausencia registrada a "+winner.name+". La llave fue actualizada.");
+     }catch(e){
+       message("No se aplicó W.O.: "+(e.message||String(e)),true);
+       noShow.disabled=false;noShow.textContent="⚖️ Dar victoria por ausencia (W.O.)";
+     }
+   };
+   box.append(heading,remaining,members,note,noShow);
    card.append(box);
-   model.set(match.id,{card,match,box,remaining,statuses,rows:[]});
+   model.set(match.id,{card,match,box,remaining,statuses,rows:[],noShow});
    renderState(model.get(match.id));
    if(!refreshQueued){
      refreshQueued=true;
@@ -37,6 +59,10 @@
      !info.match.winner&&opened?.status!=="finished";
    info.remaining.textContent=active?"⏱️ Tiempo restante: "+fmt(left)+" / 10:00":
      !Number.isFinite(sent)?"🔒 Sala pendiente de envío":"⌛ Espera de 10 minutos finalizada";
+   const ready=info.statuses.filter(p=>p.id&&Number.isFinite(sent)&&info.rows.some(a=>a.team_id===p.id&&Date.parse(a.room_sent_at)===sent));
+   const canWo=Number.isFinite(sent)&&Date.now()>=sent+600000&&!info.match.winner&&opened?.status!=="finished"&&ready.length===1;
+   info.noShow.classList.toggle("hidden",!canWo);
+   info.noShow.disabled=!canWo;
    for(const p of info.statuses){
      const confirmed=Boolean(Number.isFinite(sent)&&p.id&&info.rows.some(a=>a.team_id===p.id&&Date.parse(a.room_sent_at)===sent));
      p.el.textContent=(confirmed?"✅ ":"⏳ ")+p.name+": "+(confirmed?"LISTO":"pendiente");
