@@ -123,3 +123,12 @@ button,.button{cursor:pointer;display:inline-flex;justify-content:center;align-i
 .room-send-live{background:#123c33;border-color:#3cc698;color:#9af7cb}
 .room-send-expired{background:#443021;border-color:#bd9061;color:#ffdbb0}
 .room-fields button.good{background:#14775d;color:#fff;border-color:#279b7a;min-height:48px}
+
+
+/* JS Torneos 0.3.8: gestión privada de plantillas */
+.roster-player{border:1px solid #364c61;border-radius:12px;padding:13px;margin:12px 0;background:#121f30}
+.roster-player-title{font-weight:850;color:#a9f5da;margin-bottom:6px;overflow-wrap:anywhere}
+.roster-player button{margin:10px 8px 3px 0;max-width:100%;font-size:13px}
+.roster-edit{margin-top:12px;border-top:1px solid #364b5b;padding-top:12px}
+.roster-edit input{margin:9px 0;font-size:17px}
+.roster-edit>.small{margin:12px 0;min-height:18px;overflow-wrap:anywhere}

@@ -61,7 +61,7 @@ async function lookup(silent=false){
    if(!silent)notice("Revisá tu código privado de equipo (empieza con JS-EQ-).",true);
    return;
  }
- if(busy)return;
+ if(busy || (silent && window.JSRoster?.editing))return;
  busy=true;const b=$("check");if(!silent){b.disabled=true;b.textContent="Consultando…";}
  try{
    const res=await fetch(endpoint,{
@@ -73,6 +73,7 @@ async function lookup(silent=false){
    if(!Array.isArray(data.matches))throw Error("La respuesta del servidor está incompleta.");
    verifiedCode=access;
    $("teamName").textContent=data.team||"Equipo";
+   window.JSRoster?.render(data);
    $("tournamentName").textContent=(data.tournament||"Torneo")+" · "+(data.mode||"");
    $("tournamentStatus").textContent=data.tournament_status==="finished"?"Terminado":
      data.tournament_status==="open"?"Inscripciones abiertas":"Inscripciones cerradas";
@@ -130,6 +131,7 @@ async function lookup(silent=false){
    if(!silent){b.disabled=false;b.textContent="Consultar mis enfrentamientos";}
  }
 }
+window.lookupTeamAfterRosterChange=async()=>lookup(false);
 $("check").onclick=()=>lookup(false);
 $("refresh").onclick=()=>lookup(false);
 $("teamAccess").onkeydown=e=>{if(e.key==="Enter")lookup(false)};

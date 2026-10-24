@@ -336,9 +336,30 @@ async function loadTeamsMatches(){if(!opened)return;
  accessBtn.textContent=t.access_code_hash?"🔐 Renovar código del equipo":"🔐 Generar código del equipo";
  accessBtn.onclick=()=>generateTeamCode(t);
  el.append(accessBtn);
+ if(opened.rounds===0){
+  const removeTeam=document.createElement("button");
+  removeTeam.type="button";removeTeam.className="ghost";
+  removeTeam.style.cssText="margin:10px 0 0 9px;color:#ffc1c7;border-color:#96515d";
+  removeTeam.textContent="🗑 Eliminar escuadra definitivamente";
+  removeTeam.onclick=()=>deleteTeamCompletely(t);
+  el.append(removeTeam);
+ }
  $("teamList").append(el);
  }
  drawMatches();
+}
+async function deleteTeamCompletely(team){
+ if(!opened||opened.rounds!==0)return message("No se puede eliminar una escuadra después de generar los cruces.",true);
+ if(!await askConfirm("¿Estás seguro de ELIMINAR POR COMPLETO a «"+team.name+"»?\nSe borrarán sus jugadores y código privado y se liberará el cupo. Podrá inscribirse otra vez.\nEsta acción NO se puede deshacer."))return;
+ const tourId=opened.id;
+ try{
+  const {data,error}=await db.rpc("js_delete_team_completely",{p_team:team.id});
+  if(error)throw error;
+  if(!data?.ok)throw new Error("El servidor no confirmó la eliminación");
+  await openTour(tourId);
+  await loadTours();
+  message("✅ Escuadra eliminada definitivamente: "+team.name+". Sus ID y el cupo quedaron disponibles.");
+ }catch(e){message("No se pudo eliminar: "+(e.message||String(e)),true);}
 }
 async function updateTeam(teamId,status){if(!await askConfirm("¿Cambiar el estado de este equipo?"))return;
  const {error}=await db.from("js_teams").update({status}).eq("id",teamId);if(error)return message(error.message,true);await loadTeamsMatches();}
