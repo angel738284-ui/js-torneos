@@ -61,7 +61,7 @@ async function lookup(silent=false){
    if(!silent)notice("Revisá tu código privado de equipo (empieza con JS-EQ-).",true);
    return;
  }
- if(busy || (silent && window.JSRoster?.editing))return;
+ if(busy || (silent && (window.JSRoster?.editing || window.JSResultsCaptain?.draftActive?.())))return;
  busy=true;const b=$("check");if(!silent){b.disabled=true;b.textContent="Consultando…";}
  try{
    const res=await fetch(endpoint,{
@@ -111,6 +111,8 @@ async function lookup(silent=false){
      }else{
        status.textContent="🔒 Sala pendiente: el administrador todavía no la envió.";
      }
+     window.JSAttendanceCaptain?.decorateMatch(card,match,data);
+     window.JSResultsCaptain?.decorateMatch(card,match,data);
      list.append(card);
    }
    $("teamPanel").classList.remove("hidden");

@@ -567,6 +567,8 @@ function drawMatches(){
     }
    }
    appendRoomEditor(m,el);
+   window.JSAttendanceAdmin?.decorateMatch(m,el);
+   window.JSResultsAdmin?.decorateMatch(m,el);
    area.append(el);
   }
  }

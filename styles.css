@@ -146,3 +146,24 @@ button,.button{cursor:pointer;display:inline-flex;justify-content:center;align-i
 .roster-dialog p{white-space:pre-wrap;line-height:1.5}
 .roster-modal-buttons{display:flex;gap:10px;justify-content:flex-end;margin-top:20px;flex-wrap:wrap}
 .roster-add-substitute{border-style:dashed;border-color:#57c89f}
+
+/* JS Torneos 0.4.0 attendance */
+.attendance-admin-box,.attendance-card{border:1px solid #345869;border-radius:12px;padding:13px;margin:13px 0;background:#101f30;line-height:1.5}
+.attendance-row{display:flex;gap:9px;flex-wrap:wrap;margin:10px 0;align-items:stretch}
+.attendance-row>div,.attendance-row>span{flex:1 1 130px;min-width:0;border-radius:9px;padding:9px 10px;font-size:12px;font-weight:850;overflow-wrap:anywhere}
+.attendance-ok{background:#153d34;color:#aff7d3}
+.attendance-pending{background:#3a3023;color:#efd2a0}
+.attendance-clock{font-size:17px;font-weight:950;color:#eaf9f3;font-variant-numeric:tabular-nums;margin:9px 0}
+.attendance-card>button{margin-top:8px;min-height:46px}
+
+/* JS Torneos 0.4.1 results */
+.results-captain-card,.results-admin-card{border:1px solid #48677a;border-radius:14px;padding:13px;margin:14px 0;background:#142536;overflow-wrap:anywhere}
+.results-captain-card h3{margin:0 0 12px;font-size:17px}
+.results-captain-card input[type=file]{display:block;width:100%;padding:11px;margin:9px 0;border:1px dashed #5e8291;border-radius:10px;background:#101f30;color:#e0f5fb}
+.results-choice-row{display:flex;gap:10px;flex-wrap:wrap;margin:10px 0}
+.results-choice-row button{flex:1 1 130px;min-height:46px}
+.results-conflict{background:#4b242d;border:1px solid #bd6976;color:#ffcad3;border-radius:9px;padding:10px;font-weight:850}
+.results-success{color:#aeebd3;background:#184035;border-radius:9px;padding:10px}
+.results-admin-game{border:1px solid #40546a;border-radius:12px;padding:11px;margin:12px 0}
+.results-proof-row{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin:10px 0}
+.results-proof-row a{font-weight:850}
