@@ -35,7 +35,10 @@
      const both=items.length===2;
      const conflicting=both&&items[0].won===items[1].won;
      const ai=checkMap.get(info.match.id+':'+n);
-     const status=conflicting?'⚠️ CONFLICTO: los capitanes se contradicen. Revisar manualmente.':
+     const oldGame=info.match.round===opened?.rounds&&
+       n <= (Number(info.match.final_wins_a)||0)+(Number(info.match.final_wins_b)||0);
+     const status=oldGame?'✅ Esta partida de la final ya fue registrada; las capturas quedan como historial.':
+       conflicting?'⚠️ CONFLICTO: los capitanes se contradicen. Revisar manualmente.':
        !both?'⏳ Falta que el otro equipo envíe el informe y la captura.':
        ai?.status==='approved'?'✅ Capturas verificadas por Gemini: resultado aprobado.':
        ai?.status==='review'?'⚠️ GEMINI ENCONTRÓ DUDAS: revisar capturas antes de marcar el ganador.':
@@ -43,7 +46,7 @@
        '🤖 Los capitanes coinciden. Esperando análisis de Gemini (NO confirmado).';
      block.append(make('p',status,conflicting||ai?.status==='review'||ai?.status==='unavailable'?'results-conflict':ai?.status==='approved'?'results-success':'small'));
      if(ai?.summary)block.append(make('p',ai.summary,'small'));
-     if(!both&&!info.match.winner)block.append(make('p',
+     if(!both&&!info.match.winner&&!oldGame)block.append(make('p',
        'Si el rival se fue o no quiere confirmar: después de 10 minutos podés resolver con la captura del equipo que sí informó. No se concede victoria automática.','small'));
      for(const row of items){
       const label=teamCache.find(t=>t.id===row.team_id)?.name||'Equipo';
@@ -75,7 +78,7 @@
       }
       block.append(holder);
       if(url?.signedUrl&&!linkErr)block.append(preview);
-      if(!info.match.winner&&opened?.status!=='finished'){
+      if(!info.match.winner&&!oldGame&&opened?.status!=='finished'){
         const waitEnd=Date.parse(items.map(x=>x.submitted_at).sort()[0])+600000;
         const missing=items.length===1;
         const canDecide=!missing||Date.now()>=waitEnd;

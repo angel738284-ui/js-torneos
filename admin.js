@@ -311,7 +311,7 @@ async function loadTeamsMatches(){if(!opened)return;
  const finalMatch=opened.rounds>0?c.data.find(final):null;
  if(finalMatch){
    const {data:games,error:gamesError}=await db.from("js_final_games")
-     .select("match_id,game_number,winner").eq("match_id",finalMatch.id).order("game_number");
+     .select("match_id,game_number,winner,recorded_at").eq("match_id",finalMatch.id).order("game_number");
    if(gamesError)return message("No se pudo cargar el historial de la final: "+gamesError.message,true);
    finalGameCache=games||[];
  }

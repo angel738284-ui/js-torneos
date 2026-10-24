@@ -60,7 +60,10 @@
    info.remaining.textContent=active?"⏱️ Tiempo restante: "+fmt(left)+" / 10:00":
      !Number.isFinite(sent)?"🔒 Sala pendiente de envío":"⌛ Espera de 10 minutos finalizada";
    const ready=info.statuses.filter(p=>p.id&&Number.isFinite(sent)&&info.rows.some(a=>a.team_id===p.id&&Date.parse(a.room_sent_at)===sent));
-   const canWo=Number.isFinite(sent)&&Date.now()>=sent+600000&&!info.match.winner&&opened?.status!=="finished"&&ready.length===1;
+   const lastFinal=info.match.round===opened?.rounds
+     ?(finalGameCache||[]).filter(g=>g.match_id===info.match.id).slice(-1)[0]:null;
+   const newRoom=!lastFinal || sent>Date.parse(lastFinal.recorded_at);
+   const canWo=Number.isFinite(sent)&&Date.now()>=sent+600000&&!info.match.winner&&opened?.status!=="finished"&&ready.length===1&&newRoom;
    info.noShow.classList.toggle("hidden",!canWo);
    info.noShow.disabled=!canWo;
    for(const p of info.statuses){
