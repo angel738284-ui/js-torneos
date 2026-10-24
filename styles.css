@@ -132,3 +132,17 @@ button,.button{cursor:pointer;display:inline-flex;justify-content:center;align-i
 .roster-edit{margin-top:12px;border-top:1px solid #364b5b;padding-top:12px}
 .roster-edit input{margin:9px 0;font-size:17px}
 .roster-edit>.small{margin:12px 0;min-height:18px;overflow-wrap:anywhere}
+
+/* JS Torneos v0.3.9: edición privada de titulares y suplentes */
+.roster-player{border:1px solid #364c61;border-radius:12px;padding:13px;margin:12px 0;background:#121f30}
+.roster-player-title{font-weight:850;color:#a9f5da;margin-bottom:7px;overflow-wrap:anywhere}
+.roster-player button{margin:10px 8px 3px 0;max-width:100%;font-size:13px}
+.roster-edit{margin-top:12px;border-top:1px solid #364b5b;padding-top:12px}
+.roster-edit input{margin:9px 0;font-size:17px}
+.roster-edit .small{margin:12px 0;min-height:18px;overflow-wrap:anywhere}
+.roster-count{font-size:14px;font-weight:900;color:#9cedcc;padding:10px 12px;border-radius:10px;background:#173a33}
+.roster-modal{position:fixed;z-index:999999;inset:0;background:#020713e8;display:flex;align-items:center;justify-content:center;padding:18px}
+.roster-dialog{background:#172132;border:1px solid #45536b;border-radius:18px;padding:22px;width:100%;max-width:420px;color:#f4f7ff;box-shadow:0 12px 40px #0009}
+.roster-dialog p{white-space:pre-wrap;line-height:1.5}
+.roster-modal-buttons{display:flex;gap:10px;justify-content:flex-end;margin-top:20px;flex-wrap:wrap}
+.roster-add-substitute{border-style:dashed;border-color:#57c89f}
