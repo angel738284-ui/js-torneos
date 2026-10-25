@@ -1,7 +1,7 @@
 {
-  "version_code": 33,
-  "version_name": "0.6.1",
-  "apk_url": "https://angel738284-ui.github.io/js-torneos/updates/JS-TORNEOS-v0.6.1.apk",
-  "sha256": "2d0c38f7f4b0867b11a86a510f7ff141d392e735b30f063bc50dcd91f1de73e5",
-  "notes": "Panel privado de Moderación: bloquear ID de Free Fire por 1, 7, 30, 90 o 365 días, o permanente. Historial de motivos y desbloqueo manual. Bloqueos aplican a nuevos registros y lista de espera sin borrar equipos existentes."
+  "version_code": 34,
+  "version_name": "0.6.2",
+  "apk_url": "https://angel738284-ui.github.io/js-torneos/updates/JS-TORNEOS-v0.6.2.apk",
+  "sha256": "c53eaec2eb873b4c22b30ae0f82275a881c2279bc60def440a0d9b5e86c3da23",
+  "notes": "Nuevo buscador dentro de cada torneo: comprobá inscripciones por ID de Free Fire, nombre de jugador o nombre de equipo. Filtrado inmediato y estado de inscripción o descalificación. Sin tocar inscripciones ni los bloqueos."
 }

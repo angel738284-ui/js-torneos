@@ -1,4 +1,4 @@
-<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#0b111c"><title>JS Torneos · Administrador</title><link rel="stylesheet" href="styles.css?v=0.6.1"><link rel="stylesheet" href="bracket-view.css?v=0.3.5"></head><body>
+<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#0b111c"><title>JS Torneos · Administrador</title><link rel="stylesheet" href="styles.css?v=0.6.2"><link rel="stylesheet" href="bracket-view.css?v=0.3.5"></head><body>
 <div class="wrap"><header><div class="brand"><div class="logo">JS</div><div><div class="eyebrow">JS FAMILY</div><h1>JS Torneos</h1><div class="small">Panel privado de administrador</div></div></div><div style="display:flex;gap:7px;align-items:center;flex-wrap:wrap">
 <button id="checkAppUpdate" class="ghost" type="button" style="display:none">🔄 Actualizar app</button>
 <button id="logout" class="ghost hidden">Salir</button></div></header>
@@ -68,7 +68,17 @@
 <button id="tabBrackets" class="tour-tab" type="button">🏆 Cruces</button>
 <button id="tabSettings" class="tour-tab" type="button">⚙️ Ajustes</button>
 </div>
-<div id="detailTeams" class="tour-tab-body"><div class="controls"><button id="copyCode" class="secondary">Copiar código</button><button id="copyLink" class="secondary">Copiar enlace</button><button id="toggleOpen" class="ghost">Cerrar inscripciones</button></div><div class="divider"></div><div class="row"><h3>Equipos inscritos</h3><span id="teamCount" class="tag"></span></div><div id="teamList" class="rowlist"></div>
+<div id="detailTeams" class="tour-tab-body"><div class="controls"><button id="copyCode" class="secondary">Copiar código</button><button id="copyLink" class="secondary">Copiar enlace</button><button id="toggleOpen" class="ghost">Cerrar inscripciones</button></div><div class="divider"></div><div class="row"><h3 id="teamListHeading">Equipos inscritos</h3><span id="teamCount" class="tag"></span></div>
+<div class="team-search-box">
+<label for="teamSearch">🔎 Buscar por ID de Free Fire, nombre de jugador o equipo</label>
+<div class="team-search-controls">
+<input id="teamSearch" type="search" maxlength="100" autocomplete="off" autocapitalize="off"
+ placeholder="Ej. 5259513597, Alejandro, apodo..." aria-describedby="teamSearchResult">
+<button id="teamSearchClear" class="secondary" type="button" aria-label="Limpiar búsqueda" title="Limpiar búsqueda">✕</button>
+</div>
+<p id="teamSearchResult" class="small team-search-result" role="status" aria-live="polite"></p>
+</div>
+<div id="teamList" class="rowlist"></div>
 <div class="divider"></div>
 <div class="panel" id="waitlistPanel"><h3>⏳ Lista de espera</h3><p class="small">Cargando lista…</p></div></div>
 <div id="detailBrackets" class="tour-tab-body hidden">
@@ -109,4 +119,4 @@
 </div></div>
 <div class="divider"></div><h3>🎁 Premio del torneo</h3><div class="grid"><div><label>Tipo</label><select id="detailPrizeKind"><option value="ninguno">Sin premio</option><option value="diamantes">Diamantes 💎</option><option value="pases">Pases 🎟️</option><option value="otro">Otro</option></select></div><div><label>Cantidad</label><input id="detailPrizeQty" type="number" min="1" max="10000000" value="1"></div></div><label>Descripción</label><input id="detailPrizeDetails" maxlength="160" placeholder="Ej. 2 Booyah Pass"><button id="savePrize" class="secondary" style="margin:12px 0">Guardar premio</button><div class="divider"></div><div class="controls"><button id="archiveTour" class="secondary">Archivar torneo</button><button id="restoreTour" class="secondary hidden">Restaurar torneo</button><button id="deleteTour" class="ghost">🗑️ Eliminar definitivamente</button></div></div>
 </div>
-</section></div><script src="config.js"></script><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script><script src="rules-format.js?v=0.3.4"></script><script src="rules-presets.js?v=0.3.4"></script><script src="bracket-view.js?v=0.3.5"></script><script src="attendance-admin.js?v=0.5.1"></script><script src="resultados-admin.js?v=0.4.4"></script><script src="admin-roster.js?v=0.4.6"></script><script src="admin-waitlist.js?v=0.5.0"></script><script src="admin-br.js?v=0.6.0"></script><script src="admin-bans.js?v=0.6.1"></script><script src="admin.js?v=0.6.1"></script><script src="admin-extra.js?v=0.5.1"></script><script>(function(){var button=document.getElementById("checkAppUpdate");if(window.JSUpdates&&typeof window.JSUpdates.checkForUpdates==="function"){button.style.display="inline-block";button.onclick=function(){window.JSUpdates.checkForUpdates()};}})();</script></body></html>
+</section></div><script src="config.js"></script><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script><script src="rules-format.js?v=0.3.4"></script><script src="rules-presets.js?v=0.3.4"></script><script src="bracket-view.js?v=0.3.5"></script><script src="attendance-admin.js?v=0.5.1"></script><script src="resultados-admin.js?v=0.4.4"></script><script src="admin-roster.js?v=0.4.6"></script><script src="admin-waitlist.js?v=0.5.0"></script><script src="admin-br.js?v=0.6.0"></script><script src="admin-bans.js?v=0.6.1"></script><script src="admin.js?v=0.6.2"></script><script src="admin-extra.js?v=0.5.1"></script><script>(function(){var button=document.getElementById("checkAppUpdate");if(window.JSUpdates&&typeof window.JSUpdates.checkForUpdates==="function"){button.style.display="inline-block";button.onclick=function(){window.JSUpdates.checkForUpdates()};}})();</script></body></html>

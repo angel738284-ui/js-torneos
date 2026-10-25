@@ -211,3 +211,14 @@ button,.button{cursor:pointer;display:inline-flex;justify-content:center;align-i
 .ban-entry button{margin-top:7px}
 .ban-history{margin:14px 0;border-top:1px solid #364965;padding-top:12px}
 .ban-history>summary{color:#b6cbe4;cursor:pointer;font-weight:800}
+
+/* Filtro de inscriptos para administrador: ID, nickname o nombre del equipo. */
+.team-search-box{margin:13px 0 18px;background:#111d2e;border:1px solid #394f6b;
+ border-radius:14px;padding:13px 13px 8px}
+.team-search-box label{font-weight:800;color:#d4e6fa;margin:0 0 10px;line-height:1.5}
+.team-search-controls{display:flex;gap:8px;align-items:center}
+.team-search-controls input{flex:1;min-width:0;min-height:48px;font:inherit;
+ color:#f6f8ff;background:#0a1424;border:1px solid #506584;border-radius:12px;padding:12px}
+.team-search-controls button{min-width:47px;min-height:48px;padding:10px}
+.team-search-result{min-height:19px;margin:11px 0 0;color:#a6efd8}
+.team-search-no-match{color:#ffc2c8}

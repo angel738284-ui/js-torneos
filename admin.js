@@ -70,6 +70,46 @@ function chooseTourTab(tab){
     b.setAttribute("aria-pressed",String(value===tab));
   }
 }
+// Búsqueda local sobre los equipos y el roster que ya se cargaron del torneo abierto.
+function normalizeTeamSearch(value){
+ return String(value??"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLocaleLowerCase("es-AR").trim();
+}
+function applyTeamSearch(){
+ const field=$("teamSearch");
+ const query=normalizeTeamSearch(field.value);
+ const entries=Array.from($("teamList").querySelectorAll(".team-registration-entry"));
+ const numericOnly=/^[0-9]{5,16}$/.test(query);
+ let visible=0,active=0;
+ for(const entry of entries){
+  const match=!query||(entry.dataset.search||"").includes(query);
+  entry.classList.toggle("hidden",!match);
+  if(match){
+   visible++;
+   if(entry.dataset.status==="registered")active++;
+  }
+ }
+ $("teamSearchClear").disabled=!query;
+ const output=$("teamSearchResult");
+ if(!query){
+   output.textContent="Escribí para filtrar los inscriptos de este torneo, sin modificar ningún registro.";
+ }else if(!visible){
+   output.textContent=numericOnly
+    ?"❌ El ID "+field.value.trim()+" no figura entre los participantes de este torneo."
+    :"❌ No se encontraron coincidencias en este torneo. Revisá el ID o el nombre.";
+ }else{
+   output.textContent="✅ "+visible+" resultado"+(visible===1?"":"s")+
+    " · "+active+" inscripto"+(active===1?"":"s")+" activo"+(active===1?"":"s")+
+    (visible>active?" · "+(visible-active)+" descalificado(s)":"");
+ }
+ output.classList.toggle("team-search-no-match",Boolean(query)&&!visible);
+}
+$("teamSearch").addEventListener("input",applyTeamSearch);
+$("teamSearchClear").onclick=()=>{
+ $("teamSearch").value="";
+ applyTeamSearch();
+ $("teamSearch").focus();
+};
+
 $("newTournament").onclick=()=>navigate("createScreen");
 $("cancelCreate").onclick=()=>navigate("homeScreen");
 $("tabTeams").onclick=()=>chooseTourTab("teams");
@@ -302,6 +342,7 @@ async function loadTours(){
  if(!history.children.length)history.textContent="Todavía no hay torneos jugados ni archivados.";
 }
 async function openTour(id,resetTab=false){
+ if(opened?.id!==id)$("teamSearch").value="";
  const {data:t,error}=await db.from("js_tournaments").select("*").eq("id",id).single();if(error)return message(error.message,true);
  opened=t;$("absenceMinutes").value=String(t.absence_minutes||10);navigate("detail");chooseTourTab(resetTab?"teams":currentTourTab);$("detailName").textContent=t.name;$("detailCode").textContent=t.code;
  $("detailStatus").textContent={open:"Inscripción abierta",closed:"Inscripción cerrada",finished:"Torneo finalizado"}[t.status];
@@ -366,9 +407,12 @@ async function loadTeamsMatches(){if(!opened)return;
   else checkIns=data||[];
  }
  const approved=a.data.filter(t=>t.status==="registered");$("teamCount").textContent=approved.length+" / "+opened.max_teams;
+ $("teamListHeading").textContent=opened.mode==="BR"&&opened.br_format==="solo"?"Jugadores inscritos":"Equipos inscritos";
  $("teamList").replaceChildren();
  if(!a.data.length)$("teamList").textContent="Ningún equipo inscrito todavía.";
- for(const t of a.data){const el=document.createElement("div");el.className="item";
+ for(const t of a.data){const el=document.createElement("div");el.className="item team-registration-entry";
+ el.dataset.status=t.status;
+ el.dataset.search=normalizeTeamSearch([t.name,...(playerByTeam[t.id]||[]).flatMap(p=>[p.game_id,p.nickname,p.region])].join(" "));
  const roster=(playerByTeam[t.id]||[]).sort((a,b)=>(a.player_role==='suplente')-(b.player_role==='suplente')||(a.roster_order||0)-(b.roster_order||0)).map(p=>`<li>${p.player_role==='suplente'?'<strong style="color:#82e4bd">🔁 SUPLENTE</strong> ':''}<strong>${esc(p.nickname)}</strong> <span class="idcell">${esc(p.game_id)}</span> <span class="small">${esc(p.region)}</span></li>`).join("");
  el.innerHTML=`<div class="row"><strong>${esc(t.name)}</strong><span class="tag ${t.status!=="registered"?"closed":""}">${esc(t.status)}</span></div><ul class="checks">${roster}</ul>`;
 
@@ -409,6 +453,7 @@ async function loadTeamsMatches(){if(!opened)return;
  }
  $("teamList").append(el);
  }
+ applyTeamSearch();
  if(window.JSAdminWaitlist)await window.JSAdminWaitlist.render(db,opened,a.data,c.data,
   async text=>{await loadTeamsMatches();message(text);});
  drawMatches();
