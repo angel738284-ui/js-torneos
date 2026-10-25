@@ -1,7 +1,7 @@
 {
-  "version_code": 10,
-  "version_name": "1.4.1",
-  "apk_url": "https://angel738284-ui.github.io/js-torneos/updates/JS-TORNEOS-JUGADORES-v1.4.1.apk",
-  "sha256": "dc740265af560d5b19e52395fa5e07e81144bb787a3b454f8cf47ef7fb35da1e",
-  "notes": "Historial de avisos automáticos privados de cruces, salas, prórrogas, resultados, horarios y lista de espera. Los avisos se sincronizan al abrir o mantener la app activa. Se mantienen Google, perfil y torneos."
+  "version_code": 11,
+  "version_name": "1.5.0",
+  "apk_url": "https://angel738284-ui.github.io/js-torneos/updates/JS-TORNEOS-JUGADORES-v1.5.0.apk",
+  "sha256": "ecf80770a61b7b72aba08533303baee53995be1039aa271921da4af3f3112720",
+  "notes": "Campanita de notificaciones en la parte superior, nueva sección Amigos, solicitudes por ID de Free Fire, aceptar o rechazar y enviar invitaciones a torneos. Conservamos Google, inscripciones, resultados y avisos anteriores."
 }
