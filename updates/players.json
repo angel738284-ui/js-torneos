@@ -1,7 +1,7 @@
 {
-  "version_code": 12,
-  "version_name": "1.5.1",
-  "apk_url": "https://angel738284-ui.github.io/js-torneos/updates/JS-TORNEOS-JUGADORES-v1.5.1.apk",
-  "sha256": "a38412b0fcf948f29d03bb9777d490b2d92d5d9e7d0fb6007fc92bcf2842e262",
-  "notes": "Nuevo perfil público de estilo JS Voice con nombre, @usuario, biografía, foto y portada. La insignia ADM se muestra a todos los que consulten el perfil, pero solo está autorizada para el dueño JS. Conservamos amigos, Google, torneos y notificaciones."
+  "version_code": 13,
+  "version_name": "1.5.2",
+  "apk_url": "https://angel738284-ui.github.io/js-torneos/updates/JS-TORNEOS-JUGADORES-v1.5.2.apk",
+  "sha256": "8638f06b0d1adb42b709bd49ef1906f56ac95f95ca1675f0cc19f093b78aa929",
+  "notes": "Nuevo editor de perfil estilo TikTok: pantalla independiente, lápiz para elegir foto y portada, vista previa instantánea y campos ordenados. Ya no muestra los selectores de archivos. Conserva la insignia ADM, Google y datos existentes."
 }
