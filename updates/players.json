@@ -1,7 +1,7 @@
 {
-  "version_code": 5,
-  "version_name": "1.2.1",
-  "apk_url": "https://angel738284-ui.github.io/js-torneos/updates/JS-TORNEOS-JUGADORES-v1.2.1.apk",
-  "sha256": "442d1774fc01993b9e6040bb6b26f604795bd8f17a5150e962b71413b72ecfe8",
-  "notes": "Nuevo icono de JS Torneos con Itachi 456 y trofeo. Ahora podés actualizar desde Perfil, con aviso al abrir la aplicación."
+  "version_code": 6,
+  "version_name": "1.2.2",
+  "apk_url": "https://angel738284-ui.github.io/js-torneos/updates/JS-TORNEOS-JUGADORES-v1.2.2.apk",
+  "sha256": "7918fc90e6ada24b109786547c6db4c364ee84bfdaa9f60919fe8ae5cdefb35d",
+  "notes": "Nueva pantalla inicial: entrá con Google, verificá tu ID de Free Fire y accedé automáticamente en próximos ingresos. Conservamos torneos, notificaciones e inscripciones."
 }
