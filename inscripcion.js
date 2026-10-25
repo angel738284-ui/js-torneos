@@ -113,6 +113,8 @@ function makePlayerRow(number,isSubstitute){
       if(String(data.id)!==id||!data.nickname||data.verified!==true)
         throw new Error("La respuesta del verificador no coincide con el ID.");
       state.verified={id,nickname:data.nickname,region:data.region||"SAC"};
+      if(tournament?.mode==="BR"&&tournament?.br_format==="solo"&&state.role==="titular")
+        $("team").value=data.nickname.slice(0,45);
       status.style.color="#7ee9c0";
       status.textContent="✓ "+data.nickname+" · "+id+" · "+state.verified.region;
       verify.classList.add("hidden");correct.classList.remove("hidden");
@@ -177,6 +179,9 @@ async function loadTournament(){
       "🏆 Premio anunciado: "+n.toLocaleString("es-AR")+" "+unit+(data.prize_details?" · "+data.prize_details:""):"";
   const single=data.mode==="BR"&&data.br_format==="solo";
   $("registrationHeading").textContent=single?"Inscribirme en BR Solo":"Anotar equipo";
+  show("teamNameWrap",!single);
+  $("team").required=!single;
+  if(single)$("team").value="";
   $("teamNameLabel").textContent=single?"Nombre del participante / alias":"Nombre del equipo";
   $("team").placeholder=single?"Ej. JSPro":"Ej. Los Akatsuki";
   $("subHeading").textContent=minSub()?"🔁 Suplentes: mínimo 1, máximo 2":"🔁 Suplentes opcionales (0 a 2)";
@@ -200,8 +205,10 @@ async function loadTournament(){
 $("form").addEventListener("submit",async event=>{
  event.preventDefault();
  if(!tournament)return;
- const team=$("team").value.trim(),rows=everyRow();
- if(team.length<2||team.length>45)return tell("Ingresá el nombre del equipo.",true);
+ const solo=tournament.mode==="BR"&&tournament.br_format==="solo";
+ const rows=everyRow();
+ const team=solo?String(starterRows[0]?.verified?.nickname||"").trim().slice(0,45):$("team").value.trim();
+ if(team.length<2||team.length>45)return tell(solo?"Verificá tu ID para utilizar tu apodo automáticamente.":"Ingresá el nombre del equipo.",true);
  if(starterRows.length!==tournament.team_size || substituteRows.length<minSub() || substituteRows.length>2)
     return tell("Revisá los "+tournament.team_size+" titulares y "+(minSub()?"al menos un suplente.":"los suplentes opcionales."),true);
  const missing=rows.filter(row=>!row.verified||row.verified.id!==row.input.value.trim());
@@ -227,7 +234,7 @@ $("form").addEventListener("submit",async event=>{
   if(!res.ok)throw Error(data.error||"No se pudo inscribir el equipo");
   if(!/^JS-EQ-[A-HJ-NP-Z2-9]{20}$/.test(data.team_access_code||""))
     throw Error("La inscripción fue recibida pero el servidor no devolvió el código. Contactá al administrador, no vuelvas a inscribirte.");
-  show("form",false);show("success",true);$("teamSuccess").textContent="Equipo: "+team;
+  show("form",false);show("success",true);$("teamSuccess").textContent=solo?"Jugador: "+team:"Equipo: "+team;
   const waiting=data.waitlisted===true;
   $("successHeading").textContent=waiting?"⏳ ¡Anotado en lista de espera!":"✓ Equipo inscrito correctamente";
   $("waitlistSuccessInfo").textContent=waiting?
