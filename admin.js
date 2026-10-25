@@ -353,12 +353,27 @@ async function loadTeamsMatches(){if(!opened)return;
    for(const room of rooms||[])roomCache.set(room.match_id,room);
  }
  const playerByTeam={};for(const p of b.data)(playerByTeam[p.team_id]??=[]).push(p);
+ let checkIns=[];
+ if(matchCache.length){
+  const {data,error}=await db.from("js_player_match_checkins").select("match_id,team_id").in("match_id",matchCache.map(m=>m.id)).limit(500);
+  if(error)console.warn("JS Torneos checkins no disponibles",error.message);
+  else checkIns=data||[];
+ }
  const approved=a.data.filter(t=>t.status==="registered");$("teamCount").textContent=approved.length+" / "+opened.max_teams;
  $("teamList").replaceChildren();
  if(!a.data.length)$("teamList").textContent="Ningún equipo inscrito todavía.";
  for(const t of a.data){const el=document.createElement("div");el.className="item";
  const roster=(playerByTeam[t.id]||[]).sort((a,b)=>(a.player_role==='suplente')-(b.player_role==='suplente')||(a.roster_order||0)-(b.roster_order||0)).map(p=>`<li>${p.player_role==='suplente'?'<strong style="color:#82e4bd">🔁 SUPLENTE</strong> ':''}<strong>${esc(p.nickname)}</strong> <span class="idcell">${esc(p.game_id)}</span> <span class="small">${esc(p.region)}</span></li>`).join("");
  el.innerHTML=`<div class="row"><strong>${esc(t.name)}</strong><span class="tag ${t.status!=="registered"?"closed":""}">${esc(t.status)}</span></div><ul class="checks">${roster}</ul>`;
+
+ const pendingMatch=matchCache.find(m=>!m.winner && (m.team_a===t.id||m.team_b===t.id));
+ if(pendingMatch){
+  const checkedIn=checkIns.filter(p=>p.match_id===pendingMatch.id && p.team_id===t.id).length;
+  const readiness=document.createElement("p");readiness.className="small";
+  readiness.style.cssText="border:1px solid #3a756a;background:#183a36;border-radius:9px;padding:9px 12px;margin:10px 0";
+  readiness.textContent="✅ Jugadores listos para el cruce: "+checkedIn+" / "+(playerByTeam[t.id]||[]).length+" integrantes";
+  el.append(readiness);
+ }
  if(opened.rounds===0){const del=document.createElement("button");del.className="ghost";del.textContent=t.status==="registered"?"Descalificar equipo":"Restablecer equipo";
  del.onclick=()=>updateTeam(t.id,t.status==="registered"?"disqualified":"registered");el.append(del);}
  const accessBtn=document.createElement("button");
