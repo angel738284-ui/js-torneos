@@ -37,7 +37,7 @@ async function generateTeamCode(team){
 }
 // Vista de administración de sala: no programa fechas. Enviar AHORA habilita
 // la sala durante 10 minutos, luego el servidor la oculta automáticamente.
-const ROOM_WINDOW_MS=10*60*1000;
+const ROOM_WINDOW_MS=10*60*1000; // Respaldo para salas creadas antes de configurar tolerancia.
 function roomCountLabel(ms){
  const s=Math.max(0,Math.ceil(ms/1000));
  return String(Math.floor(s/60)).padStart(2,"0")+":"+String(s%60).padStart(2,"0");
@@ -66,17 +66,17 @@ function appendRoomEditor(match,card){
  const close=document.createElement("button");close.type="button";close.className="ghost full";
  close.textContent="🔒 Cerrar sala ahora";close.style.marginTop="10px";
  const note=document.createElement("p");note.className="small";
- note.textContent="Se publica en el mismo momento para los dos capitanes. Espera máxima: 10 minutos. Después se ocultan los datos; no se descalifica automáticamente a nadie.";
+ note.textContent="Se publica en el mismo momento para los dos capitanes. El plazo depende de la tolerancia de este torneo (5 o 10 minutos), más una prórroga opcional del administrador. Nunca se aplica W.O. automáticamente.";
  const sentAt=stored.sent_at?Date.parse(stored.sent_at):0;
- const expiry=sentAt?sentAt+ROOM_WINDOW_MS:0;
+ const expiry=sentAt?(stored.expires_at?Date.parse(stored.expires_at):sentAt+ROOM_WINDOW_MS):0;
  function updateState(){
    const remaining=expiry-Date.now();
    if(sentAt&&remaining>0){
-     status.textContent="🟢 Sala enviada · quedan "+roomCountLabel(remaining)+" de los 10 minutos";
+     status.textContent="🟢 Sala enviada · quedan "+roomCountLabel(remaining)+(stored.grace_extended?" (incluye 5 minutos extra)":"");
      status.className="room-send-status room-send-live";
      close.classList.remove("hidden");
    }else if(sentAt){
-     status.textContent="⌛ Espera de 10 minutos vencida. Si necesitás otra sala, enviá datos nuevos.";
+     status.textContent="⌛ Plazo de ingreso vencido. Si necesitás otra sala, enviá datos nuevos.";
      status.className="room-send-status room-send-expired";
      close.classList.add("hidden");
    }else{
@@ -98,15 +98,15 @@ function appendRoomEditor(match,card){
    if(!room||!pass)return message("Necesitás el ID y la contraseña para enviar la sala.",true);
    if(room.length>60||pass.length>80)return message("El ID o la contraseña superan el máximo permitido.",true);
    if(!match.team_a||!match.team_b)return message("Primero tienen que estar definidos los dos equipos del cruce.",true);
-   if(sentAt&&expiry>Date.now()&&!(await askConfirm("La sala anterior sigue activa. ¿Querés enviar nuevamente y reiniciar los 10 minutos?")))return;
-   if(!(await askConfirm("¿Enviar AHORA la sala a los dos equipos? Tendrán un máximo de 10 minutos para ingresar.")))return;
+   if(sentAt&&expiry>Date.now()&&!(await askConfirm("La sala anterior sigue activa. ¿Querés reiniciar la tolerancia y las confirmaciones enviando esta sala nuevamente?")))return;
+   if(!(await askConfirm("¿Enviar AHORA la sala a los dos equipos? Tendrán "+(opened?.absence_minutes||10)+" minutos para confirmar su presencia.")))return;
    btn.disabled=true;btn.textContent="Enviando…";
    try{
      const {data,error}=await db.rpc("js_send_match_room",{p_match:match.id,p_room_id:room,p_room_password:pass});
      if(error)throw error;
      if(!data?.ok)throw Error("El servidor no confirmó el envío");
      await openTour(opened.id);
-     message("✅ Sala enviada ahora a ambos equipos. Tienen 10 minutos para entrar; el acceso caduca automáticamente.");
+     message("✅ Sala enviada a ambos equipos. Tienen "+(opened?.absence_minutes||10)+" minutos para entrar.");
    }catch(e){
      message("No se pudo enviar la sala: "+(e.message||String(e)),true);
      btn.disabled=false;btn.textContent="📨 Guardar y enviar ahora";

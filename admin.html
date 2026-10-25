@@ -60,6 +60,14 @@
 <div id="matchList"></div>
 </details></div>
 <div id="detailSettings" class="tour-tab-body hidden"><div class="divider"></div>
+<div class="panel" id="absenceRulesPanel">
+<h3>⏱️ Control de ausencias</h3>
+<p class="small">Elegí el tiempo de ingreso que tendrán los equipos desde que enviás la sala. Al vencer, la app te permite revisar una victoria por ausencia (W.O.), pero nunca la aplica sola.</p>
+<label for="absenceMinutes">Tolerancia por sala</label>
+<select id="absenceMinutes"><option value="5">5 minutos</option><option value="10">10 minutos</option></select>
+<button id="saveAbsenceMinutes" class="secondary full" type="button" style="margin-top:11px">✓ Guardar tolerancia</button>
+<p class="small">Durante una sala activa también podés otorgar una sola prórroga de 5 minutos. Este cambio no modifica el plazo de salas que ya están enviadas.</p>
+</div>
 <h3>📜 Reglas del torneo</h3>
 <p class="small">Estas reglas se muestran en el enlace de inscripción. Podés editarlas después de crear el torneo.</p>
 <div class="tournament-rules"><div id="detailRulesPreview" class="rule-lines"></div></div>
@@ -73,4 +81,4 @@
 </div></div>
 <div class="divider"></div><h3>🎁 Premio del torneo</h3><div class="grid"><div><label>Tipo</label><select id="detailPrizeKind"><option value="ninguno">Sin premio</option><option value="diamantes">Diamantes 💎</option><option value="pases">Pases 🎟️</option><option value="otro">Otro</option></select></div><div><label>Cantidad</label><input id="detailPrizeQty" type="number" min="1" max="10000000" value="1"></div></div><label>Descripción</label><input id="detailPrizeDetails" maxlength="160" placeholder="Ej. 2 Booyah Pass"><button id="savePrize" class="secondary" style="margin:12px 0">Guardar premio</button><div class="divider"></div><div class="controls"><button id="archiveTour" class="secondary">Archivar torneo</button><button id="restoreTour" class="secondary hidden">Restaurar torneo</button><button id="deleteTour" class="ghost">🗑️ Eliminar definitivamente</button></div></div>
 </div>
-</section></div><script src="config.js"></script><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script><script src="rules-format.js?v=0.3.4"></script><script src="rules-presets.js?v=0.3.4"></script><script src="bracket-view.js?v=0.3.5"></script><script src="attendance-admin.js?v=0.4.4"></script><script src="resultados-admin.js?v=0.4.4"></script><script src="admin-roster.js?v=0.4.6"></script><script src="admin-waitlist.js?v=0.5.0"></script><script src="admin.js?v=0.5.0"></script><script src="admin-extra.js?v=0.3.6"></script><script>(function(){var button=document.getElementById("checkAppUpdate");if(window.JSUpdates&&typeof window.JSUpdates.checkForUpdates==="function"){button.style.display="inline-block";button.onclick=function(){window.JSUpdates.checkForUpdates()};}})();</script></body></html>
+</section></div><script src="config.js"></script><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script><script src="rules-format.js?v=0.3.4"></script><script src="rules-presets.js?v=0.3.4"></script><script src="bracket-view.js?v=0.3.5"></script><script src="attendance-admin.js?v=0.5.1"></script><script src="resultados-admin.js?v=0.4.4"></script><script src="admin-roster.js?v=0.4.6"></script><script src="admin-waitlist.js?v=0.5.0"></script><script src="admin.js?v=0.5.1"></script><script src="admin-extra.js?v=0.5.1"></script><script>(function(){var button=document.getElementById("checkAppUpdate");if(window.JSUpdates&&typeof window.JSUpdates.checkForUpdates==="function"){button.style.display="inline-block";button.onclick=function(){window.JSUpdates.checkForUpdates()};}})();</script></body></html>

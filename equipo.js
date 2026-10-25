@@ -47,7 +47,7 @@ function tickCountdown(){
      row.expired=true;
      // Ocultar ID/contraseña incluso si falla la siguiente consulta de red.
      row.secrets.replaceChildren();
-     row.status.textContent="⌛ Tiempo de espera agotado (10 minutos). Pedile una sala nueva al administrador.";
+     row.status.textContent="⌛ El tiempo de espera terminó. Pedile una sala nueva al administrador.";
      row.status.classList.remove("room-send-live");
      row.status.classList.add("room-send-expired");
      lookup(true);
@@ -104,7 +104,7 @@ async function lookup(silent=false){
        if(Number.isFinite(expiry))activeCountdowns.push({status,secrets,expiresLocal:expiry,expired:false});
        else{secrets.replaceChildren();status.textContent="No se pudo verificar el plazo. Actualizá la información.";}
      }else if(match.room_status==="expired"){
-       status.textContent="⌛ Plazo de 10 minutos agotado. Esperá a que el administrador envíe una sala nueva.";
+       status.textContent="⌛ Plazo agotado. Esperá a que el administrador envíe una sala nueva.";
        status.classList.add("room-send-expired");
      }else if(match.room_status==="finished"){
        status.textContent="✅ Partida finalizada. Las credenciales de la sala ya no están disponibles.";

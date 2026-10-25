@@ -19,7 +19,21 @@
      members.append(el);statuses.push({id:match[key],name:teamName,el});
    }
    const note=make("p","El contador comienza cuando enviás la sala. No se aplica descalificación automática.","small");
-   const noShow=make("button","⚖️ Dar victoria por ausencia (W.O.)","secondary");
+   const extra=make("button","⏱️ Dar 5 minutos extra","secondary");
+ extra.type="button";extra.className="secondary full hidden";
+ extra.style.margin="9px 0";
+ extra.onclick=async()=>{
+  if(!opened||extra.disabled)return;
+  if(!await askConfirm("¿Dar 5 minutos adicionales para que los equipos ingresen? La sala seguirá siendo la misma y solo podés otorgar una prórroga."))return;
+  extra.disabled=true;
+  try{
+   const {data,error}=await db.rpc("js_extend_match_grace",{p_match:match.id});
+   if(error||!data?.ok)throw error||Error("No se confirmó la prórroga");
+   await openTour(opened.id);
+   message("✅ Prórroga de 5 minutos concedida a los dos equipos.");
+  }catch(e){message("No se pudo extender el plazo: "+(e.message||String(e)),true);extra.disabled=false;}
+ };
+ const noShow=make("button","⚖️ Dar victoria por ausencia (W.O.)","secondary");
    noShow.type="button";noShow.classList.add("hidden");
    noShow.style.cssText="width:100%;margin:12px 0;min-height:46px";
    noShow.onclick=async()=>{
@@ -28,7 +42,7 @@
      const confirmed=current.statuses.filter(x=>current.rows.some(a=>a.team_id===x.id&&Date.parse(a.room_sent_at)===Date.parse(roomCache.get(match.id)?.sent_at||"")));
      if(confirmed.length!==1)return;
      const winner=confirmed[0];
-     if(!await askConfirm("¿Dar victoria por ausencia a "+winner.name+"?\\n\\nSe agotaron los 10 minutos y solo este equipo confirmó asistencia. Asegurate de que la partida NO se haya jugado. Si existe una captura del resultado, revisala en la sección de capturas en su lugar. La decisión quedará registrada."))return;
+     if(!await askConfirm("¿Dar victoria por ausencia a "+winner.name+"?\\n\\nSe agotó la tolerancia configurada y solo este equipo confirmó asistencia. Asegurate de que la partida NO se haya jugado. Si existe una captura del resultado, revisala en la sección de capturas en su lugar. La decisión quedará registrada."))return;
      noShow.disabled=true;noShow.textContent="Registrando W.O.…";
      try{
        const {data,error}=await db.rpc("js_adjudicate_absence",{p_match:match.id,p_winner:winner.id});
@@ -41,9 +55,9 @@
        noShow.disabled=false;noShow.textContent="⚖️ Dar victoria por ausencia (W.O.)";
      }
    };
-   box.append(heading,remaining,members,note,noShow);
+   box.append(heading,remaining,members,note,extra,noShow);
    card.append(box);
-   model.set(match.id,{card,match,box,remaining,statuses,rows:[],noShow});
+   model.set(match.id,{card,match,box,remaining,statuses,rows:[],extra,noShow});
    renderState(model.get(match.id));
    if(!refreshQueued){
      refreshQueued=true;
@@ -54,16 +68,20 @@
    if(!info.card.isConnected)return;
    const room=roomCache.get(info.match.id);
    const sent=room?.sent_at?Date.parse(room.sent_at):NaN;
-   const left=Math.ceil((sent+600000-Date.now())/1000);
+   const expires=room?.expires_at?Date.parse(room.expires_at):sent+600000;
+   const left=Math.ceil((expires-Date.now())/1000);
    const active=Number.isFinite(sent)&&sent<=Date.now()&&left>0&&
      !info.match.winner&&opened?.status!=="finished";
-   info.remaining.textContent=active?"⏱️ Tiempo restante: "+fmt(left)+" / 10:00":
-     !Number.isFinite(sent)?"🔒 Sala pendiente de envío":"⌛ Espera de 10 minutos finalizada";
+   info.remaining.textContent=active?"⏱️ Tiempo restante: "+fmt(left)+" (tolerancia inicial: "+(opened?.absence_minutes||10)+" min)":
+     !Number.isFinite(sent)?"🔒 Sala pendiente de envío":"⌛ Tiempo de ingreso agotado";
    const ready=info.statuses.filter(p=>p.id&&Number.isFinite(sent)&&info.rows.some(a=>a.team_id===p.id&&Date.parse(a.room_sent_at)===sent));
    const lastFinal=info.match.round===opened?.rounds
      ?(finalGameCache||[]).filter(g=>g.match_id===info.match.id).slice(-1)[0]:null;
    const newRoom=!lastFinal || sent>Date.parse(lastFinal.recorded_at);
-   const canWo=Number.isFinite(sent)&&Date.now()>=sent+600000&&!info.match.winner&&opened?.status!=="finished"&&ready.length===1&&newRoom;
+   const canWo=Number.isFinite(sent)&&Number.isFinite(expires)&&Date.now()>=expires&&!info.match.winner&&opened?.status!=="finished"&&ready.length===1&&newRoom;
+   const canExtend=active&&!room?.grace_extended&&info.match.team_a&&info.match.team_b;
+   info.extra.classList.toggle("hidden",!canExtend);
+   info.extra.disabled=!canExtend;
    info.noShow.classList.toggle("hidden",!canWo);
    info.noShow.disabled=!canWo;
    for(const p of info.statuses){

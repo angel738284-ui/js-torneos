@@ -27,10 +27,10 @@
      if(!box.isConnected){clearInterval(timer);return;}
      const seconds=Math.max(0,Math.ceil((expires-Date.now())/1000));
      if(live&&seconds>0){
-       clock.textContent="⏱️ Tiempo para ingresar: "+fmt(seconds)+" / 10:00";
+       clock.textContent="⏱️ Tiempo para ingresar: "+fmt(seconds)+" (tolerancia inicial: "+(m.absence_minutes||10)+" min)";
        if(!m.attendance_self)confirm.disabled=false;
      }else{
-       clock.textContent=m.room_status==="expired"||live?"⌛ Los 10 minutos de espera terminaron.":
+       clock.textContent=m.room_status==="expired"||live?"⌛ Terminó el plazo para ingresar.":
          m.room_status==="finished"?"Partida finalizada.":"La sala todavía no fue enviada.";
        confirm.disabled=true;confirm.classList.add("hidden");
        clearInterval(timer);

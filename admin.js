@@ -303,7 +303,7 @@ async function loadTours(){
 }
 async function openTour(id,resetTab=false){
  const {data:t,error}=await db.from("js_tournaments").select("*").eq("id",id).single();if(error)return message(error.message,true);
- opened=t;navigate("detail");chooseTourTab(resetTab?"teams":currentTourTab);$("detailName").textContent=t.name;$("detailCode").textContent=t.code;
+ opened=t;$("absenceMinutes").value=String(t.absence_minutes||10);navigate("detail");chooseTourTab(resetTab?"teams":currentTourTab);$("detailName").textContent=t.name;$("detailCode").textContent=t.code;
  $("detailStatus").textContent={open:"Inscripción abierta",closed:"Inscripción cerrada",finished:"Torneo finalizado"}[t.status];
  $("detailStatus").className="tag"+(t.status!=="open"?" closed":"");
  $("detailMeta").textContent=`${t.team_size}vs${t.team_size} · máximo ${t.max_teams} equipos`+(t.starts_at?" · "+new Date(t.starts_at).toLocaleString("es-AR"):"");
@@ -348,7 +348,7 @@ async function loadTeamsMatches(){if(!opened)return;
  roomCache=new Map();
  if(matchCache.length){
    const {data:rooms,error:roomsError}=await db.from("js_match_rooms")
-     .select("match_id,room_id,room_password,sent_at").in("match_id",matchCache.map(m=>m.id));
+     .select("match_id,room_id,room_password,sent_at,expires_at,grace_extended").in("match_id",matchCache.map(m=>m.id));
    if(roomsError)return message("No se pudieron cargar las salas: "+roomsError.message,true);
    for(const room of rooms||[])roomCache.set(room.match_id,room);
  }
@@ -429,6 +429,19 @@ const siteRoot=()=>String(currentConfig.siteUrl||location.href.replace(/\/admin\
 const enrollmentLink=()=>siteRoot()+"/inscripcion.html?codigo="+encodeURIComponent(opened.code);
 $("copyLink").onclick=()=>{if(!currentConfig.siteUrl && location.protocol==="file:")return message("Configurá la URL pública del sitio antes de compartir inscripciones.",true);copy(enrollmentLink())};
 async function copy(text){try{await navigator.clipboard.writeText(text);message("Copiado: "+text);}catch{prompt("Copiá este texto:",text)}}
+$("saveAbsenceMinutes").onclick=async()=>{
+ if(!opened)return;
+ const minutes=Number($("absenceMinutes").value);
+ if(![5,10].includes(minutes))return message("Elegí 5 o 10 minutos.",true);
+ $("saveAbsenceMinutes").disabled=true;
+ try{
+  const {data,error}=await db.rpc("js_admin_set_absence_minutes",{p_tour:opened.id,p_minutes:minutes});
+  if(error||!data?.ok)throw error||Error("El servidor no confirmó la configuración");
+  await openTour(opened.id);
+  message("✅ Tolerancia guardada: "+minutes+" minutos por sala.");
+ }catch(e){message("No se guardó la tolerancia: "+(e.message||String(e)),true);}
+ finally{$("saveAbsenceMinutes").disabled=false;}
+};
 $("toggleOpen").onclick=async()=>{
  if(opened.rounds>0||opened.status==="finished")return;
  const next=opened.status==="open"?"closed":"open";
