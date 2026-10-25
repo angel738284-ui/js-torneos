@@ -1,7 +1,7 @@
 {
-  "version_code": 15,
-  "version_name": "1.6.1",
-  "apk_url": "https://angel738284-ui.github.io/js-torneos/updates/JS-TORNEOS-JUGADORES-v1.6.1.apk",
-  "sha256": "95aa6035d92bdae79388c6e4c4b544338af3dc76d7a7ba029af96eadff386d0a",
-  "notes": "BR Solo: inscripción con un toque usando Google y el apodo Free Fire verificado, sin volver a escribir ID ni alias. Mis torneos se actualiza automáticamente y permite cancelar antes de empezar. El formulario público también usa el apodo verificado."
+  "version_code": 16,
+  "version_name": "1.6.2",
+  "apk_url": "https://angel738284-ui.github.io/js-torneos/updates/JS-TORNEOS-JUGADORES-v1.6.2.apk",
+  "sha256": "07bf55a77e71c5fad2ead18a33b66f3bb2c7f9eaa5417423b0dfece87ea26235",
+  "notes": "Se corrigió la bienvenida que quedaba en Preparando tu cuenta. Ahora recupera el perfil Google verificado sin bloquear la pantalla, sincroniza el servidor por separado y permite reintentar si falla la conexión. Se conservan torneos, amigos, avisos e inscripciones."
 }
