@@ -366,6 +366,18 @@ async function loadTeamsMatches(){if(!opened)return;
  accessBtn.textContent=t.access_code_hash?"🔐 Renovar código del equipo":"🔐 Generar código del equipo";
  accessBtn.onclick=()=>generateTeamCode(t);
  el.append(accessBtn);
+ if(t.status==="registered"&&opened.status!=="finished"&&!opened.archived_at){
+  const edit=document.createElement("button");
+  edit.type="button";edit.className="secondary";
+  edit.style.cssText="margin-top:10px;margin-left:8px;border-color:#d3aa52";
+  edit.textContent="✏️ Cambiar jugadores";
+  edit.onclick=()=>{
+   if(!window.JSAdminRoster)return message("No cargó el editor de jugadores. Actualizá el panel.",true);
+   window.JSAdminRoster.open(db,opened,t,playerByTeam[t.id]||[],
+    async text=>{await loadTeamsMatches();message(text);});
+  };
+  el.append(edit);
+ }
  if(opened.rounds===0){
   const removeTeam=document.createElement("button");
   removeTeam.type="button";removeTeam.className="ghost";
