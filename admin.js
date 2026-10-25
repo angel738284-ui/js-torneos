@@ -166,6 +166,27 @@ function refreshRulesPreview(){
  window.JSRuleFormat.render(box,text);
  if(!text.trim())box.textContent="No se especificaron reglas. Podés agregar unas desde Modificar reglas.";
 }
+function applyTournamentCapacity(){
+ const br=$("tourMode").value==="BR";
+ show("brFormatWrap",br);
+ $("teamSize").disabled=br;$("maxTeams").disabled=br;
+ const limit=$("maxTeams");
+ for(const value of ["12","25","50"]){
+  const opt=[...limit.options].find(o=>o.value===value);
+  if(br&&!opt){const o=document.createElement("option");o.value=value;o.textContent=value;limit.append(o);}
+  if(!br&&opt)opt.remove();
+ }
+ if(br){
+  const config={solo:[1,50],duo:[2,25],escuadra:[4,12]}[$("brFormat").value]||[1,50];
+  $("teamSize").value=String(config[0]);limit.value=String(config[1]);
+ }else if(![...limit.options].some(o=>o.value===limit.value))limit.value="8";
+ updateMaxTeamsHint();
+}
+$("brFormat").onchange=applyTournamentCapacity;
+$("requireSub").onchange=()=>{
+ $("subRequirementHint").textContent=$("requireSub").checked?
+ "Activado: 1 suplente obligatorio, máximo 2.":"Desactivado: 0 suplentes obligatorios, hasta 2 opcionales.";
+};
 function changeModeRules(){
  const next=$("tourMode").value;
  modeRuleDrafts[currentRulesMode]=$("rules").value;
@@ -179,6 +200,10 @@ function changeModeRules(){
  if(next==="VV2")$("teamSize").value="2";
  else if(next==="PVP")$("teamSize").value="1";
  else if(next==="BY")$("teamSize").value="6";
+ if(next==="BR"){$("brFormat").value="solo";$("requireSub").checked=false;}
+ else $("requireSub").checked=true;
+ $("requireSub").onchange();
+ applyTournamentCapacity();
  refreshRulesPreview();
 }
 $("tourMode").onchange=changeModeRules;
@@ -237,7 +262,11 @@ $("create").onclick=async()=>{
  const start=day?new Date(day+"T"+clock+":00"):null;
  if(start && (!Number.isFinite(start.getTime()) || start.getTime()<Date.now()))
   return message("Elegí un día y una hora futuros.",true);
- const row={name,team_size:Number($("teamSize").value),max_teams:Number($("maxTeams").value),mode:$("tourMode").value==="OTRA"?$("customMode").value.trim().slice(0,60):$("tourMode").value,starts_at:start?start.toISOString():null,rules:$("rules").value.trim().slice(0,1500),created_by:user.id};
+ const br=$("tourMode").value==="BR";
+ const row={name,team_size:Number($("teamSize").value),max_teams:Number($("maxTeams").value),
+ mode:$("tourMode").value==="OTRA"?$("customMode").value.trim().slice(0,60):$("tourMode").value,
+ br_format:br?$("brFormat").value:null,requires_substitute:$("requireSub").checked,
+ starts_at:start?start.toISOString():null,rules:$("rules").value.trim().slice(0,1500),created_by:user.id};
  $("create").disabled=true;
  try{const {data,error}=await db.from("js_tournaments").insert(row).select().single();if(error)throw error;
   $("tourName").value="";initializeDayPicker();resetNewTournamentRules();message("Torneo creado. Código: "+data.code);await loadTours();await openTour(data.id,true);
@@ -250,7 +279,7 @@ function drawTournamentCard(t,history){
  const left=document.createElement("div");
  const name=document.createElement("strong");name.textContent=t.name;
  const code=document.createElement("div");code.className="code";code.textContent=t.code;
- const meta=document.createElement("div");meta.className="small";meta.textContent=t.team_size+" vs "+t.team_size+" · "+t.max_teams+" equipos · "+(t.mode||"PVP");
+ const meta=document.createElement("div");meta.className="small";meta.textContent=t.mode==="BR"?("BR "+({solo:"Solo",duo:"Dúo",escuadra:"Escuadra"}[t.br_format]||"")+" · "+t.max_teams+" cupos"):(t.team_size+" vs "+t.team_size+" · "+t.max_teams+" equipos · "+(t.mode||"PVP"));
  const award=document.createElement("div");award.className="small";award.textContent=prizeText(t);
  left.append(name,code,meta,award);
  const tag=document.createElement("span");tag.className="tag "+(history?"closed":"");tag.textContent=t.status==="finished"?"🏆 Jugado":t.archived_at?"Archivado":t.status==="open"?"Abierto":"Cerrado";
@@ -280,7 +309,8 @@ async function openTour(id,resetTab=false){
  $("detailMeta").textContent=`${t.team_size}vs${t.team_size} · máximo ${t.max_teams} equipos`+(t.starts_at?" · "+new Date(t.starts_at).toLocaleString("es-AR"):"");
  $("toggleOpen").textContent=t.status==="open"?"Cerrar inscripciones":"Abrir inscripciones";
  $("toggleOpen").disabled=t.rounds>0||t.status==="finished";
- $("startBracket").disabled=t.rounds>0||t.status==="finished";
+ $("startBracket").disabled=t.rounds>0||t.status==="finished"||t.mode==="BR";
+ $("startBracket").title=t.mode==="BR"?"BR no utiliza llaves eliminatorias 1vs1":"";
  $("archiveTour").classList.toggle("hidden",t.status==="finished"||!!t.archived_at);
  $("restoreTour").classList.toggle("hidden",!t.archived_at||t.status==="finished");
  $("detailPrizeKind").value=t.prize_kind||"ninguno";
@@ -452,6 +482,7 @@ $("deleteTour").onclick=async()=>{
 };
 $("startBracket").onclick=async()=>{
  if(!opened||opened.rounds>0)return;
+ if(opened.mode==="BR")return message("BR usa una sala compartida, no cruces 1vs1.",true);
  const count=teamCache.filter(t=>t.status==="registered").length;
  if(count<2)return message("Necesitás al menos dos equipos.",true);
  if(!await askConfirm("¿Sortear los cruces entre "+count+" equipos y cerrar las inscripciones? Una vez creadas las llaves no podrás volver a sortearlas."))return;
@@ -471,7 +502,7 @@ $("startBracket").onclick=async()=>{
    message("No se pudieron generar los cruces: "+(e.message||String(e)),true);
  }finally{
    button.textContent="Generar cruces";
-   button.disabled=Boolean(opened&&opened.rounds>0);
+   button.disabled=Boolean(opened&&(opened.rounds>0||opened.mode==="BR"));
  }
 };
 function drawMatches(){
@@ -637,10 +668,12 @@ function updateMaxTeamsHint(){
    16:"16 equipos: octavos, cuartos, semifinales y final.",
    32:"32 equipos: eliminatorias de 5 rondas, con final al mejor de 3."
  };
- $("maxTeamsHint").textContent=hint[n]||"Formato eliminatorio";
+ $("maxTeamsHint").textContent=$("tourMode").value==="BR"?
+ ({solo:"BR Solo: hasta 50 jugadores.",duo:"BR Dúo: hasta 25 dúos (50 jugadores).",escuadra:"BR Escuadra: hasta 12 escuadras (48 jugadores)."}[$("brFormat").value]||"BR"):
+ (hint[n]||"Formato eliminatorio");
 }
 $("maxTeams").onchange=updateMaxTeamsHint;
-updateMaxTeamsHint();
+applyTournamentCapacity();
 resetNewTournamentRules();
 initializeDayPicker();
 launch();

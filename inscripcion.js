@@ -6,6 +6,7 @@ const tell=(text,bad=false)=>{
 };
 let tournament=null;
 let starterRows=[],substituteRows=[];
+const minSub=()=>tournament?.requires_substitute===false?0:1;
 const config=window.JS_CONFIG||{};
 const base=String(config.supabaseUrl||"").replace(/\/$/,"");
 const endpoint=base+"/functions/v1/torneo";
@@ -29,10 +30,8 @@ function updateSubButton(){
  const count=substituteRows.length;
  const b=$("addSub");
  b.disabled=count>=2||!tournament||tournament.status!=="open";
- b.textContent=count>=2?"✓ Suplentes completos (2/2)":"＋ Agregar segundo suplente (opcional)";
- substituteRows.forEach((row,i)=>{
-   row.remove?.classList.toggle("hidden",i===0);
- });
+ b.textContent=count>=2?"✓ Suplentes completos (2/2)":count===0?"＋ Agregar suplente (opcional)":"＋ Agregar segundo suplente (opcional)";
+ substituteRows.forEach((row,i)=>{row.remove?.classList.toggle("hidden",count<=minSub());});
 }
 function everyRow(){return [...starterRows,...substituteRows]}
 function resetRoster(){
@@ -47,7 +46,7 @@ function makePlayerRow(number,isSubstitute){
  wrapper.style.cssText="border:1px solid #36465d;border-radius:14px;padding:14px;margin:12px 0";
  const label=document.createElement("div");
  label.style.cssText="font-weight:800;margin-bottom:10px";
- label.textContent=isSubstitute?(number===1?"🔁 Suplente 1 — OBLIGATORIO":"🔁 Suplente 2 — opcional"):"Titular "+number;
+ label.textContent=isSubstitute?(number===1?"🔁 Suplente 1 — "+(minSub()?"OBLIGATORIO":"opcional"):"🔁 Suplente 2 — opcional"):"Titular "+number;
  const input=document.createElement("input");
  input.type="text";input.inputMode="numeric";input.maxLength=16;input.autocomplete="off";
  input.placeholder="ID numérico de Free Fire";input.className="player-id";input.required=!isSubstitute;
@@ -65,7 +64,7 @@ function makePlayerRow(number,isSubstitute){
  remove.textContent="Quitar suplente";remove.style.cssText="min-width:110px";
  if(isSubstitute)buttons.append(verify,correct,remove);
  else buttons.append(verify,correct);
- if(isSubstitute&&number===1)remove.classList.add("hidden");
+ if(isSubstitute&&number===1&&minSub()===1)remove.classList.add("hidden");
  wrapper.append(label,input,status,buttons);
  const state={element:wrapper,input,status,verify,correct,remove,verified:null,role:isSubstitute?"suplente":"titular"};
  function invalidate(){
@@ -81,12 +80,12 @@ function makePlayerRow(number,isSubstitute){
    input.readOnly=false;input.value="";invalidate();input.focus();
  };
  remove.onclick=()=>{
-   if(!isSubstitute||substituteRows.length<=1)return;
+   if(!isSubstitute||substituteRows.length<=minSub())return;
    const idx=substituteRows.indexOf(state);
    if(idx>=0)substituteRows.splice(idx,1);
    wrapper.remove();
    substituteRows.forEach((v,i)=>{
-     const d=v.element.firstChild;if(d)d.textContent=i===0?"🔁 Suplente 1 — OBLIGATORIO":"🔁 Suplente 2 — opcional";
+     const d=v.element.firstChild;if(d)d.textContent=i===0?"🔁 Suplente 1 — "+(minSub()?"OBLIGATORIO":"opcional"):"🔁 Suplente 2 — opcional";
    });
    updateSubButton();
  };
@@ -151,8 +150,8 @@ async function loadTournament(){
   const available=data.status==="open"&&data.registered<data.max_teams;
   show("form",available);show("success",false);
   $("name").textContent=data.name;
-  $("mode").textContent=(data.mode||"PVP")+" · "+data.team_size+" vs "+data.team_size;
-  $("slots").textContent=data.registered+" / "+data.max_teams+" equipos";
+  $("mode").textContent=data.mode==="BR"?("BR "+({solo:"Solo",duo:"Dúo",escuadra:"Escuadra"}[data.br_format]||"")+" · "+data.team_size+" titular(es)"):(data.mode||"PVP")+" · "+data.team_size+" vs "+data.team_size;
+  $("slots").textContent=data.registered+" / "+data.max_teams+(data.mode==="BR"&&data.br_format==="solo"?" jugadores":" equipos");
   $("date").textContent=data.starts_at?"Fecha: "+new Date(data.starts_at).toLocaleString("es-AR"):"Fecha por confirmar";
   $("publicBracketLink").href="llaves.html?codigo="+encodeURIComponent(data.code);
   $("rulesSection").dataset.mode=data.mode||"";
@@ -163,20 +162,27 @@ async function loadTournament(){
   setRulesExpanded(false);
   show("rulesToggle",hasRules);
   const finalMentioned=/al mejor de 3 solo ultima ronda\(\s*final\s*\)/i.test(data.rules||"");
-  show("finalPublicInfo",!finalMentioned);
+  show("finalPublicInfo",data.mode!=="BR"&&!finalMentioned);
+  show("publicBracketLink",data.mode!=="BR");
   const n=Number(data.prize_quantity)||0;
   const unit=data.prize_kind==="diamantes"?"diamantes 💎":data.prize_kind==="pases"?"pase(s) 🎟️":"premio(s)";
   $("prizePublic").textContent=data.prize_kind&&data.prize_kind!=="ninguno"&&n>0?
       "🏆 Premio anunciado: "+n.toLocaleString("es-AR")+" "+unit+(data.prize_details?" · "+data.prize_details:""):"";
+  const single=data.mode==="BR"&&data.br_format==="solo";
+  $("registrationHeading").textContent=single?"Inscribirme en BR Solo":"Anotar equipo";
+  $("teamNameLabel").textContent=single?"Nombre del participante / alias":"Nombre del equipo";
+  $("team").placeholder=single?"Ej. JSPro":"Ej. Los Akatsuki";
+  $("subHeading").textContent=minSub()?"🔁 Suplentes: mínimo 1, máximo 2":"🔁 Suplentes opcionales (0 a 2)";
+  $("subDescription").textContent=minSub()?"Además de los titulares, al menos un suplente debe verificar su ID.":"Podés inscribirte sin suplente. Si querés, agregá hasta dos y verificá sus ID.";
   resetRoster();
   for(let i=0;i<data.team_size;i++){
     const row=makePlayerRow(i+1,false);
     starterRows.push(row);$("players").append(row.element);
   }
-  if(available)addSubstitute();
+  if(available&&minSub()===1)addSubstitute();
   else updateSubButton();
   if(!available)tell("El torneo está cerrado o ya no tiene cupos.",true);
-  else tell("Torneo encontrado. Inscripción obligatoria: verificá los "+data.team_size+" titulares y al menos 1 suplente (máximo 2).");
+  else tell("Torneo encontrado: verificá "+data.team_size+" titular(es). "+(minSub()?"Al menos un suplente obligatorio.":"No necesitás suplente."));
  }catch(e){
   tournament=null;resetRoster();show("form",false);show("tournament",false);
   tell(e.message,true);
@@ -188,12 +194,12 @@ $("form").addEventListener("submit",async event=>{
  if(!tournament)return;
  const team=$("team").value.trim(),rows=everyRow();
  if(team.length<2||team.length>45)return tell("Ingresá el nombre del equipo.",true);
- if(starterRows.length!==tournament.team_size || substituteRows.length<1 || substituteRows.length>2)
-    return tell("La escuadra debe tener "+tournament.team_size+" titulares completos y al menos 1 suplente (máximo 2).",true);
+ if(starterRows.length!==tournament.team_size || substituteRows.length<minSub() || substituteRows.length>2)
+    return tell("Revisá los "+tournament.team_size+" titulares y "+(minSub()?"al menos un suplente.":"los suplentes opcionales."),true);
  const missing=rows.filter(row=>!row.verified||row.verified.id!==row.input.value.trim());
  if(missing.length){
    missing[0].element.scrollIntoView({behavior:"smooth",block:"center"});
-   return tell("Faltan jugadores por verificar. Son obligatorios los "+tournament.team_size+" titulares y al menos 1 suplente. Revisá sus ID.",true);
+   return tell("Faltan ID por verificar. Revisá todos los titulares y suplentes que cargaste.",true);
  }
  const ids=rows.map(x=>x.verified.id);
  if(new Set(ids).size!==ids.length)return tell("Hay ID repetidos entre titulares y suplentes.",true);

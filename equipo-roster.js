@@ -107,7 +107,7 @@
   const enabled=Boolean(data.can_edit_roster);
   const players=[...data.roster].sort((a,b)=>(a.player_role==='suplente')-(b.player_role==='suplente')||(a.roster_order||0)-(b.roster_order||0));
   const substitutes=players.filter(p=>p.player_role==="suplente");
-  list.append(node("p","🔁 Suplentes: "+substitutes.length+" / 2 · Mínimo obligatorio: 1","roster-count"));
+  list.append(node("p","🔁 Suplentes: "+substitutes.length+" / 2 · Mínimo: "+(data.requires_substitute===false?"0":"1"),"roster-count"));
   $("rosterNote").textContent=enabled?
    "Antes de generar los cruces podés cambiar titulares, cambiar suplentes, agregar un segundo o quitar uno si hay dos. Cada nuevo ID se verifica con Epinby.":
    "Plantilla bloqueada: los cruces comenzaron, el torneo terminó o la escuadra no está activa.";
@@ -119,7 +119,7 @@
     card.append(editor({oldPlayer:player,caption:"✏️ Cambiar jugador",
      postAction:(old,verified)=>({action:"team_replace_player",old_player_id:old.game_id,new_player_id:verified.id}),
      successText:"Jugador reemplazado"}));
-    if(player.player_role==="suplente"&&substitutes.length>1){
+    if(player.player_role==="suplente"&&substitutes.length>(data.requires_substitute===false?0:1)){
      const remove=node("button","🗑 Quitar este suplente","ghost");remove.type="button";
      remove.onclick=()=>removeSecondSubstitute(player);
      card.append(remove);
@@ -129,7 +129,7 @@
   }
   if(enabled&&substitutes.length<2){
    const extra=node("div",undefined,"roster-player roster-add-substitute");
-   extra.append(node("div",substitutes.length===1?"➕ Segundo suplente (opcional)":"➕ Agregar suplente obligatorio","roster-player-title"));
+   extra.append(node("div",substitutes.length===1?"➕ Segundo suplente (opcional)":(data.requires_substitute===false?"➕ Agregar suplente (opcional)":"➕ Agregar suplente obligatorio"),"roster-player-title"));
    extra.append(editor({caption:"➕ Agregar suplente",oldPlayer:null,
     postAction:(old,verified)=>({action:"team_manage_substitute",operation:"add",player_id:verified.id}),
     successText:"Suplente agregado"}));
