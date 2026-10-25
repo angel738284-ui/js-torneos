@@ -1,7 +1,7 @@
 {
-  "version_code": 11,
-  "version_name": "1.5.0",
-  "apk_url": "https://angel738284-ui.github.io/js-torneos/updates/JS-TORNEOS-JUGADORES-v1.5.0.apk",
-  "sha256": "ecf80770a61b7b72aba08533303baee53995be1039aa271921da4af3f3112720",
-  "notes": "Campanita de notificaciones en la parte superior, nueva sección Amigos, solicitudes por ID de Free Fire, aceptar o rechazar y enviar invitaciones a torneos. Conservamos Google, inscripciones, resultados y avisos anteriores."
+  "version_code": 12,
+  "version_name": "1.5.1",
+  "apk_url": "https://angel738284-ui.github.io/js-torneos/updates/JS-TORNEOS-JUGADORES-v1.5.1.apk",
+  "sha256": "a38412b0fcf948f29d03bb9777d490b2d92d5d9e7d0fb6007fc92bcf2842e262",
+  "notes": "Nuevo perfil público de estilo JS Voice con nombre, @usuario, biografía, foto y portada. La insignia ADM se muestra a todos los que consulten el perfil, pero solo está autorizada para el dueño JS. Conservamos amigos, Google, torneos y notificaciones."
 }
