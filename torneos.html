@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="es"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#080d1a">
+<title>JS Family · Torneos para jugadores</title>
+<style>
+:root{color-scheme:dark}*{box-sizing:border-box}body{margin:0;background:#080d1a;color:#f6f8fe;font:500 15px/1.45 system-ui,-apple-system,Roboto,sans-serif;min-height:100vh}
+body:before{content:"";position:fixed;inset:0;z-index:-1;background:radial-gradient(ellipse at 90% -20%,#3c607a55,transparent 50%),radial-gradient(ellipse at 0% 50%,#76314833,transparent 50%)}
+.wrap{max-width:780px;margin:auto;padding:20px 17px 120px}header{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px}
+.logo{width:52px;height:52px;background:linear-gradient(145deg,#f36379,#852943);border-radius:16px;display:grid;place-items:center;font-size:25px;font-weight:1000;letter-spacing:-2px}
+.brand{display:flex;gap:10px;align-items:center}.brand b{font-size:19px;letter-spacing:.5px}.brand small{display:block;color:#9faec8;font-size:10px;letter-spacing:2px}
+.refresh{background:#18243a;color:#fff;border:1px solid #35465c;border-radius:12px;width:45px;height:45px;font-size:26px}
+.hero{padding:30px 22px 0;background:linear-gradient(120deg,#282b45,#112539);border:1px solid #3c4d65;border-radius:23px;overflow:hidden}
+.over{color:#a6eae0;font-size:10px;letter-spacing:2px;font-weight:900}.hero h1{font-size:clamp(30px,7vw,50px);letter-spacing:-1.5px;line-height:1.06;margin:15px 0 11px}
+.hero h1 em{color:#ff8393;font-style:normal}.hero p{color:#c1cee2;margin:0 0 25px;font-size:13px}
+.stats{margin:0 -22px;padding:15px 22px;background:#09101d77;border-top:1px solid #ffffff16;display:flex;gap:25px}.stats strong{font-size:27px;display:block}.stats span{color:#9eafc9;font-size:11px}
+.title{display:flex;justify-content:space-between;align-items:end;margin:30px 2px 15px}.title small{color:#ff8393;letter-spacing:2px;font-weight:900;font-size:10px}.title h2{margin:2px 0;font-size:25px}.title>span{font-size:10px;color:#98a8c0}
+input{height:51px;width:100%;border:1px solid #34445a;border-radius:13px;background:#151e30;color:white;padding:0 15px;font:inherit}input:focus{outline:2px solid #79dfeb}
+.filters{display:flex;gap:8px;overflow:auto;padding:14px 0 15px}.filters button{border:1px solid #314257;background:#18263c;color:#bdc9db;white-space:nowrap;padding:10px 13px;border-radius:24px;font-size:12px;font-weight:850}
+.filters button.sel{background:#e9536e;color:white;border-color:#ff8193}#cards{display:grid;gap:15px}
+.card{padding:18px;background:linear-gradient(155deg,#1a2a40,#121b2c);border:1px solid #31435b;border-radius:20px}.card.open{border-color:#377e74}
+.head{display:flex;justify-content:space-between;gap:10px;align-items:start}.head h3{margin:0;font-size:19px}.code{color:#92a8c2;font-size:11px;margin-top:4px;letter-spacing:1px}
+.badge{font-size:10px;border-radius:8px;padding:7px 9px;font-weight:900;white-space:nowrap;background:#4d3a28;color:#ffe0a4}.badge.yes{background:#17483d;color:#6bf3c3}
+.info{display:flex;gap:12px;flex-wrap:wrap;margin:15px 0;color:#bfccdf;font-size:12px}.prize{color:#ffe2aa;background:#ffcb6013;border:1px solid #e1b36133;border-radius:11px;padding:10px 11px;margin:12px 0;font-size:12px}
+.count{display:flex;justify-content:space-between;font-size:12px;margin:12px 0 7px}.bar{height:7px;background:#344358;border-radius:10px;overflow:hidden}
+.fill{height:100%;background:linear-gradient(90deg,#20cdad,#7cf4e4)}.actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:17px}
+.actions a{border:1px solid #49627f;border-radius:12px;background:#29394f;color:#fff;min-height:45px;display:grid;place-items:center;text-align:center;padding:8px;font-size:13px;font-weight:900;text-decoration:none}
+.actions a.primary{background:linear-gradient(120deg,#f25c76,#a72b54);border-color:#fa889b}.empty{padding:35px 15px;border:1px dashed #3c526a;border-radius:16px;text-align:center;color:#c0cee0}
+.help{background:#172338;border:1px solid #33465e;border-radius:16px;padding:17px;margin-top:25px}.help h3{margin:0 0 5px}
+.help p{font-size:12px;color:#b0c0d6;margin:0 0 12px}.help a{color:#7be5e4;font-weight:900}
+nav{position:fixed;bottom:0;left:0;right:0;border-top:1px solid #344358;background:#091120f2;display:flex;justify-content:space-around;padding:9px 10px calc(12px + env(safe-area-inset-bottom));z-index:10}
+nav a{color:#aab9ce;text-decoration:none;text-align:center;font-size:11px;font-weight:850;display:grid;gap:2px}nav span{font-size:21px}
+nav a.sel{color:white}.error{border:1px solid #df8791;border-radius:10px;background:#4c2732;padding:12px;color:#ffc5ce;margin:8px 0}button,a{cursor:pointer}
+</style></head>
+<body><div class="wrap"><header><div class="brand"><div class="logo">JS</div><div><b>JS FAMILY</b><small>TORNEOS · FREE FIRE</small></div></div><button id="refresh" class="refresh" aria-label="Actualizar" type="button">↻</button></header>
+<section class="hero"><div class="over">● FREE FIRE · COMPETITIVO</div><h1>Tu próxima<br><em>victoria</em> empieza acá.</h1><p>Encontrá tu campeonato, inscribí a tu escuadra y competí.</p>
+<div class="stats"><div><strong id="openCount">—</strong><span>Inscripciones abiertas</span></div><div><strong id="allCount">—</strong><span>Torneos disponibles</span></div></div></section>
+<div class="title"><div><small>ENCONTRÁ TU DESAFÍO</small><h2>Explorar torneos</h2></div><span id="when">Actualizando…</span></div>
+<input type="search" id="search" placeholder="Buscar torneo por nombre o código" aria-label="Buscar torneos">
+<div class="filters"><button type="button" data-state="open" class="sel">🔥 Abiertos</button><button type="button" data-state="all">Todos</button><button type="button" data-state="closed">⚔️ En curso</button><button type="button" data-state="finished">🏆 Terminados</button></div>
+<div id="error" hidden class="error"></div><div id="cards"><div class="empty">Buscando torneos de JS Family…</div></div>
+<div class="help"><h3>🔐 ¿Ya te inscribiste?</h3><p>Entrá con tu código privado para ver tu rival, sala y resultados.</p><a href="https://angel738284-ui.github.io/js-torneos/equipo.html">Consultar mi equipo →</a></div>
+</div>
+<nav><a class="sel" href="?"><span>🏆</span>Torneos</a><a href="https://angel738284-ui.github.io/js-torneos/equipo.html"><span>🛡️</span>Mi equipo</a><a href="https://angel738284-ui.github.io/js-torneos/llaves.html"><span>⚔️</span>Llaves</a></nav>
+<script>
+(function(){
+"use strict";
+const q=id=>document.getElementById(id);
+let list=[],mode="open",term="",busy=false;
+const e=(tag,text,cls)=>{const n=document.createElement(tag);if(typeof text==="string")n.textContent=text;if(cls)n.className=cls;return n};
+const fmt=d=>{if(!d)return"Por confirmar";const dt=new Date(d);return Number.isNaN(dt.getTime())?"Por confirmar":new Intl.DateTimeFormat("es-AR",{day:"numeric",month:"short",hour:"2-digit",minute:"2-digit",timeZone:"America/Argentina/Buenos_Aires"}).format(dt)+" h Arg."};
+const allowed=t=>t.status==="open"&&Number(t.registered)<Number(t.max_teams);
+function draw(){
+const root=q("cards");root.replaceChildren();
+const rows=list.filter(t=>(mode==="all"||mode==="open"&&allowed(t)||mode==="closed"&&t.status==="closed"||mode==="finished"&&t.status==="finished")&&(t.name+" "+t.code+" "+t.mode).toLowerCase().includes(term));
+if(!rows.length){root.append(e("div",term?"No encontramos torneos con ese nombre.":mode==="open"?"No hay inscripciones abiertas por ahora.":"No hay torneos en esta categoría.","empty"));return;}
+for(const t of rows){
+const c=e("article",undefined,"card"+(allowed(t)?" open":""));
+const h=e("div",undefined,"head"),name=e("div");name.append(e("h3",t.name),e("div",t.code,"code"));
+const full=t.status==="open"&&!allowed(t),pill=e("span",allowed(t)?"Abierto":full?"Sin cupos":t.status==="closed"?"En curso":"Finalizado","badge"+(allowed(t)?" yes":""));
+h.append(name,pill);c.append(h);
+const details=e("div",undefined,"info");
+details.append(e("span","🎮 "+(t.mode==="BY"?"Duelo de Escuadras":t.mode)),e("span","👥 "+t.team_size+" titular(es) por equipo"),e("span","🗓️ "+fmt(t.starts_at)));
+c.append(details);
+const prize=String(t.prize_details||"").trim();if(prize||Number(t.prize_quantity)>0)c.append(e("div","🏆 Premio: "+(Number(t.prize_quantity)>0?t.prize_quantity+" ":"")+String(t.prize_kind||"").replace(/_/g," ")+(prize?" · "+prize:""),"prize"));
+const n=e("div",undefined,"count");n.append(e("span","Equipos inscriptos"),e("b",t.registered+" / "+t.max_teams));c.append(n);
+const bar=e("div",undefined,"bar"),fill=e("div",undefined,"fill");fill.style.width=Math.min(100,100*Number(t.registered)/Math.max(1,Number(t.max_teams)))+"%";bar.append(fill);c.append(bar);
+const actions=e("div",undefined,"actions");
+const a=e("a",allowed(t)?"✍️ Inscribirme":"📋 Ver torneo",allowed(t)?"primary":"");a.href="https://angel738284-ui.github.io/js-torneos/inscripcion.html?codigo="+encodeURIComponent(t.code);
+const b=e("a","🏆 Ver llaves");b.href="https://angel738284-ui.github.io/js-torneos/llaves.html?codigo="+encodeURIComponent(t.code);
+actions.append(a,b);c.append(actions);root.append(c);
+}
+}
+async function load(){
+if(busy)return;busy=true;q("refresh").disabled=true;q("error").hidden=true;
+try{
+const ctrl=new AbortController(),timeout=setTimeout(()=>ctrl.abort(),15000);let res;
+try{res=await fetch("https://chfshxlykvmovwryjnxi.supabase.co/functions/v1/js-jugadores?feed=1",{cache:"no-store",signal:ctrl.signal});}finally{clearTimeout(timeout)}
+const data=await res.json();if(!res.ok||!Array.isArray(data.tournaments))throw Error(data.error||"No se pudo cargar");
+list=data.tournaments.filter(t=>t&&t.code&&t.name);q("openCount").textContent=list.filter(allowed).length;q("allCount").textContent=list.length;
+q("when").textContent="Actualizado "+new Date().toLocaleTimeString("es-AR",{hour:"2-digit",minute:"2-digit"});draw();
+}catch(err){q("error").hidden=false;q("error").textContent="No se pudo cargar. Tocá ↻ para reintentar. "+(err.message||"");if(!list.length)q("cards").replaceChildren(e("div","Conexión no disponible.","empty"));}
+finally{busy=false;q("refresh").disabled=false}
+}
+document.querySelectorAll("[data-state]").forEach(b=>b.onclick=()=>{mode=b.dataset.state;document.querySelectorAll("[data-state]").forEach(x=>x.classList.toggle("sel",x===b));draw()});
+q("search").oninput=ev=>{term=ev.target.value.trim().toLowerCase();draw()};
+q("refresh").onclick=load;document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible")load()});
+setInterval(()=>{if(document.visibilityState==="visible")load()},90000);load();
+})();
+</script></body></html>
