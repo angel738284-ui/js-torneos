@@ -1,7 +1,7 @@
 {
-  "version_code": 31,
-  "version_name": "0.5.1",
-  "apk_url": "https://angel738284-ui.github.io/js-torneos/updates/JS-TORNEOS-v0.5.1.apk",
-  "sha256": "8c28bcf9e35943bea292ddc70df746c639d9234c63b68ff9c26ca7f691e3f388",
-  "notes": "Avisos automáticos para jugadores y control de ausencias: tolerancia de 5 o 10 minutos, cuenta regresiva, prórroga de 5 minutos y decisión de W.O. supervisada por administrador."
+  "version_code": 32,
+  "version_name": "0.6.0",
+  "apk_url": "https://angel738284-ui.github.io/js-torneos/updates/JS-TORNEOS-v0.6.0.apk",
+  "sha256": "38ff2bf02de652597ce66b1df0942a042fc4ffd105677e727392a6f303858abf",
+  "notes": "Battle Royale ahora usa una sola sala general para todos: enviá una vez el ID y la contraseña, cerrá la sala cuando quieras y elegí un único campeón. BR ya no muestra llaves ni cruces; BY/PVP sigue igual."
 }

@@ -310,6 +310,12 @@ async function openTour(id,resetTab=false){
  $("toggleOpen").textContent=t.status==="open"?"Cerrar inscripciones":"Abrir inscripciones";
  $("toggleOpen").disabled=t.rounds>0||t.status==="finished";
  $("startBracket").disabled=t.rounds>0||t.status==="finished"||t.mode==="BR";
+ $("tabBrackets").textContent=t.mode==="BR"?"📨 Sala BR":"🏆 Cruces";
+ $("detailMeta").textContent=t.mode==="BR"?"🎮 BR · todos contra todos · "+t.max_teams+" cupos":$("detailMeta").textContent;
+ $("brRoomPanel").classList.toggle("hidden",t.mode!=="BR");
+ $("eliminationUi").classList.toggle("hidden",t.mode==="BR");
+ $("absenceRulesPanel").classList.toggle("hidden",t.mode==="BR");
+ $("toggleOpen").disabled=t.rounds>0||t.status==="finished"||t.mode==="BR"&&t.status==="closed";
  $("startBracket").title=t.mode==="BR"?"BR no utiliza llaves eliminatorias 1vs1":"";
  $("archiveTour").classList.toggle("hidden",t.status==="finished"||!!t.archived_at);
  $("restoreTour").classList.toggle("hidden",!t.archived_at||t.status==="finished");
@@ -406,6 +412,11 @@ async function loadTeamsMatches(){if(!opened)return;
  if(window.JSAdminWaitlist)await window.JSAdminWaitlist.render(db,opened,a.data,c.data,
   async text=>{await loadTeamsMatches();message(text);});
  drawMatches();
+ if(opened.mode==="BR"&&window.JSBRAdmin){
+  await window.JSBRAdmin.render(db,opened,a.data,
+   async()=>{await openTour(opened.id);await loadTours();},
+   (text,bad=false)=>message(text,bad),askConfirm);
+ }
 }
 async function deleteTeamCompletely(team){
  if(!opened||opened.rounds!==0)return message("No se puede eliminar una escuadra después de generar los cruces.",true);
@@ -548,6 +559,7 @@ $("startBracket").onclick=async()=>{
  }
 };
 function drawMatches(){
+ if(opened?.mode==="BR"){$("championBox").classList.add("hidden");return;}
  const area=$("matchList");area.replaceChildren();
  window.JSBracket.render($("bracketVisual"),{
    rounds:opened?.rounds||0,matches:matchCache,teams:teamCache,

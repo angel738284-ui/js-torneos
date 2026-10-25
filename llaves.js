@@ -24,9 +24,14 @@
      $("publicMode").textContent=data.mode+" · "+data.max_teams+" equipos";
      $("publicStatus").textContent=data.status==="finished"?"Finalizado":
         data.status==="open"?"Inscripciones abiertas":"Inscripciones cerradas";
-     const bracket=window.JSBracket.render($("publicBracket"),data);
+     if(data.mode==="BR"){
+       $("publicBracket").replaceChildren();
+       const info=document.createElement("p");info.className="small";
+       info.textContent="🎮 Battle Royale: todos contra todos en UNA sola sala. No existen llaves eliminatorias. Los datos privados están en Mi equipo.";
+       $("publicBracket").append(info);
+     }else window.JSBracket.render($("publicBracket"),data);
      $("publicContent").classList.remove("hidden");
-     notice(data.rounds>0?"Llaves actualizadas correctamente.":"Las llaves todavía no fueron generadas.");
+     notice(data.mode==="BR"?"Este torneo BR no utiliza llaves.":data.rounds>0?"Llaves actualizadas correctamente.":"Las llaves todavía no fueron generadas.");
    }catch(e){
      $("publicContent").classList.add("hidden");
      notice(e.message||"Error de conexión",true);

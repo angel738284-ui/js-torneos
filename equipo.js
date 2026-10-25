@@ -79,12 +79,28 @@ async function lookup(silent=false){
      data.tournament_status==="open"?"Inscripciones abiertas":"Inscripciones cerradas";
    $("tournamentStart").textContent=data.tournament_start?
      "Fecha general del torneo: "+dateTime(data.tournament_start):"Fecha general del torneo: por confirmar";
+   $("teamMatchHeading").textContent=data.mode==="BR"?"🎮 Sala general Battle Royale":"⚔️ Mis enfrentamientos";
+   $("teamBracketLink").classList.toggle("hidden",data.mode==="BR");
    const list=$("matches");list.replaceChildren();
    activeCountdowns=[];
    // Calibrar cuenta regresiva con la hora de Supabase, no la del teléfono.
    const serverTime=Date.parse(data.server_now||"");
    const offset=Number.isFinite(serverTime)?Date.now()-serverTime:0;
-   if(!data.matches.length){
+   if(data.mode==="BR"){
+     const room=data.br_room||{status:"not_sent"};
+     const card=make("div",undefined,"item js-br-room");
+     card.append(make("h3","🎮 Battle Royale · Sala única para todos"));
+     card.append(make("p","No hay cruces ni llaves. Todos compiten en la misma sala y solo hay un ganador.","small"));
+     const label={active:"🟢 Sala enviada",not_sent:"⏳ Esperando sala general",closed:"🔒 Sala cerrada",finished:"🏆 Torneo finalizado"}[room.status]||"Esperando sala";
+     card.append(make("p",label,"room-send-status"));
+     if(room.status==="active"&&room.room_id&&room.room_password){
+       addRow(card,"ID de sala BR",room.room_id,true);
+       addRow(card,"Contraseña para todos",room.room_password,true);
+       card.append(make("p","Los mismos datos se enviaron a todos los participantes inscritos.","small"));
+     }
+     if(room.status==="finished"&&room.winner_name)card.append(make("h3","🏆 Campeón: "+room.winner_name));
+     list.append(card);
+   }else if(!data.matches.length){
      list.append(make("div","Todavía no se generaron los cruces. Cuando estén listos aparecerá tu contrincante.","item"));
    }else for(const match of data.matches){
      const card=make("div","","item team-private-match");
