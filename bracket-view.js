@@ -38,6 +38,7 @@
   host.replaceChildren();
   const matches=Array.isArray(info.matches)?info.matches:[];
   const rounds=Number(info.rounds)||0;
+  const bestOf=Number(info.final_best_of)===1?1:3;
   if(rounds<1||!matches.length){
     host.append(E("p","small","Aún no hay llaves. Aparecerán cuando el administrador genere los cruces."));
     return;
@@ -88,7 +89,7 @@
    if(match.winner)card.classList.add("champ-match-done");
    if(isBye)card.classList.add("champ-match-bye");
    const title=E("div","champ-match-header",
-     isFinal?"GRAN FINAL · BO3":"PARTIDA "+match.slot+(isBye?" · PASE":""));
+     isFinal?(bestOf===1?"GRAN FINAL · 1 PARTIDA":"GRAN FINAL · BO3"):"PARTIDA "+match.slot+(isBye?" · PASE":""));
    card.append(title);
    for(const [field,letter] of [["team_a","A"],["team_b","B"]]){
     const id=match[field];
@@ -109,7 +110,7 @@
     card.append(line);
    }
    if(isFinal&&!match.winner&&match.team_a&&match.team_b){
-    const p=E("div","champ-match-footer","Primero en ganar 2 partidas");
+    const p=E("div","champ-match-footer",bestOf===1?"Ganador de esta partida = campeón":"Primero en ganar 2 partidas");
     card.append(p);
    }else if(isFinal&&match.winner){
     card.append(E("div","champ-match-footer","🏆 CAMPEÓN"));

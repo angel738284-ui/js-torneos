@@ -210,6 +210,7 @@ function applyTournamentCapacity(){
  const br=$("tourMode").value==="BR";
  show("brFormatWrap",br);
  $("teamSize").disabled=br;$("maxTeams").disabled=br;
+ show("finalBestOfCreateWrap",!br);
  const limit=$("maxTeams");
  for(const value of ["12","25","50"]){
   const opt=[...limit.options].find(o=>o.value===value);
@@ -303,11 +304,15 @@ $("create").onclick=async()=>{
  if(start && (!Number.isFinite(start.getTime()) || start.getTime()<Date.now()))
   return message("Elegí un día y una hora futuros.",true);
  const br=$("tourMode").value==="BR";
+ let newRules=$("rules").value.trim().slice(0,1500);
+ if(!br&&Number($("finalBestOfCreate").value)===1)
+  newRules=newRules.replace("> AL MEJOR DE 3 SOLO ULTIMA RONDA( FINAL)","> FINAL A UNA SOLA PARTIDA");
  const row={name,team_size:Number($("teamSize").value),max_teams:Number($("maxTeams").value),
  mode:$("tourMode").value==="OTRA"?$("customMode").value.trim().slice(0,60):$("tourMode").value,
  br_format:br?$("brFormat").value:null,requires_substitute:$("requireSub").checked,
+ final_best_of:Number($("finalBestOfCreate").value),
  allowed_region:$("allowedRegion").value,
- starts_at:start?start.toISOString():null,rules:$("rules").value.trim().slice(0,1500),created_by:user.id};
+ starts_at:start?start.toISOString():null,rules:newRules,created_by:user.id};
  $("create").disabled=true;
  try{const {data,error}=await db.from("js_tournaments").insert(row).select().single();if(error)throw error;
   $("tourName").value="";initializeDayPicker();resetNewTournamentRules();message("Torneo creado. Código: "+data.code);await loadTours();await openTour(data.id,true);
@@ -362,6 +367,18 @@ async function openTour(id,resetTab=false){
  $("startBracket").title=t.mode==="BR"?"BR no utiliza llaves eliminatorias 1vs1":"";
  $("archiveTour").classList.toggle("hidden",t.status==="finished"||!!t.archived_at);
  $("restoreTour").classList.toggle("hidden",!t.archived_at||t.status==="finished");
+ const isBR=t.mode==="BR";
+ const firstFinal=(Number(t.final_best_of)===1);
+ $("finalBestOfSettings").classList.toggle("hidden",isBR);
+ $("finalBestOfDetail").value=firstFinal?"1":"3";
+ $("finalBestOfDetail").disabled=t.status==="finished";
+ $("finalBestOfHint").textContent=t.status==="finished"?
+  "Torneo finalizado: el formato ya no se puede modificar.":
+  "El formato se bloquea después de registrar el primer resultado de la final.";
+ $("saveFinalBestOf").disabled=t.status==="finished"||isBR;
+ $("eliminationFormatHelp").textContent=firstFinal?
+  "Las rondas anteriores y la final se juegan a una partida. Ganar una vez en la final define al campeón.":
+  "Las rondas anteriores son a una partida. La final es al mejor de 3: gana quien alcance dos victorias.";
  $("detailPrizeKind").value=t.prize_kind||"ninguno";
  $("detailPrizeQty").value=t.prize_quantity>0?t.prize_quantity:1;
  $("detailRulesPreview").parentElement.dataset.mode=t.mode||"";
@@ -534,6 +551,31 @@ $("saveExistingRules").onclick=async()=>{
  }catch(e){message("No se pudieron guardar las reglas: "+e.message,true);}
  finally{b.disabled=false;}
 };
+$("saveFinalBestOf").onclick=async()=>{
+ if(!opened||opened.mode==="BR")return;
+ const id=opened.id;
+ const best=Number($("finalBestOfDetail").value);
+ if(![1,3].includes(best))return message("Formato de final inválido.",true);
+ if(best===Number(opened.final_best_of||3))return message("Ese formato ya está guardado.");
+ const played=matchCache.some(m=>m.round===opened.rounds&&opened.rounds>0&&
+   (m.winner||Number(m.final_wins_a)>0||Number(m.final_wins_b)>0))||finalGameCache.length>0;
+ if(opened.status==="finished"||played)return message("La final ya empezó a registrar resultados. No se puede cambiar el formato.",true);
+ if(!await askConfirm("¿Cambiar la final de "+opened.name+" a "+(best===1?"UNA sola partida":"MEJOR DE 3")+"? "+
+  "El próximo resultado de la final se resolverá según esta modalidad."))return;
+ const button=$("saveFinalBestOf");button.disabled=true;
+ try{
+  const update={final_best_of:best};
+  if(best===1&&opened.rules?.includes("> AL MEJOR DE 3 SOLO ULTIMA RONDA( FINAL)"))
+   update.rules=opened.rules.replace("> AL MEJOR DE 3 SOLO ULTIMA RONDA( FINAL)","> FINAL A UNA SOLA PARTIDA");
+  else if(best===3&&opened.rules?.includes("> FINAL A UNA SOLA PARTIDA"))
+   update.rules=opened.rules.replace("> FINAL A UNA SOLA PARTIDA","> AL MEJOR DE 3 SOLO ULTIMA RONDA( FINAL)");
+  const {error}=await db.from("js_tournaments").update(update).eq("id",id);
+  if(error)throw error;
+  await openTour(id);await loadTours();
+  message("✅ Final configurada a "+(best===1?"una sola partida":"mejor de 3")+".");
+ }catch(e){message("No se pudo guardar el formato: "+(e.message||String(e)),true);}
+ finally{button.disabled=false;}
+};
 $("savePrize").onclick=async()=>{
  if(!opened)return;
  let award;try{award=prizeInput("detailPrizeKind","detailPrizeQty","detailPrizeDetails")}catch(e){return message(e.message,true)}
@@ -610,6 +652,7 @@ function drawMatches(){
  const area=$("matchList");area.replaceChildren();
  window.JSBracket.render($("bracketVisual"),{
    rounds:opened?.rounds||0,matches:matchCache,teams:teamCache,
+   final_best_of:opened?.final_best_of||3,
    onMatchSelect:m=>{
      $("matchDetails").open=true;
      const target=document.getElementById("match-editor-"+m.id);
@@ -625,11 +668,14 @@ function drawMatches(){
  for(let round=1;round<=opened.rounds;round++){
   const isFinal=round===opened.rounds;
   const heading=document.createElement("h3");
-  heading.textContent=isFinal?"🏆 Final — al mejor de 3":round===opened.rounds-1?"Semifinales":"Ronda "+round;
+  const oneFinal=Number(opened.final_best_of)===1;
+  heading.textContent=isFinal?(oneFinal?"🏆 Final — 1 partida":"🏆 Final — al mejor de 3"):round===opened.rounds-1?"Semifinales":"Ronda "+round;
   heading.style.marginTop="18px";area.append(heading);
   if(isFinal){
    const help=document.createElement("p");help.className="small";
-   help.textContent="Gana la final el primer equipo que consiga 2 victorias. Registrá quién ganó cada partida.";
+   help.textContent=oneFinal?
+     "Una sola partida: el equipo que gane se convierte inmediatamente en campeón.":
+     "Gana la final el primer equipo que consiga 2 victorias. Registrá quién ganó cada partida.";
    area.append(help);
   }
   for(const m of matchCache.filter(x=>x.round===round)){
@@ -659,7 +705,7 @@ function drawMatches(){
     title.className="final-label";
     title.textContent=legacy?"🏆 Final histórica — resultado registrado":
        m.winner?"🏆 FINAL TERMINADA":
-       m.team_a&&m.team_b?"🔥 Partida "+(played+1)+" de hasta 3":"Esperando finalistas";
+       m.team_a&&m.team_b?(oneFinal?"🔥 FINAL · PARTIDA ÚNICA":"🔥 Partida "+(played+1)+" de hasta 3"):"Esperando finalistas";
     el.append(title);
     const score=document.createElement("div");score.className="final-scoreboard";
     for(const [key,label,wins] of [["team_a","A",scoreA],["team_b","B",scoreB]]){
@@ -673,7 +719,7 @@ function drawMatches(){
       col.append(tag,name,number);
       if(m[key]&&m.team_a&&m.team_b&&!m.winner&&opened.status!=="finished"){
         const btn=document.createElement("button");btn.className="good";
-        btn.textContent="Ganó partida "+(played+1);
+        btn.textContent=oneFinal?"🏆 Ganó la final":"Ganó partida "+(played+1);
         btn.disabled=savingFinalGame;
         btn.onclick=()=>recordFinalGame(m,m[key]);
         col.append(btn);
@@ -683,8 +729,9 @@ function drawMatches(){
     el.append(score);
     if(!legacy){
       const line=document.createElement("div");line.className="final-progress";
-      line.textContent=m.winner?"✅ Campeón definido por 2 victorias":
-       m.team_a&&m.team_b?"Marcador "+scoreA+" – "+scoreB+" · Primer equipo en llegar a 2 gana":"Los dos finalistas aparecerán al terminar las semifinales";
+      line.textContent=m.winner?(oneFinal?"✅ Campeón definido en una partida":"✅ Campeón definido por 2 victorias"):
+       m.team_a&&m.team_b?(oneFinal?"El ganador de esta partida es campeón":"Marcador "+scoreA+" – "+scoreB+" · Primer equipo en llegar a 2 gana"):
+       "Los dos finalistas aparecerán al terminar las semifinales";
       el.append(line);
     }
     const history=finalGameCache.filter(g=>g.match_id===m.id);
@@ -712,7 +759,8 @@ function drawMatches(){
   const name=document.createElement("div");name.style.cssText="font-size:29px;font-weight:900;margin:8px 0;overflow-wrap:anywhere";name.textContent=names[finalMatch.winner]||"Equipo ganador";
   const score=document.createElement("div");score.style.cssText="color:#d9e9fa;font-size:16px;font-weight:800;margin-bottom:7px";
   const hasScores=(Number(finalMatch.final_wins_a)||0)+(Number(finalMatch.final_wins_b)||0)>0;
-  score.textContent=hasScores?"Ganó la final "+finalMatch.final_wins_a+" – "+finalMatch.final_wins_b+" (mejor de 3)":"Final registrada anteriormente";
+  score.textContent=hasScores?"Ganó la final "+finalMatch.final_wins_a+" – "+finalMatch.final_wins_b+
+     (Number(opened.final_best_of)===1?" (partida única)":" (mejor de 3)"):"Final registrada anteriormente";
   const prize=document.createElement("div");prize.style.cssText="color:#b3ddce;font-size:14px";prize.textContent=prizeText(opened);
   box.append(heading,name,score,prize);
  }else box.classList.add("hidden");
@@ -724,7 +772,10 @@ async function recordFinalGame(match,winner){
  const n=(Number(match.final_wins_a)||0)+(Number(match.final_wins_b)||0)+1;
  const tournamentId=opened.id;
  try{
-  if(!await askConfirm("¿Confirmás que "+name+" ganó la PARTIDA "+n+" de la final?\nSe sumará 1 victoria. La final termina cuando alguien gana 2 partidas."))return;
+  const oneFinal=Number(opened.final_best_of)===1;
+  if(!await askConfirm(oneFinal?
+    "¿Confirmás que "+name+" ganó la FINAL a 1 partida?\nEl torneo terminará y se declarará campeón inmediatamente.":
+    "¿Confirmás que "+name+" ganó la PARTIDA "+n+" de la final?\nSe sumará 1 victoria. La final termina cuando alguien gana 2 partidas."))return;
   const {data,error}=await db.rpc("js_report_final_game",{p_match:match.id,p_winner:winner});
   if(error)throw error;
   if(!data?.ok)throw new Error("El servidor no confirmó la partida");
@@ -761,6 +812,7 @@ $("copyBracketLink").onclick=()=>{
 };
 function updateMaxTeamsHint(){
  const n=Number($("maxTeams").value);
+ const finalLabel=Number($("finalBestOfCreate").value)===1?"una sola partida":"mejor de 3";
  const hint={
    2:"2 equipos: final directa al mejor de 3.",
    4:"4 equipos: semifinales y final al mejor de 3.",
@@ -771,9 +823,11 @@ function updateMaxTeamsHint(){
  };
  $("maxTeamsHint").textContent=$("tourMode").value==="BR"?
  ({solo:"BR Solo: hasta 50 jugadores.",duo:"BR Dúo: hasta 25 dúos (50 jugadores).",escuadra:"BR Escuadra: hasta 12 escuadras (48 jugadores)."}[$("brFormat").value]||"BR"):
- (hint[n]||"Formato eliminatorio");
+ (hint[n]||"Formato eliminatorio").replaceAll("mejor de 3",finalLabel)+
+ " · FINAL: "+finalLabel;
 }
 $("maxTeams").onchange=updateMaxTeamsHint;
+$("finalBestOfCreate").onchange=updateMaxTeamsHint;
 applyTournamentCapacity();
 resetNewTournamentRules();
 initializeDayPicker();

@@ -1,7 +1,7 @@
 {
-  "version_code": 35,
-  "version_name": "0.6.3",
-  "apk_url": "https://angel738284-ui.github.io/js-torneos/updates/JS-TORNEOS-v0.6.3.apk",
-  "sha256": "afe179acf42bd0afe19ef0264434ba4a692aebb0551679cb6428e3dad9b6e05e",
-  "notes": "Elegí la región permitida de Free Fire al crear cada torneo (SAC, NAC, US y otras). El verificador rechaza IDs de regiones distintas al comprobarlos y Supabase también bloquea las inscripciones, suplentes y lista de espera incompatibles. Sin modificar torneos previos."
+  "version_code": 36,
+  "version_name": "0.6.4",
+  "apk_url": "https://angel738284-ui.github.io/js-torneos/updates/JS-TORNEOS-v0.6.4.apk",
+  "sha256": "30980ec0e129e0775a61bed01dbd2ff839d51806afb0656c82a67f82e31d004a",
+  "notes": "Elegí si la FINAL de torneos eliminatorios se juega a una sola partida o al mejor de 3; configurala al crear o desde Ajustes mientras no haya resultados de la final. Una victoria termina la final BO1; dos victorias ganan la BO3. Las llaves y el enlace de inscripción muestran el formato correcto."
 }

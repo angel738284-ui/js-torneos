@@ -21,7 +21,7 @@
        throw Error("El servidor devolvió datos incompletos");
      activeCode=code;
      $("publicTitle").textContent=data.name;
-     $("publicMode").textContent=data.mode+" · "+data.max_teams+" equipos";
+     $("publicMode").textContent=data.mode+" · "+data.max_teams+" equipos · Final "+(Number(data.final_best_of)===1?"1 partida":"mejor de 3");
      $("publicStatus").textContent=data.status==="finished"?"Finalizado":
         data.status==="open"?"Inscripciones abiertas":"Inscripciones cerradas";
      if(data.mode==="BR"){

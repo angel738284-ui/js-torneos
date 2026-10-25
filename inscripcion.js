@@ -177,8 +177,10 @@ async function loadTournament(){
   // El reglamento se despliega con una flecha clara, sin recortar su parte inferior.
   setRulesExpanded(false);
   show("rulesToggle",hasRules);
-  const finalMentioned=/al mejor de 3 solo ultima ronda\(\s*final\s*\)/i.test(data.rules||"");
-  show("finalPublicInfo",data.mode!=="BR"&&!finalMentioned);
+  $("finalPublicInfo").textContent=Number(data.final_best_of)===1?
+   "🏆 FINAL: UNA sola partida. Quien gane se consagra campeón.":
+   "🏆 FINAL: al mejor de 3. El primer equipo en ganar 2 partidas es campeón.";
+  show("finalPublicInfo",data.mode!=="BR");
   show("publicBracketLink",data.mode!=="BR");
   const n=Number(data.prize_quantity)||0;
   const unit=data.prize_kind==="diamantes"?"diamantes 💎":data.prize_kind==="pases"?"pase(s) 🎟️":"premio(s)";
