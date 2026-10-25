@@ -306,6 +306,7 @@ $("create").onclick=async()=>{
  const row={name,team_size:Number($("teamSize").value),max_teams:Number($("maxTeams").value),
  mode:$("tourMode").value==="OTRA"?$("customMode").value.trim().slice(0,60):$("tourMode").value,
  br_format:br?$("brFormat").value:null,requires_substitute:$("requireSub").checked,
+ allowed_region:$("allowedRegion").value,
  starts_at:start?start.toISOString():null,rules:$("rules").value.trim().slice(0,1500),created_by:user.id};
  $("create").disabled=true;
  try{const {data,error}=await db.from("js_tournaments").insert(row).select().single();if(error)throw error;
@@ -344,7 +345,8 @@ async function loadTours(){
 async function openTour(id,resetTab=false){
  if(opened?.id!==id)$("teamSearch").value="";
  const {data:t,error}=await db.from("js_tournaments").select("*").eq("id",id).single();if(error)return message(error.message,true);
- opened=t;$("absenceMinutes").value=String(t.absence_minutes||10);navigate("detail");chooseTourTab(resetTab?"teams":currentTourTab);$("detailName").textContent=t.name;$("detailCode").textContent=t.code;
+ opened=t;$("absenceMinutes").value=String(t.absence_minutes||10);
+ $("detailRegion").textContent="🌎 Región permitida: "+(t.allowed_region||"SAC");navigate("detail");chooseTourTab(resetTab?"teams":currentTourTab);$("detailName").textContent=t.name;$("detailCode").textContent=t.code;
  $("detailStatus").textContent={open:"Inscripción abierta",closed:"Inscripción cerrada",finished:"Torneo finalizado"}[t.status];
  $("detailStatus").className="tag"+(t.status!=="open"?" closed":"");
  $("detailMeta").textContent=`${t.team_size}vs${t.team_size} · máximo ${t.max_teams} equipos`+(t.starts_at?" · "+new Date(t.starts_at).toLocaleString("es-AR"):"");

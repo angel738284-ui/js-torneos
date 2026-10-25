@@ -1,7 +1,7 @@
 {
-  "version_code": 34,
-  "version_name": "0.6.2",
-  "apk_url": "https://angel738284-ui.github.io/js-torneos/updates/JS-TORNEOS-v0.6.2.apk",
-  "sha256": "c53eaec2eb873b4c22b30ae0f82275a881c2279bc60def440a0d9b5e86c3da23",
-  "notes": "Nuevo buscador dentro de cada torneo: comprobá inscripciones por ID de Free Fire, nombre de jugador o nombre de equipo. Filtrado inmediato y estado de inscripción o descalificación. Sin tocar inscripciones ni los bloqueos."
+  "version_code": 35,
+  "version_name": "0.6.3",
+  "apk_url": "https://angel738284-ui.github.io/js-torneos/updates/JS-TORNEOS-v0.6.3.apk",
+  "sha256": "afe179acf42bd0afe19ef0264434ba4a692aebb0551679cb6428e3dad9b6e05e",
+  "notes": "Elegí la región permitida de Free Fire al crear cada torneo (SAC, NAC, US y otras). El verificador rechaza IDs de regiones distintas al comprobarlos y Supabase también bloquea las inscripciones, suplentes y lista de espera incompatibles. Sin modificar torneos previos."
 }
