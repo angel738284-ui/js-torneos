@@ -1,7 +1,7 @@
 {
-  "version_code": 16,
-  "version_name": "1.6.2",
-  "apk_url": "https://angel738284-ui.github.io/js-torneos/updates/JS-TORNEOS-JUGADORES-v1.6.2.apk",
-  "sha256": "07bf55a77e71c5fad2ead18a33b66f3bb2c7f9eaa5417423b0dfece87ea26235",
-  "notes": "Se corrigió la bienvenida que quedaba en Preparando tu cuenta. Ahora recupera el perfil Google verificado sin bloquear la pantalla, sincroniza el servidor por separado y permite reintentar si falla la conexión. Se conservan torneos, amigos, avisos e inscripciones."
+  "version_code": 17,
+  "version_name": "1.6.3",
+  "apk_url": "https://angel738284-ui.github.io/js-torneos/updates/JS-TORNEOS-JUGADORES-v1.6.3.apk",
+  "sha256": "95974a844dd0c4d72f4ad7e77c355cf67d539eb6f0609aa9abdf100a3b3378a6",
+  "notes": "Mis torneos detecta todas las inscripciones vinculadas al ID de Free Fire verificado en Google, incluso si te anotaste desde un enlace. Abre Mis torneos al iniciar con inscripciones activas; muestra rival y datos de sala BY/PVP sin código privado (solo durante la ventana habilitada), o sala general BR. Incluye Actualizar y oculta credenciales vencidas."
 }
