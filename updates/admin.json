@@ -1,7 +1,7 @@
 {
-  "version_code": 28,
-  "version_name": "0.4.6",
-  "apk_url": "https://angel738284-ui.github.io/js-torneos/updates/JS-TORNEOS-v0.4.6.apk",
-  "sha256": "a4b0327260ffddf91aa55ebc9af11a6f95507793d7806a880ad3d5a1621397bb",
-  "notes": "Nuevo icono JS Family con trofeo e Itachi 456. Actualizaciones desde la aplicación, mejoras de estabilidad y seguridad."
+  "version_code": 29,
+  "version_name": "0.4.7",
+  "apk_url": "https://angel738284-ui.github.io/js-torneos/updates/JS-TORNEOS-v0.4.7.apk",
+  "sha256": "decf28b96a4e6bc0a57b415bf2ac2ae63d3bb0a795fd28d9c8bd70b672fff5a6",
+  "notes": "Como administrador, ahora podés ver cuántos integrantes confirmaron Estoy listo en cada enfrentamiento. Se mantienen inscripciones, cruces y reemplazos."
 }
