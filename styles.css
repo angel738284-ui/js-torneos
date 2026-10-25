@@ -197,3 +197,17 @@ button,.button{cursor:pointer;display:inline-flex;justify-content:center;align-i
 #brRoomPanel .br-shared-status{background:#153f38;border:1px solid #367c69;padding:13px;border-radius:12px;font-weight:750;font-size:13px;line-height:1.6}
 .js-br-room{border:1px solid #4b907e;border-radius:16px;background:#152b35;padding:17px;margin:12px 0}
 .js-br-secret{border:1px solid #488975;padding:11px;border-radius:12px;background:#0a1926;white-space:pre-wrap;overflow-wrap:anywhere;font-size:19px;font-weight:850}
+
+/* JS Torneos · moderación privada por ID de Free Fire */
+.ban-summary{font-weight:900;font-size:17px;color:#ffb8c2;cursor:pointer;padding:6px 0}
+#banManageDetails>.small{margin:10px 0 18px}
+.ban-fields{padding:14px;background:#101b30;border:1px solid #3e516b;border-radius:14px}
+.ban-fields label{display:block;font-size:13px;font-weight:800;margin:11px 0 6px}
+.ban-fields input,.ban-fields textarea,.ban-fields select{width:100%;font:inherit;color:inherit;
+ background:#0c1526;border:1px solid #465b78;border-radius:11px;padding:11px}
+.ban-entry,.ban-history-entry{border:1px solid #4d596d;background:#1d2536;border-radius:13px;
+ padding:13px;margin:9px 0}
+.ban-entry strong{color:#ffb8c2}.ban-entry p,.ban-history-entry p{overflow-wrap:anywhere;margin:8px 0}
+.ban-entry button{margin-top:7px}
+.ban-history{margin:14px 0;border-top:1px solid #364965;padding-top:12px}
+.ban-history>summary{color:#b6cbe4;cursor:pointer;font-weight:800}

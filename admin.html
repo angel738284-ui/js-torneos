@@ -1,4 +1,4 @@
-<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#0b111c"><title>JS Torneos · Administrador</title><link rel="stylesheet" href="styles.css?v=0.6.0"><link rel="stylesheet" href="bracket-view.css?v=0.3.5"></head><body>
+<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#0b111c"><title>JS Torneos · Administrador</title><link rel="stylesheet" href="styles.css?v=0.6.1"><link rel="stylesheet" href="bracket-view.css?v=0.3.5"></head><body>
 <div class="wrap"><header><div class="brand"><div class="logo">JS</div><div><div class="eyebrow">JS FAMILY</div><h1>JS Torneos</h1><div class="small">Panel privado de administrador</div></div></div><div style="display:flex;gap:7px;align-items:center;flex-wrap:wrap">
 <button id="checkAppUpdate" class="ghost" type="button" style="display:none">🔄 Actualizar app</button>
 <button id="logout" class="ghost hidden">Salir</button></div></header>
@@ -12,6 +12,33 @@
 </div>
 <div class="panel"><div class="row"><h2>Torneos activos</h2><button id="refresh" class="secondary">↻ Actualizar</button></div><div id="tours" class="rowlist"><p class="muted">Cargando...</p></div></div>
 <div class="panel"><div class="row"><h2>🏆 Torneos jugados / Historial</h2></div><p class="small">Los finalizados aparecen acá automáticamente. Podés archivar otros para ocultarlos de la lista activa.</p><div id="historyTours" class="rowlist">Cargando historial…</div></div>
+<div class="panel" id="adminBansPanel">
+<details id="banManageDetails">
+<summary class="ban-summary">🚫 Moderación y bloqueos · <span id="banActiveCount">0</span> activos</summary>
+<p class="small">Este control es privado del administrador. Bloquear un ID de Free Fire evita que se inscriba en torneos nuevos, incluidos BR, BY, PVP y lista de espera. No borra partidas ni inscripciones anteriores.</p>
+<div class="ban-fields">
+<label for="banGameId">ID de Free Fire a bloquear</label>
+<input id="banGameId" type="text" inputmode="numeric" maxlength="16" autocomplete="off" placeholder="ID numérico del jugador">
+<label for="banReason">Motivo de la sanción</label>
+<textarea id="banReason" maxlength="280" rows="3" placeholder="Ej. Reincidencia en incumplimiento de las reglas (indicar lo ocurrido)" style="width:100%"></textarea>
+<label for="banDuration">Duración</label>
+<select id="banDuration">
+<option value="1">1 día</option>
+<option value="7" selected>7 días</option>
+<option value="30">30 días</option>
+<option value="90">90 días</option>
+<option value="365">1 año</option>
+<option value="permanent">Permanente · hasta desbloquear manualmente</option>
+</select>
+<button id="banSubmit" type="button" class="full" style="margin-top:14px">🚫 Bloquear jugador</button>
+<p id="banFeedback" class="small" role="status" aria-live="polite"></p>
+</div>
+<div class="divider"></div>
+<div class="row wraprow"><h3>Jugadores bloqueados</h3><button id="banRefresh" class="secondary" type="button">↻ Actualizar</button></div>
+<div id="bannedPlayerList" class="rowlist"><p class="small">Cargando bloqueos…</p></div>
+<details class="ban-history"><summary>📜 Ver bloqueos vencidos y levantados</summary><div id="banHistoryList" class="rowlist"></div></details>
+</details>
+</div>
 </div>
 <div id="createScreen" class="hidden">
 <div class="row" style="margin-top:14px"><h2>Nuevo torneo</h2><button id="cancelCreate" type="button" class="ghost">← Volver</button></div>
@@ -82,4 +109,4 @@
 </div></div>
 <div class="divider"></div><h3>🎁 Premio del torneo</h3><div class="grid"><div><label>Tipo</label><select id="detailPrizeKind"><option value="ninguno">Sin premio</option><option value="diamantes">Diamantes 💎</option><option value="pases">Pases 🎟️</option><option value="otro">Otro</option></select></div><div><label>Cantidad</label><input id="detailPrizeQty" type="number" min="1" max="10000000" value="1"></div></div><label>Descripción</label><input id="detailPrizeDetails" maxlength="160" placeholder="Ej. 2 Booyah Pass"><button id="savePrize" class="secondary" style="margin:12px 0">Guardar premio</button><div class="divider"></div><div class="controls"><button id="archiveTour" class="secondary">Archivar torneo</button><button id="restoreTour" class="secondary hidden">Restaurar torneo</button><button id="deleteTour" class="ghost">🗑️ Eliminar definitivamente</button></div></div>
 </div>
-</section></div><script src="config.js"></script><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script><script src="rules-format.js?v=0.3.4"></script><script src="rules-presets.js?v=0.3.4"></script><script src="bracket-view.js?v=0.3.5"></script><script src="attendance-admin.js?v=0.5.1"></script><script src="resultados-admin.js?v=0.4.4"></script><script src="admin-roster.js?v=0.4.6"></script><script src="admin-waitlist.js?v=0.5.0"></script><script src="admin-br.js?v=0.6.0"></script><script src="admin.js?v=0.6.0"></script><script src="admin-extra.js?v=0.5.1"></script><script>(function(){var button=document.getElementById("checkAppUpdate");if(window.JSUpdates&&typeof window.JSUpdates.checkForUpdates==="function"){button.style.display="inline-block";button.onclick=function(){window.JSUpdates.checkForUpdates()};}})();</script></body></html>
+</section></div><script src="config.js"></script><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script><script src="rules-format.js?v=0.3.4"></script><script src="rules-presets.js?v=0.3.4"></script><script src="bracket-view.js?v=0.3.5"></script><script src="attendance-admin.js?v=0.5.1"></script><script src="resultados-admin.js?v=0.4.4"></script><script src="admin-roster.js?v=0.4.6"></script><script src="admin-waitlist.js?v=0.5.0"></script><script src="admin-br.js?v=0.6.0"></script><script src="admin-bans.js?v=0.6.1"></script><script src="admin.js?v=0.6.1"></script><script src="admin-extra.js?v=0.5.1"></script><script>(function(){var button=document.getElementById("checkAppUpdate");if(window.JSUpdates&&typeof window.JSUpdates.checkForUpdates==="function"){button.style.display="inline-block";button.onclick=function(){window.JSUpdates.checkForUpdates()};}})();</script></body></html>

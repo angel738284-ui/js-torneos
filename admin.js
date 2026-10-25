@@ -153,7 +153,7 @@ async function checkUser(){
  if(error||!user){show("login",true);show("app",false);show("logout",false);return;}
  const {data:a,error:err}=await db.from("js_admins").select("uid").eq("uid",user.id).maybeSingle();
  if(err||!a){show("login",true);show("app",false);show("logout",true);message("Cuenta creada, pero todavía no autorizada. Agregá tu correo a js_admins desde Supabase SQL Editor.",true);return;}
- show("login",false);show("app",true);show("logout",true);navigate("homeScreen");await loadTours();
+ show("login",false);show("app",true);show("logout",true);navigate("homeScreen");await loadTours();window.JSAdminBans?.load();
 }
 $("detailPrizeKind").onchange=()=>prizeFormState("detailPrizeKind","detailPrizeQty","detailPrizeDetails");
 

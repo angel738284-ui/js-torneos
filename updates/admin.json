@@ -1,7 +1,7 @@
 {
-  "version_code": 32,
-  "version_name": "0.6.0",
-  "apk_url": "https://angel738284-ui.github.io/js-torneos/updates/JS-TORNEOS-v0.6.0.apk",
-  "sha256": "38ff2bf02de652597ce66b1df0942a042fc4ffd105677e727392a6f303858abf",
-  "notes": "Battle Royale ahora usa una sola sala general para todos: enviá una vez el ID y la contraseña, cerrá la sala cuando quieras y elegí un único campeón. BR ya no muestra llaves ni cruces; BY/PVP sigue igual."
+  "version_code": 33,
+  "version_name": "0.6.1",
+  "apk_url": "https://angel738284-ui.github.io/js-torneos/updates/JS-TORNEOS-v0.6.1.apk",
+  "sha256": "2d0c38f7f4b0867b11a86a510f7ff141d392e735b30f063bc50dcd91f1de73e5",
+  "notes": "Panel privado de Moderación: bloquear ID de Free Fire por 1, 7, 30, 90 o 365 días, o permanente. Historial de motivos y desbloqueo manual. Bloqueos aplican a nuevos registros y lista de espera sin borrar equipos existentes."
 }
