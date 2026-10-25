@@ -1,7 +1,7 @@
 {
-  "version_code": 29,
-  "version_name": "0.4.7",
-  "apk_url": "https://angel738284-ui.github.io/js-torneos/updates/JS-TORNEOS-v0.4.7.apk",
-  "sha256": "decf28b96a4e6bc0a57b415bf2ac2ae63d3bb0a795fd28d9c8bd70b672fff5a6",
-  "notes": "Como administrador, ahora podés ver cuántos integrantes confirmaron Estoy listo en cada enfrentamiento. Se mantienen inscripciones, cruces y reemplazos."
+  "version_code": 30,
+  "version_name": "0.5.0",
+  "apk_url": "https://angel738284-ui.github.io/js-torneos/updates/JS-TORNEOS-v0.5.0.apk",
+  "sha256": "419a3ed8ecc49b710ef9aba82901777d24243017743d90333e0a570e3ee4eaa4",
+  "notes": "Lista de espera para torneos llenos: ver la cola por orden de llegada, admitir el siguiente equipo cuando se libera un cupo y conservar sus jugadores verificados. Se mantienen inscripciones y cruces."
 }

@@ -147,8 +147,15 @@ async function loadTournament(){
   if(!res.ok)throw Error(data.error||"No se pudo buscar el torneo");
   tournament=data;
   show("tournament",true);
-  const available=data.status==="open"&&data.registered<data.max_teams;
-  show("form",available);show("success",false);
+  const canRegister=data.status==="open"&&data.queue_open===true;
+  const isFull=data.registered>=data.max_teams;
+  show("form",canRegister);show("success",false);
+  show("waitlistInfo",canRegister&&(isFull||data.waitlist_count>0));
+  show("waitlistLookup",canRegister&&(isFull||data.waitlist_count>0));
+  $("waitlistInfoText").textContent=isFull?
+    "Los cupos están completos, pero podés anotar a todo tu equipo en espera. Posiciones pendientes: "+(data.waitlist_count||0)+".":
+    "Hay "+data.waitlist_count+" equipo(s) en espera. Se respeta el orden de llegada.";
+  $("register").textContent=isFull||data.waitlist_count>0?"⏳ Anotarme en lista de espera":"Inscribir equipo";
   $("name").textContent=data.name;
   $("mode").textContent=data.mode==="BR"?("BR "+({solo:"Solo",duo:"Dúo",escuadra:"Escuadra"}[data.br_format]||"")+" · "+data.team_size+" titular(es)"):(data.mode||"PVP")+" · "+data.team_size+" vs "+data.team_size;
   $("slots").textContent=data.registered+" / "+data.max_teams+(data.mode==="BR"&&data.br_format==="solo"?" jugadores":" equipos");
@@ -179,9 +186,10 @@ async function loadTournament(){
     const row=makePlayerRow(i+1,false);
     starterRows.push(row);$("players").append(row.element);
   }
-  if(available&&minSub()===1)addSubstitute();
+  if(canRegister&&minSub()===1)addSubstitute();
   else updateSubButton();
-  if(!available)tell("El torneo está cerrado o ya no tiene cupos.",true);
+  if(!canRegister)tell("Este torneo ya cerró inscripciones o comenzó sus enfrentamientos.",true);
+  else if(isFull||data.waitlist_count>0)tell("⏳ Cupos completos o lista pendiente: podés verificar tus ID y anotarte en espera.");
   else tell("Torneo encontrado: verificá "+data.team_size+" titular(es). "+(minSub()?"Al menos un suplente obligatorio.":"No necesitás suplente."));
  }catch(e){
   tournament=null;resetRoster();show("form",false);show("tournament",false);
@@ -220,6 +228,15 @@ $("form").addEventListener("submit",async event=>{
   if(!/^JS-EQ-[A-HJ-NP-Z2-9]{20}$/.test(data.team_access_code||""))
     throw Error("La inscripción fue recibida pero el servidor no devolvió el código. Contactá al administrador, no vuelvas a inscribirte.");
   show("form",false);show("success",true);$("teamSuccess").textContent="Equipo: "+team;
+  const waiting=data.waitlisted===true;
+  $("successHeading").textContent=waiting?"⏳ ¡Anotado en lista de espera!":"✓ Equipo inscrito correctamente";
+  $("waitlistSuccessInfo").textContent=waiting?
+    "Tu equipo está en posición "+data.position+". Todavía no tiene un cupo confirmado. El administrador te podrá admitir cuando quede un lugar.":
+    "Tu equipo ya tiene un cupo confirmado.";
+  $("teamCodeDescription").textContent=waiting?
+    "Guardá este código privado: sirve para consultar tu posición. Si te admiten, el mismo código te permitirá entrar a Mi equipo y ver las salas.":
+    "Guardá este código. Lo necesitás para consultar el rival y los datos de sala.";
+  show("privatePanelAccess",!waiting);
   $("teamCode").value=data.team_access_code;
   const list=$("playersSuccess");list.replaceChildren();
   for(const p of data.players||[]){
@@ -227,12 +244,39 @@ $("form").addEventListener("submit",async event=>{
     li.textContent=(p.role==="suplente"?"🔁 Suplente · ":"Titular · ")+p.nickname+" · ID "+p.id+" · "+p.region;
     list.append(li);
   }
-  tell("¡Inscripción confirmada! "+starterRows.length+" titulares y "+substituteRows.length+" suplentes.");
+  $("waitlistPrivate").value=data.team_access_code;
+  show("waitlistLookup",waiting);
+  if(waiting)tell("⏳ Lista de espera confirmada. Posición "+data.position+". Guardá tu código privado.");
+  else tell("¡Inscripción confirmada! "+starterRows.length+" titulares y "+substituteRows.length+" suplentes.");
  }catch(e){
   tell(e.message||"Error al inscribir el equipo",true);
   window.turnstile?.reset?.();
- }finally{btn.disabled=false;btn.textContent="Inscribir equipo";}
+ }finally{btn.disabled=false;btn.textContent=tournament&&(tournament.registered>=tournament.max_teams||tournament.waitlist_count>0)?"⏳ Anotarme en lista de espera":"Inscribir equipo";}
 });
+
+$("waitlistCheck").onclick=async()=>{
+ if(!tournament)return;
+ const access=$("waitlistPrivate").value.trim().toUpperCase();
+ if(!/^JS-EQ-[A-HJ-NP-Z2-9]{20}$/.test(access)){
+  $("waitlistResult").textContent="Ingresá el código privado completo.";
+  return;
+ }
+ $("waitlistCheck").disabled=true;
+ try{
+  const result=await fetch(endpoint,{method:"POST",headers:{"content-type":"application/json"},
+   body:JSON.stringify({action:"waitlist_status",code:tournament.code,team_access_code:access})});
+  const data=await result.json();
+  if(!result.ok)throw Error(data.error||"No se encontró esta inscripción");
+  const status=data.status==="waiting"?
+   "⏳ "+data.team+" · Posición actual: "+data.position+". Tu equipo todavía espera un cupo.":
+   data.status==="admitted"?
+   "✅ ¡"+data.team+" fue admitido! Ya podés utilizar este mismo código en Mi equipo.":
+   "❌ La inscripción en espera fue retirada. Consultá con el organizador.";
+  $("waitlistResult").textContent=status;
+  if(data.status==="admitted")show("privatePanelAccess",true);
+ }catch(e){$("waitlistResult").textContent="⚠️ "+e.message;}
+ finally{$("waitlistCheck").disabled=false;}
+};
 
 // Protección adicional opcional para inscripciones públicas con Cloudflare Turnstile.
 if(config.turnstileSiteKey){

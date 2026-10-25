@@ -403,6 +403,8 @@ async function loadTeamsMatches(){if(!opened)return;
  }
  $("teamList").append(el);
  }
+ if(window.JSAdminWaitlist)await window.JSAdminWaitlist.render(db,opened,a.data,c.data,
+  async text=>{await loadTeamsMatches();message(text);});
  drawMatches();
 }
 async function deleteTeamCompletely(team){
