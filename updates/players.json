@@ -1,7 +1,7 @@
 {
-  "version_code": 8,
-  "version_name": "1.3.1",
-  "apk_url": "https://angel738284-ui.github.io/js-torneos/updates/JS-TORNEOS-JUGADORES-v1.3.1.apk",
-  "sha256": "79d88fd434f1c4d0007186c71ae493e30dd2ec9ab0c49f7c1b20270fa3c688bc",
-  "notes": "Nuevas listas de espera: si un torneo se llena podés anotar tu equipo en espera, guardar el código privado y consultar tu posición. Se mantienen Google, perfil y torneos."
+  "version_code": 9,
+  "version_name": "1.4.0",
+  "apk_url": "https://angel738284-ui.github.io/js-torneos/updates/JS-TORNEOS-JUGADORES-v1.4.0.apk",
+  "sha256": "f58f59ff4b83709337c1e5409e939ba6e1aca018c55187f40cf0dab76091ba8d",
+  "notes": "Historial de avisos automáticos privados de cruces, salas, prórrogas, resultados, horarios y lista de espera. Los avisos se sincronizan al abrir o mantener la app activa. Se mantienen Google, perfil y torneos."
 }
