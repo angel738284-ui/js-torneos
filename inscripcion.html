@@ -1,6 +1,36 @@
-<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#0b111c"><title>JS Torneos · Inscripción</title><link rel="stylesheet" href="styles.css"></head><body><div class="wrap"><header><div class="brand"><div class="logo">JS</div><div><div class="eyebrow">JS FAMILY</div><h1>Inscripciones</h1><div class="small">Torneos Free Fire LATAM</div></div></div></header>
-<div id="notice" class="status" role="status"></div>
-<div class="panel"><p class="small"><a class="link" href="equipo.html">🔐 ¿Ya te inscribiste? Consultá acá tu rival y los datos de la sala.</a></p></div><div class="panel"><label>Código del torneo</label><div class="row"><input class="grow" id="code" maxlength="11" placeholder="JS-A12B34CD"><button id="find" class="secondary">Buscar</button></div><div id="tournament" class="hidden"><div class="divider"></div><h2 id="name"></h2><div class="row wraprow"><span class="tag" id="mode"></span><span class="tag" id="slots"></span></div><p class="small" id="date"></p>
+<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#0b111c"><title>JS Torneos · Inscripción</title><link rel="stylesheet" href="https://angel738284-ui.github.io/js-torneos/styles.css?v=0.6.4"></head><body><div class="wrap"><header><div class="brand"><div class="logo">JS</div><div><div class="eyebrow">JS FAMILY</div><h1>Inscripciones</h1><div class="small">Torneos Free Fire LATAM</div></div></div></header>
+<div class="panel" id="js-web-access" style="background:linear-gradient(135deg,#132a34,#161d34);border:1px solid #4e9b89">
+<h2>🌐 Participá sin instalar ninguna app</h2>
+<p class="small">Elegí cómo querés participar. Con cuenta guardás tus torneos y códigos privados; sin cuenta te inscribís normalmente y tenés que guardar el código que recibís.</p>
+<div id="js-web-login" style="display:grid;gap:10px">
+<button type="button" id="js-web-google" class="secondary full">🔑 Entrar con Google</button>
+<details id="js-web-email-details" style="border:1px solid #445d75;border-radius:13px;padding:12px">
+<summary style="font-weight:800;cursor:pointer">✉️ Entrar con correo electrónico</summary>
+<label for="js-web-email">Correo</label><input id="js-web-email" type="email" placeholder="tunombre@correo.com" autocomplete="email">
+<label for="js-web-password">Contraseña (mínimo 8 caracteres)</label><input id="js-web-password" type="password" placeholder="Contraseña segura" autocomplete="current-password">
+<div class="row wraprow" style="gap:10px;margin-top:10px"><button type="button" class="secondary" id="js-web-signin">Iniciar sesión</button>
+<button type="button" id="js-web-signup" class="secondary">Crear cuenta</button></div>
+<p class="small">Al registrarte, confirmá el mensaje que llegue a tu correo y regresá a iniciar sesión. No uses la contraseña de Free Fire.</p>
+</details>
+<button id="js-web-guest" type="button" class="secondary full">👤 Continuar sin cuenta · guardaré mi código</button>
+</div>
+<div id="js-web-profile" style="display:none">
+<p id="js-web-identity" class="small"></p>
+<div id="js-web-profile-id">
+<label for="js-web-game-id">ID de Free Fire para vincular tus torneos</label>
+<input id="js-web-game-id" inputmode="numeric" maxlength="16" placeholder="Tu ID numérico de Free Fire">
+<button type="button" id="js-web-verify" class="secondary full" style="margin-top:8px">🔎 Verificar y guardar mi ID</button>
+</div>
+<div class="row wraprow" style="margin:12px 0;gap:10px">
+<button type="button" class="secondary" id="js-web-saved-refresh">🔄 Mis códigos guardados</button>
+<button type="button" class="ghost" id="js-web-logout">Salir de la cuenta</button>
+</div>
+<div id="js-web-saved"></div>
+</div>
+<p id="js-web-message" class="small" role="status" aria-live="polite"></p>
+<a href="https://angel738284-ui.github.io/js-torneos/torneos.html" class="link">🏆 Ver todos los torneos y mi perfil web</a>
+</div><div id="notice" class="status" role="status"></div>
+<div class="panel"><p class="small"><a class="link" href="https://angel738284-ui.github.io/js-torneos/equipo.html">🔐 ¿Ya te inscribiste? Consultá acá tu rival y los datos de la sala.</a></p></div><div class="panel"><label>Código del torneo</label><div class="row"><input class="grow" id="code" maxlength="11" placeholder="JS-A12B34CD"><button id="find" class="secondary">Buscar</button></div><div id="tournament" class="hidden"><div class="divider"></div><h2 id="name"></h2><div class="row wraprow"><span class="tag" id="mode"></span><span class="tag" id="slots"></span></div><p class="small" id="date"></p>
 <div id="regionRule" class="item" style="margin:12px 0;border:1px solid #488d7f;background:#122a31">
 <strong id="regionRuleTitle">🌎 Región permitida: SAC</strong>
 <p id="regionRuleNote" class="small" style="margin:6px 0 0">Este torneo solo admite cuentas de la región indicada.</p>
@@ -15,15 +45,15 @@
 <input id="waitlistPrivate" maxlength="26" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="JS-EQ-…">
 <button id="waitlistCheck" class="secondary full" type="button" style="margin-top:10px">Ver posición actual</button>
 <p id="waitlistResult" class="small" role="status"></p>
-</div><a id="publicBracketLink" class="button secondary full" href="llaves.html" style="margin:12px 0 6px">🏆 Ver llaves del campeonato</a><p id="finalPublicInfo" class="final-public-info">🏆 Final: formato por confirmar…</p><p id="prizePublic" class="small" style="color:#a1e5cb;font-weight:800"></p><section id="rulesSection" class="tournament-rules hidden"><h3>📜 Reglas del torneo</h3><div id="rulesWindow" class="rules-window is-collapsed"><div id="rules" class="rule-lines"></div></div>
+</div><a id="publicBracketLink" class="button secondary full" href="https://angel738284-ui.github.io/js-torneos/llaves.html" style="margin:12px 0 6px">🏆 Ver llaves del campeonato</a><p id="finalPublicInfo" class="final-public-info">🏆 Final: formato por confirmar…</p><p id="prizePublic" class="small" style="color:#a1e5cb;font-weight:800"></p><section id="rulesSection" class="tournament-rules hidden"><h3>📜 Reglas del torneo</h3><div id="rulesWindow" class="rules-window is-collapsed"><div id="rules" class="rule-lines"></div></div>
 <button id="rulesToggle" type="button" class="secondary full rules-toggle" aria-controls="rulesWindow" aria-expanded="false">▼ Ver todas las reglas</button>
 </section></div></div>
 <form id="form" class="panel hidden"><h2 id="registrationHeading">Anotar equipo</h2><div id="teamNameWrap"><label id="teamNameLabel">Nombre del equipo</label><input id="team" maxlength="45" required placeholder="Ej: Los Akatsuki"></div><p class="small">Verificá cada ID antes de inscribir: aparecerán el nombre y la región de Free Fire. Si no es el jugador correcto, tocá <strong>Borrar / Corregir ID</strong>.</p><h3>Jugadores titulares</h3><div id="players"></div><div class="divider"></div><h3 id="subHeading">Suplentes</h3><p class="small" id="subDescription">Podés consultar las condiciones al buscar el torneo.</p><div id="substitutes"></div><button id="addSub" type="button" class="secondary" style="margin-top:12px">＋ Agregar segundo suplente (opcional)</button><div id="captcha" style="margin-top:15px"></div><button id="register" class="full" type="submit" style="margin-top:16px">Inscribir equipo</button><p class="small">Un mismo ID no puede inscribirse dos veces en el torneo. No compartas datos personales ni contraseñas del juego.</p></form>
 <div id="success" class="panel hidden"><h2 class="ok" id="successHeading">✓ Equipo inscrito correctamente</h2><p id="waitlistSuccessInfo" class="small"></p><p id="teamSuccess"></p><ul class="checks" id="playersSuccess"></ul><p class="small">Tu inscripción quedó guardada automáticamente. El organizador la verá en JS Torneos.</p>
-<div class="team-code-box"><h3>🔐 Código privado de tu equipo</h3>
+<div class="team-code-box"><h3>🔐 Código privado de tu equipo</h3><p id="js-web-code-status" class="small" role="status"></p><button type="button" class="secondary full" id="js-web-save-code" style="margin-bottom:10px">💾 Guardar este código en mi cuenta</button>
 <p id="teamCodeDescription">Guardá este código. Lo vas a necesitar para consultar tu rival, horario, ID y contraseña de sala.</p>
 <input id="teamCode" readonly autocomplete="off" spellcheck="false">
 <button id="copyTeamCode" type="button" class="secondary">Copiar código del equipo</button>
-<a id="privatePanelAccess" class="button full" href="equipo.html" style="margin-top:12px">⚔️ Consultar mis enfrentamientos →</a>
+<a id="privatePanelAccess" class="button full" href="https://angel738284-ui.github.io/js-torneos/equipo.html" style="margin-top:12px">⚔️ Consultar mis enfrentamientos →</a>
 <p class="small">Este código es privado. No es el código público del torneo. Si lo perdés, pedile uno nuevo al administrador.</p></div></div>
-</div><script src="config.js"></script><script src="rules-format.js?v=0.2.8"></script><script src="inscripcion.js?v=0.6.4"></script></body></html>
+</div><script src="https://angel738284-ui.github.io/js-torneos/config.js"></script><script src="https://angel738284-ui.github.io/js-torneos/rules-format.js?v=0.2.8"></script><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="inscripcion-web-account.js?v=1.0.0"></script><script src="inscripcion-web-form.js?v=1.0.0"></script></body></html>

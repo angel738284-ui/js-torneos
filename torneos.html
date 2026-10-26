@@ -31,6 +31,33 @@ input{height:51px;width:100%;border:1px solid #34445a;border-radius:13px;backgro
 nav{position:fixed;bottom:0;left:0;right:0;border-top:1px solid #344358;background:#091120f2;display:flex;justify-content:space-around;padding:9px 10px calc(12px + env(safe-area-inset-bottom));z-index:10}
 nav a{color:#aab9ce;text-decoration:none;text-align:center;font-size:11px;font-weight:850;display:grid;gap:2px}nav span{font-size:21px}
 nav a.sel{color:white}.error{border:1px solid #df8791;border-radius:10px;background:#4c2732;padding:12px;color:#ffc5ce;margin:8px 0}button,a{cursor:pointer}
+
+/* Cuenta y Mis Torneos - JS Family */
+.account-section{margin:24px 0 14px;background:linear-gradient(140deg,#1e2a43,#111c31);border:1px solid #405570;border-radius:21px;padding:19px}
+.account-section h2{font-size:22px;margin:0 0 6px}
+.account-section h3{margin:20px 0 5px;font-size:17px}
+.account-section p{font-size:13px;color:#b8c7dc;margin:4px 0 14px}
+.account-row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.account-section label{display:block;color:#b5c5d9;font-weight:800;font-size:12px;margin:12px 0 6px}
+.account-section input{width:100%;height:50px;border-radius:12px;background:#111929;border:1px solid #46607d;color:#fff;padding:10px 14px;font:inherit}
+.account-section input:focus{outline:2px solid #64dfec}
+.btn-action{background:linear-gradient(130deg,#f15c76,#b52a51);color:#fff;border:1px solid #ff8ca0;border-radius:12px;min-height:46px;padding:10px 16px;font:900 14px system-ui;cursor:pointer}
+.btn-alt{background:#283a53;color:white;border:1px solid #4c6789;border-radius:12px;padding:10px 15px;min-height:43px;font:850 13px system-ui}
+.auth-status{font-size:12px;padding:10px;background:#121b30;border-radius:10px;color:#bbd0e8}
+.auth-status.good{border:1px solid #3e8f78;color:#83efbf}
+.auth-status.warn{border:1px solid #b36a72;color:#ffd1d8}
+.account-card{padding:15px;border:1px solid #3d506b;border-radius:14px;background:#141e32;margin:12px 0}
+.account-card strong{color:white}
+.account-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin:13px 0}
+.mini{background:#0b1628;padding:10px;border-radius:10px}
+.mini span{display:block;font-size:11px;color:#96abc6}
+.mini b{font-size:16px;overflow-wrap:anywhere}
+.account-section .verified-name{font-size:19px;font-weight:950;color:#88f7c2}
+.player-nav-button{border:0;background:transparent;color:#a8b9d1;font:850 11px system-ui;display:grid;justify-items:center;gap:3px;min-width:67px;padding:5px}
+.player-nav-button span{font-size:20px}.player-nav-button.is-current{color:#fff}
+.account-hide{display:none!important}
+.notice-line{display:flex;align-items:center;gap:9px;border:1px solid #344963;border-radius:12px;padding:12px;margin:9px 0;color:#dbe8f7}
+.tiny{font-size:11px!important;color:#9eb3cf!important}
 </style></head>
 <body><div class="wrap"><header><div class="brand"><div class="logo">JS</div><div><b>JS FAMILY</b><small>TORNEOS · FREE FIRE</small></div></div><button id="refresh" class="refresh" aria-label="Actualizar" type="button">↻</button></header>
 <section class="hero"><div class="over">● FREE FIRE · COMPETITIVO</div><h1>Tu próxima<br><em>victoria</em> empieza acá.</h1><p>Encontrá tu campeonato, inscribí a tu escuadra y competí.</p>
@@ -87,4 +114,325 @@ q("search").oninput=ev=>{term=ev.target.value.trim().toLowerCase();draw()};
 q("refresh").onclick=load;document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible")load()});
 setInterval(()=>{if(document.visibilityState==="visible")load()},90000);load();
 })();
-</script></body></html>
+</script>
+<section id="js-account-view" class="account-section account-hide" aria-live="polite">
+  <h2>👤 Mi perfil de jugador</h2>
+  <p>Entrá con Google o correo electrónico para guardar tus torneos y códigos. También podés inscribirte sin cuenta y conservar tu código privado.</p>
+  <div id="js-account-status" class="auth-status">Comprobando sesión…</div>
+  <div id="js-account-guest" class="account-card">
+    <p>Iniciá sesión para recuperar tus torneos y códigos desde otro dispositivo.</p>
+    <button id="js-google-login" class="btn-action" type="button">🔑 Entrar con Google</button>
+    <details style="margin-top:12px;border:1px solid #47617c;border-radius:12px;padding:12px">
+      <summary style="font-weight:900;cursor:pointer">✉️ Entrar o crear cuenta con correo</summary>
+      <label for="js-email-address">Correo electrónico</label>
+      <input id="js-email-address" type="email" autocomplete="email" placeholder="tu@correo.com">
+      <label for="js-email-password">Contraseña (mínimo 8 caracteres)</label>
+      <input id="js-email-password" type="password" autocomplete="current-password" placeholder="Contraseña segura">
+      <div class="account-row" style="margin-top:12px">
+        <button id="js-email-signin" class="btn-action" type="button">Iniciar sesión</button>
+        <button id="js-email-signup" class="btn-alt" type="button">Crear cuenta</button>
+      </div>
+      <p>Si creás una cuenta, confirmá el correo y regresá a iniciar sesión.</p>
+    </details>
+    <p style="margin-top:12px">👤 Sin cuenta también podés participar: entrá a Torneos e inscribite, pero guardá tu código JS-EQ.</p>
+  </div>
+  <div id="js-account-signed" class="account-hide">
+    <div class="account-card">
+      <div class="account-row" style="justify-content:space-between">
+        <strong id="js-google-name">Cuenta Google</strong>
+        <button id="js-google-logout" class="btn-alt" type="button">Salir</button>
+      </div>
+      <label for="js-game-id">ID de jugador de Free Fire</label>
+      <input id="js-game-id" type="text" inputmode="numeric" maxlength="16" placeholder="Ejemplo: 123456789" autocomplete="off">
+      <button id="js-id-verify" class="btn-action" type="button" style="margin-top:12px;width:100%">🔎 Verificar ID y guardar perfil</button>
+      <div id="js-game-nickname" class="verified-name" style="margin-top:14px"></div>
+      <div id="js-game-region" class="tiny"></div>
+      <p class="tiny">La verificación identifica el apodo del ID, pero no demuestra que seas el propietario de esa cuenta de Free Fire.</p>
+    </div>
+    <div class="account-card">
+      <h3>🔐 Guardar mi código privado</h3>
+      <p>Guardá el código JS-EQ cifrado en tu cuenta para recuperarlo en otro celular. El ID de tu perfil debe figurar en esa inscripción.</p>
+      <input id="js-team-code" type="text" placeholder="JS-EQ-..." autocomplete="off" spellcheck="false">
+      <button type="button" id="js-team-link" class="btn-alt" style="margin-top:10px">💾 Guardar código</button>
+      <h3>Mis códigos guardados</h3><div id="js-saved-codes"></div>
+      <button id="js-saved-refresh" class="btn-alt" type="button">↻ Actualizar códigos</button>
+    </div>
+  </div>
+</section>
+<section id="js-my-view" class="account-section account-hide">
+  <h2>⚔️ Mis torneos</h2>
+  <p>Las inscripciones encontradas con el ID de Free Fire de tu perfil.</p>
+  <div id="js-my-list"><div class="empty">Ingresá con correo o Google para ver tus participaciones.</div></div>
+</section>
+<section id="js-notices-view" class="account-section account-hide">
+  <h2>🔔 Notificaciones</h2>
+  <p>Avisos sobre cruces, salas y resultados mientras tenés abierta la aplicación.</p>
+  <button id="js-alert-permission" class="btn-alt" type="button">Activar avisos de este dispositivo</button>
+  <div id="js-notice-list" style="margin-top:15px"></div>
+  <p class="tiny">Las notificaciones con la app completamente cerrada requerirán una actualización posterior con Firebase Cloud Messaging.</p>
+</section>
+
+<script type="module">
+import {createClient} from "https://esm.sh/@supabase/supabase-js@2";
+(function(){
+ "use strict";
+ const conf={url:"https://chfshxlykvmovwryjnxi.supabase.co",key:"sb_publishable_rS9X7AX-LPQeBJCCPJdshw_S0WckOOv"};
+ const api=conf.url+"/functions/v1/js-jugadores-cuenta";
+ const sb=createClient(conf.url,conf.key,{auth:{flowType:"pkce",detectSessionInUrl:true,persistSession:true,autoRefreshToken:true}});
+ const q=id=>document.getElementById(id);
+ const select=(el,show)=>el.classList.toggle("account-hide",!show);
+ const make=(tag,txt,cls)=>{const x=document.createElement(tag);if(typeof txt==="string")x.textContent=txt;if(cls)x.className=cls;return x};
+ const scenes=["torneos","perfil","mis","avisos"];
+ const original=[...document.querySelectorAll(".hero,.title,#search,.filters,#cards,.help")];
+ const views={perfil:q("js-account-view"),mis:q("js-my-view"),avisos:q("js-notices-view")};
+ let session=null,profile=null,tournaments=[],fresh=false,activeTab="torneos";
+ const storeKey="js-family-player-notices-v2";
+ const saved=()=>{try{return JSON.parse(localStorage.getItem(storeKey)||"[]")}catch{return[]}};
+ let notices=Array.isArray(saved())?saved():[];
+ let known=new Set();
+ const status=(msg,ok)=>{
+   q("js-account-status").textContent=msg;
+   q("js-account-status").className="auth-status"+(ok===true?" good":ok===false?" warn":"");
+ };
+ async function apiCall(action,fields){
+   const {data}=await sb.auth.getSession();
+   if(!data.session?.access_token)throw Error("Ingresá con correo o Google primero.");
+   const response=await fetch(api,{
+     method:"POST",headers:{"content-type":"application/json","authorization":"Bearer "+data.session.access_token},
+     cache:"no-store",body:JSON.stringify(Object.assign({action:action},fields||{}))
+   });
+   let result;try{result=await response.json()}catch{throw Error("No se pudo leer la respuesta del servidor")}
+   if(!response.ok||result.ok!==true)throw Error(result.error||"Error del servidor");
+   return result;
+ }
+ function menu(){
+   const nav=document.querySelector("nav");if(!nav)return;
+   nav.replaceChildren();
+   const icons={torneos:"🏆",perfil:"👤",mis:"⚔️",avisos:"🔔"};
+   const names={torneos:"Torneos",perfil:"Perfil",mis:"Mis torneos",avisos:"Avisos"};
+   for(const name of scenes){
+     const b=make("button",undefined,"player-nav-button"+(activeTab===name?" is-current":""));
+     b.append(make("span",icons[name]),make("small",names[name]));
+     b.onclick=()=>switchTab(name);b.dataset.tab=name;nav.append(b);
+   }
+ }
+ function switchTab(tab){
+   activeTab=tab;for(const x of original)x.classList.toggle("account-hide",tab!=="torneos");
+   for(const [name,node] of Object.entries(views))select(node,name===tab);
+   menu();
+   if(tab==="mis")loadMy();
+   if(tab==="avisos")showNotices();
+   window.scrollTo({top:0,behavior:"instant"});
+ }
+ function showNotices(){
+   const box=q("js-notice-list");box.replaceChildren();
+   if(!notices.length)box.append(make("p","No hay avisos nuevos todavía.","tiny"));
+   for(const n of notices.slice(0,60)){
+     const row=make("div",undefined,"notice-line");
+     row.append(make("span",n.title),make("small",new Date(n.at).toLocaleString("es-AR")));
+     box.append(row);
+   }
+ }
+ function notify(text,id,initial){
+   if(known.has(id))return;known.add(id);
+   if(initial)return;
+   notices.unshift({id,title:text,at:new Date().toISOString()});
+   notices=notices.slice(0,60);
+   localStorage.setItem(storeKey,JSON.stringify(notices));
+   if(document.visibilityState==="visible"&&"Notification" in window&&Notification.permission==="granted"){
+     try{new Notification("JS Family · Torneos",{body:text,tag:id})}catch{}
+   }
+ }
+ function showMy(){
+   const root=q("js-my-list");root.replaceChildren();
+   if(!session){root.append(make("div","Ingresá con correo o Google para ver tus torneos.","empty"));return}
+   if(!profile){root.append(make("div","Primero verificá tu ID de Free Fire desde Perfil.","empty"));return}
+   if(!tournaments.length){root.append(make("div","Aún no encontramos equipos inscritos con tu ID.","empty"));return}
+   for(const t of tournaments){
+     const card=make("article",undefined,"card");
+     card.append(make("h3",t.tournament),make("p","🛡️ "+t.team+" · "+(t.role==="suplente"?"Suplente":"Titular"),"tiny"));
+     card.append(make("p","Estado: "+(t.status==="open"?"Inscripciones abiertas":t.status==="closed"?"En competencia":"Finalizado"),"tiny"));
+     if(t.mode==="BR"){
+       const br=t.br_room||{status:"not_sent"};
+       const note=br.status==="active"?"🟢 Sala BR habilitada":
+         br.status==="finished"?"🏆 Campeón: "+(br.winner_name||"Ganador confirmado"):
+         br.status==="closed"?"🔒 Sala BR cerrada":"⏳ Esperando la sala BR";
+       card.append(make("div",note,"notice-line"));
+       if(br.status==="active"&&br.room_id&&br.room_password)
+         card.append(make("div","🎮 ID de sala: "+br.room_id+" · 🔑 Contraseña: "+br.room_password,"notice-line"));
+     }
+     for(const game of t.matches||[]){
+       card.append(make("p","⚔️ Ronda "+game.round+" · Rival: "+(game.opponent||"Por definir"),"tiny"));
+       if(game.room_status==="active"&&game.room_id&&game.room_password&&game.room_expires_at&&
+          Date.parse(game.room_expires_at)>Date.now()){
+         const credential=make("div","🎮 ID: "+game.room_id+" · 🔑 Contraseña: "+game.room_password,"notice-line");
+         credential.dataset.expiry=game.room_expires_at;
+         card.append(credential);
+       }
+       let label=game.result==="win"?"🏆 Ronda "+game.round+": ganaron":
+         game.result==="lose"?"❌ Ronda "+game.round+": eliminados":
+         game.room_status==="active"?"⏱️ ¡Sala enviada! Solo 10 minutos":
+         "⚔️ Ronda "+game.round+": pendiente";
+       card.append(make("div",label,"notice-line"));
+     }
+     const actions=make("div",undefined,"actions");
+     const link=make("a","🏆 Ver llaves");link.href="https://angel738284-ui.github.io/js-torneos/llaves.html?codigo="+encodeURIComponent(t.code);
+     actions.append(link);card.append(actions);root.append(card);
+   }
+ }
+ async function loadSavedCodes(){
+   const el=q("js-saved-codes");el.replaceChildren();
+   if(!session||!profile){el.textContent="Verificá tu ID de Free Fire para ver códigos guardados.";return}
+   try{
+     const out=await apiCall("my_web_codes");
+     if(!out.codes?.length){el.textContent="Sin códigos guardados todavía.";return}
+     for(const item of out.codes){
+       const row=make("div",undefined,"account-card");
+       row.append(make("strong",item.tournament+" · "+item.name),make("p","🔐 "+item.code));
+       const copy=make("button","Copiar","btn-alt");copy.type="button";
+       copy.onclick=async()=>{try{await navigator.clipboard.writeText(item.code);status("Código privado copiado.",true)}catch{status("Seleccioná el código para copiarlo.",false)}};
+       row.append(copy);el.append(row);
+     }
+   }catch(e){el.textContent="⚠️ "+e.message}
+ }
+ async function loadMy(){
+   if(!session||!profile){tournaments=[];showMy();return}
+   try{
+     const result=await apiCall("my_tournaments");
+     const newer=result.tournaments||[];
+     for(const t of newer)for(const game of t.matches||[]){
+       const label=t.team+" · Ronda "+game.round;
+       if(game.room_status==="active")notify("🚨 Sala disponible: "+label,"room:"+game.match_id+":"+game.room_expires_at,!fresh);
+       if(game.result==="win")notify("🏆 Ganaste: "+label,"win:"+game.match_id,!fresh);
+       if(game.result==="lose")notify("📋 Partida finalizada: "+label,"lose:"+game.match_id,!fresh);
+     }
+     tournaments=newer;fresh=true;showMy();
+   }catch(e){q("js-my-list").replaceChildren(make("div",e.message,"empty"))}
+ }
+ async function current(){
+   const {data,error}=await sb.auth.getSession();
+   if(error){status("No se pudo consultar la sesión. Abrí nuevamente la página.",false);return}
+   session=data.session;
+   select(q("js-account-guest"),!session);
+   select(q("js-account-signed"),!!session);
+   if(!session){profile=null;tournaments=[];status("Podés participar sin cuenta, o ingresar con correo / Google.");showMy();return}
+   q("js-google-name").textContent=session.user.user_metadata?.full_name||session.user.email||"Cuenta Google";
+   status("✅ Sesión iniciada. Tus torneos quedan asociados a esta cuenta.",true);
+   try{
+     const result=await apiCall("profile");
+     profile=result.profile;
+     if(profile){
+       q("js-game-id").value=profile.game_id;
+       q("js-game-nickname").textContent="✅ "+profile.nickname;
+       q("js-game-region").textContent="Región: "+profile.region+" · Perfil guardado en tu cuenta";
+       loadMy();loadSavedCodes();
+     }else{
+       q("js-game-nickname").textContent="";
+       q("js-game-region").textContent="Ingresá tu ID y tocá Verificar.";
+       tournaments=[];showMy();
+     }
+   }catch(e){status("⚠️ "+e.message,false)}
+ }
+ window.JSPlayerGoogleCallback=async function(returnUrl){
+   try{
+     const callback=new URL(returnUrl);
+     if(callback.protocol!=="jsjugadores:"||callback.hostname!=="auth-callback")
+       throw Error("Respuesta OAuth no autorizada");
+     const code=callback.searchParams.get("code");
+     const authError=callback.searchParams.get("error_description");
+     if(authError)throw Error(authError);
+     if(!code)throw Error("No llegó el código de acceso de Google");
+     const result=await sb.auth.exchangeCodeForSession(code);
+     if(result.error)throw result.error;
+     status("✅ Google conectado correctamente.",true);
+     await current();
+   }catch(e){status("No se pudo completar el ingreso: "+(e.message||"Error de sesión"),false)}
+ };
+ q("js-google-login").onclick=async()=>{
+   try{
+     status("Abriendo Google…");
+     const native=Boolean(window.JSNative&&typeof window.JSNative.openGoogleOAuth==="function");
+     const {data,error}=await sb.auth.signInWithOAuth({
+       provider:"google",
+       options:{
+         redirectTo:native?"jsjugadores://auth-callback":location.origin+location.pathname,
+         skipBrowserRedirect:native
+       }
+     });
+     if(error)throw error;
+     if(native){
+       if(!data?.url)throw Error("Google no devolvió un enlace de ingreso");
+       window.JSNative.openGoogleOAuth(data.url);
+     }
+   }catch(e){status("No se pudo ingresar: "+e.message+". Confirmá que Google esté habilitado en Supabase Auth.",false)}
+ };
+ q("js-google-logout").onclick=async()=>{await sb.auth.signOut();session=null;profile=null;tournaments=[];fresh=false;await current()};
+ q("js-id-verify").onclick=async()=>{
+   const id=q("js-game-id").value.trim().replace(/\s+/g,"");
+   if(!/^[0-9]{5,16}$/.test(id)){status("Ingresá un ID numérico de 5 a 16 cifras.",false);return}
+   q("js-id-verify").disabled=true;
+   status("Consultando el apodo de Free Fire…");
+   try{
+     const result=await apiCall("verify_id",{game_id:id});
+     profile=result.profile;
+     q("js-game-nickname").textContent="✅ "+profile.nickname;
+     q("js-game-region").textContent="Región: "+profile.region+" · Perfil guardado en tu cuenta";
+     status("✅ Nombre verificado y guardado correctamente.",true);
+     await loadMy();
+   }catch(e){status("⚠️ "+e.message,false)}
+   finally{q("js-id-verify").disabled=false}
+ };
+ q("js-team-link").onclick=async()=>{
+   const code=q("js-team-code").value.trim().toUpperCase();
+   try{
+     const result=await apiCall("save_web_code",{team_code:code});
+     q("js-team-code").value="";
+     status("✅ Código guardado: "+result.name,true);loadSavedCodes();loadMy();
+   }catch(e){status("⚠️ "+e.message,false)}
+ };
+ q("js-saved-refresh").onclick=()=>loadSavedCodes();
+ q("js-email-signin").onclick=async()=>{
+   try{
+     const {error}=await sb.auth.signInWithPassword({email:q("js-email-address").value.trim(),password:q("js-email-password").value});
+     if(error)throw error;await current();
+   }catch(e){status("⚠️ "+e.message,false)}
+ };
+ q("js-email-signup").onclick=async()=>{
+   const email=q("js-email-address").value.trim(),password=q("js-email-password").value;
+   if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)||password.length<8)
+     return status("Ingresá un correo válido y una contraseña de 8 caracteres o más.",false);
+   try{
+     const {data,error}=await sb.auth.signUp({email,password,options:{emailRedirectTo:location.origin+location.pathname}});
+     if(error)throw error;
+     if(data.session)await current();
+     else status("✅ Revisá tu correo, confirmá la cuenta y volvé a iniciar sesión.",true);
+   }catch(e){status("⚠️ "+e.message,false)}
+ };
+ q("js-alert-permission").onclick=async()=>{
+   if(window.JSNative&&typeof window.JSNative.requestNotifications==="function"){
+     window.JSNative.requestNotifications();
+     alert("Se solicitó permiso de avisos para JS Torneos Jugadores.");
+     return;
+   }
+   if(!("Notification" in window)){alert("Tu navegador no permite notificaciones web.");return}
+   try{
+     const permission=await Notification.requestPermission();
+     alert(permission==="granted"?"Avisos habilitados mientras la app está activa.":"No se concedió permiso.");
+   }catch{alert("No se pudo habilitar el permiso desde este navegador.")}
+ };
+ sb.auth.onAuthStateChange((event)=>{if(event==="SIGNED_IN"||event==="SIGNED_OUT")setTimeout(current,0)});
+ menu();
+ current();
+ setInterval(()=>{if(session&&profile&&document.visibilityState==="visible")loadMy()},45000);
+ setInterval(()=>{
+   for(const el of document.querySelectorAll("[data-expiry]")){
+     if(Date.parse(el.dataset.expiry||"")<=Date.now()){
+       el.textContent="⌛ La sala venció. Esperá nuevos datos del administrador.";
+       el.removeAttribute("data-expiry");
+     }
+   }
+ },3000);
+ document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible"&&session&&profile)loadMy()});
+})();
+</script>
+</body></html>
