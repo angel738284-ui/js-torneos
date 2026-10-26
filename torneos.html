@@ -58,6 +58,36 @@ nav a.sel{color:white}.error{border:1px solid #df8791;border-radius:10px;backgro
 .account-hide{display:none!important}
 .notice-line{display:flex;align-items:center;gap:9px;border:1px solid #344963;border-radius:12px;padding:12px;margin:9px 0;color:#dbe8f7}
 .tiny{font-size:11px!important;color:#9eb3cf!important}
+
+/* Perfil completo: portada y avatar guardados en Supabase, mismo perfil de la APK */
+body.player-account-screen .wrap{padding-bottom:0}
+body.player-account-screen header{margin-bottom:5px}
+.account-section{width:min(100% - 28px,780px);margin:14px auto 28px}
+.js-web-profile-card{background:#111c2d;border:1px solid #365474;border-radius:20px;overflow:hidden;margin:15px 0 20px}
+.js-web-profile-cover{height:178px;background:linear-gradient(125deg,#412b60,#1c4461 60%,#101e31);
+ background-size:cover;background-position:center}
+.js-web-profile-avatar{width:108px;height:108px;border-radius:50%;border:5px solid #141d30;
+ margin:-53px 0 0 17px;position:relative;overflow:hidden;background:linear-gradient(135deg,#dd668b,#49356f);
+ display:flex;align-items:center;justify-content:center;font-size:26px;font-weight:950;color:#fff}
+.js-web-profile-avatar img{width:100%;height:100%;object-fit:cover}
+.js-web-profile-details{padding:15px 18px 22px;overflow-wrap:anywhere}
+.js-web-profile-details h3{font-size:24px;margin:0 0 4px}
+.js-web-profile-handle{color:#b5c4dc;font-size:13px;font-weight:750}
+.js-web-profile-bio{white-space:pre-wrap;font-size:14px;color:#e3eafd;margin:16px 0;line-height:1.6}
+.js-web-profile-verified{font-size:12px;color:#a5efcc;font-weight:750;margin-top:10px}
+.js-web-profile-admin{display:inline-block;background:#614025;border:1px solid #c59e49;
+ padding:6px 10px;border-radius:10px;color:#ffe3a0;font-size:12px;font-weight:900;margin:7px 0}
+.js-web-profile-summary{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;margin:17px 0 5px}
+.js-web-profile-stat{padding:12px 5px;text-align:center;background:#101b2e;border:1px solid #364e6d;border-radius:12px}
+.js-web-profile-stat strong{display:block;font-size:21px;color:#dbfbed}
+.js-web-profile-stat small{font-size:11px;color:#b3c5de}
+#js-web-editor[hidden]{display:none}
+#js-web-editor{padding:16px;background:#111d31;border:1px solid #466a85;border-radius:15px;margin:14px 0}
+#js-web-editor label{font-weight:850}
+#js-web-editor textarea{width:100%;min-height:85px;resize:vertical;background:#0c182a;
+ border:1px solid #47607e;border-radius:10px;padding:11px;color:#fff;font:inherit}
+#js-web-editor input[type=file]{height:auto;min-height:50px;padding:10px;font-size:12px}
+#js-web-editor button{margin:12px 5px 0 0}
 </style></head>
 <body><div class="wrap"><header><div class="brand"><div class="logo">JS</div><div><b>JS FAMILY</b><small>TORNEOS · FREE FIRE</small></div></div><button id="refresh" class="refresh" aria-label="Actualizar" type="button">↻</button></header>
 <section class="hero"><div class="over">● FREE FIRE · COMPETITIVO</div><h1>Tu próxima<br><em>victoria</em> empieza acá.</h1><p>Encontrá tu campeonato, inscribí a tu escuadra y competí.</p>
@@ -137,6 +167,41 @@ setInterval(()=>{if(document.visibilityState==="visible")load()},90000);load();
     <p style="margin-top:12px">👤 Sin cuenta también podés participar: entrá a Torneos e inscribite, pero guardá tu código JS-EQ.</p>
   </div>
   <div id="js-account-signed" class="account-hide">
+    <div id="js-web-profile" class="js-web-profile-card" aria-label="Perfil de JS Torneos">
+      <div id="js-web-cover" class="js-web-profile-cover"></div>
+      <div id="js-web-avatar" class="js-web-profile-avatar">JS</div>
+      <div class="js-web-profile-details">
+        <h3 id="js-web-display-name">Cargando perfil…</h3>
+        <div id="js-web-user-handle" class="js-web-profile-handle"></div>
+        <div id="js-web-admin-badge"></div>
+        <p id="js-web-user-bio" class="js-web-profile-bio"></p>
+        <p id="js-web-freefire" class="js-web-profile-verified"></p>
+        <div id="js-web-profile-stats" class="js-web-profile-summary">
+          <div class="js-web-profile-stat"><strong id="js-web-stat-tours">—</strong><small>Torneos</small></div>
+          <div class="js-web-profile-stat"><strong id="js-web-stat-wins">—</strong><small>Victorias</small></div>
+          <div class="js-web-profile-stat"><strong id="js-web-stat-champions">—</strong><small>Campeonatos</small></div>
+        </div>
+        <div class="account-row" style="margin-top:12px">
+          <button id="js-web-edit-toggle" class="btn-alt" type="button">✏️ Editar perfil</button>
+          <button id="js-web-profile-refresh" class="btn-alt" type="button">↻ Actualizar perfil</button>
+        </div>
+        <div id="js-web-editor" hidden>
+          <label for="js-web-display-edit">Nombre para mostrar</label>
+          <input id="js-web-display-edit" maxlength="42" autocomplete="nickname">
+          <label for="js-web-username-edit">Nombre de usuario (@)</label>
+          <input id="js-web-username-edit" maxlength="22" autocapitalize="off" autocomplete="off">
+          <label for="js-web-bio-edit">Biografía</label>
+          <textarea id="js-web-bio-edit" maxlength="180" placeholder="Contá algo sobre vos…"></textarea>
+          <label for="js-web-avatar-file">Foto de perfil (JPG, PNG o WebP)</label>
+          <input id="js-web-avatar-file" type="file" accept="image/jpeg,image/png,image/webp">
+          <label for="js-web-cover-file">Portada del perfil</label>
+          <input id="js-web-cover-file" type="file" accept="image/jpeg,image/png,image/webp">
+          <p id="js-web-edit-status" class="tiny" role="status"></p>
+          <button id="js-web-edit-save" class="btn-action" type="button">Guardar cambios</button>
+          <button id="js-web-edit-cancel" class="btn-alt" type="button">Cancelar</button>
+        </div>
+      </div>
+    </div>
     <div class="account-card">
       <div class="account-row" style="justify-content:space-between">
         <strong id="js-google-name">Cuenta Google</strong>
@@ -144,7 +209,7 @@ setInterval(()=>{if(document.visibilityState==="visible")load()},90000);load();
       </div>
       <label for="js-game-id">ID de jugador de Free Fire</label>
       <input id="js-game-id" type="text" inputmode="numeric" maxlength="16" placeholder="Ejemplo: 123456789" autocomplete="off">
-      <button id="js-id-verify" class="btn-action" type="button" style="margin-top:12px;width:100%">🔎 Verificar ID y guardar perfil</button>
+      <button id="js-id-verify" class="btn-alt" type="button" style="margin-top:12px;width:100%">🔎 Verificar o cambiar ID de Free Fire</button>
       <div id="js-game-nickname" class="verified-name" style="margin-top:14px"></div>
       <div id="js-game-region" class="tiny"></div>
       <p class="tiny">La verificación identifica el apodo del ID, pero no demuestra que seas el propietario de esa cuenta de Free Fire.</p>
@@ -217,7 +282,9 @@ import {createClient} from "https://esm.sh/@supabase/supabase-js@2";
    }
  }
  function switchTab(tab){
-   activeTab=tab;for(const x of original)x.classList.toggle("account-hide",tab!=="torneos");
+   activeTab=tab;
+   document.body.classList.toggle("player-account-screen",tab!=="torneos");
+   for(const x of original)x.classList.toggle("account-hide",tab!=="torneos");
    for(const [name,node] of Object.entries(views))select(node,name===tab);
    menu();
    if(tab==="mis")loadMy();
@@ -295,6 +362,108 @@ import {createClient} from "https://esm.sh/@supabase/supabase-js@2";
      }
    }catch(e){el.textContent="⚠️ "+e.message}
  }
+ const imageHost="https://chfshxlykvmovwryjnxi.supabase.co/storage/v1/object/public/js-player-profiles/";
+ function safeProfileImage(path,updatedAt){
+   if(typeof path!=="string"||!/^[0-9a-f-]{36}\/(?:avatar|banner)\.webp$/i.test(path))return "";
+   return imageHost+path.split("/").map(encodeURIComponent).join("/")+"?t="+encodeURIComponent(updatedAt||"0");
+ }
+ function renderProfile(){
+   const container=q("js-web-profile");
+   if(!profile){container.style.display="none";return}
+   container.style.display="";
+   const cover=q("js-web-cover"),avatar=q("js-web-avatar");
+   const coverURL=safeProfileImage(profile.banner_path,profile.updated_at);
+   cover.style.backgroundImage=coverURL?'linear-gradient(0deg,#101c3033,#101c3033),url("'+coverURL+'")':"";
+   avatar.replaceChildren();
+   const avatarURL=safeProfileImage(profile.avatar_path,profile.updated_at);
+   if(avatarURL){
+     const img=make("img");
+     img.src=avatarURL;
+     img.alt="Foto de perfil de "+(profile.display_name||profile.nickname||"jugador");
+     img.onerror=()=>{avatar.replaceChildren(make("span",(profile.display_name||profile.nickname||"JS").slice(0,2).toUpperCase()))};
+     avatar.append(img);
+   }else avatar.append(make("span",(profile.display_name||profile.nickname||"JS").slice(0,2).toUpperCase()));
+   q("js-web-display-name").textContent=profile.display_name||profile.nickname||"Jugador JS";
+   q("js-web-user-handle").textContent=profile.username?"@"+profile.username:"ID "+profile.game_id;
+   const badge=q("js-web-admin-badge");badge.replaceChildren();
+   if(profile.is_admin===true)badge.append(make("span","🛡️ ADM · Administrador","js-web-profile-admin"));
+   q("js-web-user-bio").textContent=profile.bio||"Todavía no agregaste una biografía.";
+   q("js-web-freefire").textContent="✅ Free Fire: "+profile.nickname+" · ID "+profile.game_id+" · Región "+profile.region;
+ }
+ function fillProfileEdit(){
+   if(!profile)return;
+   q("js-web-display-edit").value=profile.display_name||profile.nickname||"";
+   q("js-web-username-edit").value=profile.username||"js"+profile.game_id?.slice(-8);
+   q("js-web-bio-edit").value=profile.bio||"";
+   q("js-web-avatar-file").value="";
+   q("js-web-cover-file").value="";
+   q("js-web-edit-status").textContent="";
+ }
+ q("js-web-edit-toggle").onclick=()=>{
+   if(!profile)return status("Verificá primero tu ID de Free Fire.",false);
+   fillProfileEdit();
+   q("js-web-editor").hidden=!q("js-web-editor").hidden;
+ };
+ q("js-web-edit-cancel").onclick=()=>{q("js-web-editor").hidden=true};
+ q("js-web-profile-refresh").onclick=()=>current();
+ function processedPhoto(file,kind){
+   return new Promise((resolve,reject)=>{
+     if(!file){resolve(null);return}
+     if(file.size>10*1024*1024)return reject(Error("La imagen debe pesar menos de 10 MB."));
+     if(!["image/jpeg","image/png","image/webp"].includes(file.type))
+       return reject(Error("Solo se admiten imágenes JPG, PNG y WebP."));
+     const uri=URL.createObjectURL(file),image=new Image();
+     image.onload=()=>{
+       URL.revokeObjectURL(uri);
+       const w=kind==="avatar"?480:1100,h=kind==="avatar"?480:480;
+       const scale=Math.max(w/image.width,h/image.height),sw=w/scale,sh=h/scale;
+       const canvas=document.createElement("canvas");canvas.width=w;canvas.height=h;
+       const context=canvas.getContext("2d");
+       if(!context)return reject(Error("No se pudo leer la foto."));
+       context.fillStyle="#0f1b2c";context.fillRect(0,0,w,h);
+       context.drawImage(image,(image.width-sw)/2,(image.height-sh)/2,sw,sh,0,0,w,h);
+       canvas.toBlob(blob=>blob&&blob.size<=2097152?resolve(blob):reject(Error("No se pudo comprimir la imagen.")),"image/webp",0.79);
+     };
+     image.onerror=()=>{URL.revokeObjectURL(uri);reject(Error("Archivo de imagen inválido."))};
+     image.src=uri;
+   });
+ }
+ async function uploadWebPhoto(kind,file){
+   if(!file)return kind==="avatar"?profile.avatar_path:null;
+   const processed=await processedPhoto(file,kind);
+   const path=session.user.id+"/"+kind+".webp";
+   const {error}=await sb.storage.from("js-player-profiles").upload(path,processed,
+     {contentType:"image/webp",upsert:true,cacheControl:"60"});
+   if(error)throw Error("Error subiendo "+(kind==="avatar"?"la foto":"la portada")+": "+error.message);
+   return path;
+ }
+ q("js-web-edit-save").onclick=async()=>{
+   if(!session||!profile)return;
+   const display_name=q("js-web-display-edit").value.trim();
+   const username=q("js-web-username-edit").value.trim().toLowerCase();
+   const bio=q("js-web-bio-edit").value.trim();
+   if(display_name.length<2||display_name.length>42)return status("El nombre debe tener entre 2 y 42 caracteres.",false);
+   if(!/^[a-z0-9_]{3,22}$/.test(username))return status("El @usuario debe tener entre 3 y 22 caracteres (letras, números o _).",false);
+   const save=q("js-web-edit-save");save.disabled=true;
+   const indication=q("js-web-edit-status");
+   try{
+     indication.textContent="Guardando tu perfil en Supabase…";
+     const avatarFile=q("js-web-avatar-file").files[0],bannerFile=q("js-web-cover-file").files[0];
+     const avatar=avatarFile?await uploadWebPhoto("avatar",avatarFile):profile.avatar_path;
+     const banner=bannerFile?await uploadWebPhoto("banner",bannerFile):profile.banner_path;
+     const result=await apiCall("profile_update",{
+       display_name,username,bio,avatar_path:avatar,banner_path:banner
+     });
+     profile=result.profile;
+     renderProfile();
+     q("js-web-editor").hidden=true;
+     status("✅ Perfil actualizado: nombre, foto y portada sincronizados con la APK.",true);
+   }catch(e){
+     indication.textContent="⚠️ "+e.message;
+     status("No se pudieron guardar los cambios: "+e.message,false);
+   }finally{save.disabled=false}
+ };
+
  async function loadMy(){
    if(!session||!profile){tournaments=[];showMy();return}
    try{
@@ -307,6 +476,11 @@ import {createClient} from "https://esm.sh/@supabase/supabase-js@2";
        if(game.result==="lose")notify("📋 Partida finalizada: "+label,"lose:"+game.match_id,!fresh);
      }
      tournaments=newer;fresh=true;showMy();
+     if(result.stats){
+       q("js-web-stat-tours").textContent=String(Number(result.stats.tournaments)||0);
+       q("js-web-stat-wins").textContent=String(Number(result.stats.victories)||0);
+       q("js-web-stat-champions").textContent=String(Number(result.stats.championships)||0);
+     }
    }catch(e){q("js-my-list").replaceChildren(make("div",e.message,"empty"))}
  }
  async function current(){
@@ -315,12 +489,13 @@ import {createClient} from "https://esm.sh/@supabase/supabase-js@2";
    session=data.session;
    select(q("js-account-guest"),!session);
    select(q("js-account-signed"),!!session);
-   if(!session){profile=null;tournaments=[];status("Podés participar sin cuenta, o ingresar con correo / Google.");showMy();return}
+   if(!session){profile=null;tournaments=[];renderProfile();status("Podés participar sin cuenta, o ingresar con correo / Google.");showMy();return}
    q("js-google-name").textContent=session.user.user_metadata?.full_name||session.user.email||"Cuenta Google";
    status("✅ Sesión iniciada. Tus torneos quedan asociados a esta cuenta.",true);
    try{
      const result=await apiCall("profile");
      profile=result.profile;
+     renderProfile();
      if(profile){
        q("js-game-id").value=profile.game_id;
        q("js-game-nickname").textContent="✅ "+profile.nickname;
@@ -375,6 +550,7 @@ import {createClient} from "https://esm.sh/@supabase/supabase-js@2";
    try{
      const result=await apiCall("verify_id",{game_id:id});
      profile=result.profile;
+     renderProfile();
      q("js-game-nickname").textContent="✅ "+profile.nickname;
      q("js-game-region").textContent="Región: "+profile.region+" · Perfil guardado en tu cuenta";
      status("✅ Nombre verificado y guardado correctamente.",true);
