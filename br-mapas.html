@@ -1,7 +1,7 @@
 <!doctype html><html lang="es"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#0a101b">
-<title>JS Torneos · Tres mapas BR</title>
+<title>TORNEOS JS · Tres mapas BR</title>
 <style>
 :root{color-scheme:dark;--bg:#0a101b;--panel:#171f30;--line:#35435c;--text:#f4f7ff;--pink:#f05d7c;--green:#78efca;--muted:#b1bed1}
 *{box-sizing:border-box}body{background:radial-gradient(circle at 100% 0,#5325366e,transparent 37%),var(--bg);margin:0;color:var(--text);font:15px/1.5 system-ui,-apple-system,sans-serif;min-height:100vh}
@@ -11,14 +11,14 @@ button{cursor:pointer;min-height:42px;padding:10px 14px;font-weight:850;color:wh
 .maps{display:grid;gap:13px}.map{border:1px solid #344f69;border-radius:16px;padding:17px;background:#111d30}.map[data-active="true"]{border-color:#55c7a3;background:#122d2c}.mapTitle{display:flex;justify-content:space-between;gap:10px;align-items:center}.mapNumber{font-size:10px;letter-spacing:1.5px;color:#e998a8;font-weight:1000}.map h3{font-size:21px;margin:5px 0}.fieldgrid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.copygroup{display:flex;gap:8px;align-items:center}.copygroup input{flex:1}.copygroup button{flex-shrink:0}.note{font-size:12px;background:#242c41;border:1px solid #58617a;color:#d5dfec;padding:11px 12px;border-radius:11px;margin:12px 0}.note.good{border-color:#4a967b;color:#a6f7dd;background:#17332f}.err{background:#502a36;border:1px solid #ce7791;color:#ffc1ce}.hidden{display:none!important}.empty{text-align:center;border:1px dashed #52617a;border-radius:14px;padding:20px;color:#b6c4d7}#message{position:sticky;top:7px;z-index:3}footer{text-align:center;color:#8697b0;font-size:11px;padding:15px}
 @media(max-width:540px){.fieldgrid{grid-template-columns:1fr}.panel{padding:15px}.hero h1{font-size:28px}}
 </style></head><body><main>
-<header><div class="logo">JS</div><div><span class="sub">JS FAMILY · FREE FIRE</span><h1>TRES MAPAS BR</h1></div></header>
+<header><div class="logo">JS</div><div><span class="sub">TORNEOS JS · FREE FIRE</span><h1>TRES MAPAS BR</h1></div></header>
 <div class="panel hero"><div class="sub">UN TORNEO · TRES SALAS</div><h1>BERMUDA · PURGATORIO · KALAHARI</h1><p>Una inscripción para los tres mapas. Cada sala tiene su propio ID y contraseña. El organizador las habilita en orden.</p></div>
 <div id="message" role="status" aria-live="polite"></div>
 <div class="row" style="margin-bottom:14px"><button id="tabAdmin" class="primary" type="button">⚙ Organizador</button><button id="tabPlayer" type="button">🎮 Jugador</button></div>
 <section id="authPanel" class="panel">
-<h2>Iniciar sesión</h2><p class="small">Usá el correo y la contraseña de tu cuenta de JS Torneos. No ingreses la contraseña de Free Fire.</p>
-<label>Correo de JS Torneos</label><input id="email" type="email" autocomplete="username" placeholder="correo@ejemplo.com">
-<label>Contraseña de JS Torneos</label><input id="password" type="password" autocomplete="current-password" placeholder="Tu contraseña">
+<h2>Iniciar sesión</h2><p class="small">Usá el correo y la contraseña de tu cuenta de TORNEOS JS. No ingreses la contraseña de Free Fire.</p>
+<label>Correo de TORNEOS JS</label><input id="email" type="email" autocomplete="username" placeholder="correo@ejemplo.com">
+<label>Contraseña de TORNEOS JS</label><input id="password" type="password" autocomplete="current-password" placeholder="Tu contraseña">
 <button class="primary full" id="signin" type="button">Entrar</button>
 <div class="row" style="margin-top:10px"><button type="button" id="google" class="secondary">Continuar con Google</button><button type="button" id="signout" class="secondary hidden">Cerrar sesión</button></div>
 <p id="signedAs" class="small"></p>
@@ -42,7 +42,7 @@ button{cursor:pointer;min-height:42px;padding:10px 14px;font-weight:850;color:wh
 <button type="button" class="secondary full" id="teamAccessBtn">Consultar mis tres mapas</button></div>
 <div class="panel"><h2>🗺 Salas de los tres mapas</h2><div id="playerMaps" class="maps"></div></div>
 </section>
-<footer>JS Torneos es una herramienta comunitaria independiente de Garena. Los datos de las salas solo se muestran a participantes autorizados.</footer>
+<footer>TORNEOS JS es una herramienta comunitaria independiente de Garena. Los datos de las salas solo se muestran a participantes autorizados.</footer>
 </main>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <script>

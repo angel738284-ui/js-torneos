@@ -2,7 +2,7 @@
 <html lang="es"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#080d1a">
-<title>JS Family · Torneos para jugadores</title>
+<title>TORNEOS JS · Free Fire</title>
 <style>
 :root{color-scheme:dark}*{box-sizing:border-box}body{margin:0;background:#080d1a;color:#f6f8fe;font:500 15px/1.45 system-ui,-apple-system,Roboto,sans-serif;min-height:100vh}
 body:before{content:"";position:fixed;inset:0;z-index:-1;background:radial-gradient(ellipse at 90% -20%,#3c607a55,transparent 50%),radial-gradient(ellipse at 0% 50%,#76314833,transparent 50%)}
@@ -119,6 +119,27 @@ body.js-auth-required #js-account-status{border-radius:12px;padding:13px 14px}
 body.js-auth-required #js-account-guest .js-guest-note{color:#b7c5d7;font-size:12px;line-height:1.55}
 body.js-auth-required #js-account-view label{margin-top:10px}
 body.js-auth-required #js-account-view input{font-size:16px}
+
+/* TORNEOS JS: campanita superior y panel de notificaciones. */
+.js-header-actions{display:flex;align-items:center;gap:8px}
+.js-bell{position:relative;background:#18243a;color:white;border:1px solid #35465c;border-radius:12px;width:45px;height:45px;display:grid;place-items:center;font-size:21px}
+.js-bell:hover,.js-bell:focus-visible{border-color:#7debd6}
+.js-notice-dot{position:absolute;right:7px;top:6px;width:10px;height:10px;border-radius:50%;background:#fd647d;border:2px solid #18243a}
+.js-notice-overlay{position:fixed;inset:0;z-index:500;background:#050913d9;display:flex;align-items:flex-start;justify-content:center;padding:env(safe-area-inset-top) 14px 20px;overflow:auto}
+.js-notice-panel{position:relative;max-width:580px;width:100%;max-height:calc(100dvh - 36px);overflow-y:auto;background:linear-gradient(145deg,#182640,#0f1c2d);border:1px solid #49607f;border-radius:20px;padding:19px 17px 24px;margin:clamp(24px,12vh,90px) auto 0;box-shadow:0 20px 70px #000b}
+.js-notice-head{display:flex;justify-content:space-between;align-items:flex-start;gap:9px}
+.js-notice-kicker{font-size:10px;font-weight:900;letter-spacing:1.7px;color:#a1eadc}
+.js-notice-head h2{font-size:21px;margin:5px 0 10px}
+.js-notice-close{border:1px solid #5b6b81;background:#253750;color:white;border-radius:11px;min-width:41px;min-height:41px;font-size:19px}
+.js-notice-explain{color:#aebfd3;font-size:12px;margin:0 0 15px}
+.js-notice-list{display:grid;gap:8px;margin-bottom:12px}
+.js-notice-list .notice-line{display:flex;flex-direction:column;align-items:flex-start;gap:5px;margin:0;font-size:13px}
+.js-notice-list .notice-line small{font-size:10px;color:#a6bcd7}
+.js-alert-button{margin:13px 0 4px;width:100%}
+.js-notice-footer{line-height:1.5;margin-top:12px}
+.js-logout-btn{border-color:#9a5b69!important;color:#ffc8d0!important;background:#342437!important}
+@media(max-width:380px){.brand b{font-size:16px}.brand small{font-size:8px}.logo{width:43px;height:43px}.js-header-actions{gap:5px}.js-bell,.refresh{width:41px;height:41px}}
+body.js-auth-required #js-notice-overlay,body.js-auth-checking #js-notice-overlay{display:none!important}
 </style></head>
 <body class="js-auth-checking">
 <div id="js-auth-loading" role="status" aria-live="polite">
@@ -126,13 +147,18 @@ body.js-auth-required #js-account-view input{font-size:16px}
   <strong>JS TORNEOS</strong>
   <p>Comprobando tu sesión…</p>
 </div>
-<div class="wrap"><header><div class="brand"><div class="logo">JS</div><div><b>JS FAMILY</b><small>TORNEOS · FREE FIRE</small></div></div><button id="refresh" class="refresh" aria-label="Actualizar" type="button">↻</button></header>
+<div class="wrap"><header><div class="brand"><div class="logo">JS</div><div><b>TORNEOS JS</b><small>TORNEOS · FREE FIRE</small></div></div><div class="js-header-actions">
+ <button id="js-open-notices" class="js-bell" type="button" aria-label="Abrir notificaciones" aria-expanded="false" aria-controls="js-notice-overlay">
+  <span aria-hidden="true">🔔</span><span id="js-notice-dot" class="js-notice-dot account-hide" aria-hidden="true"></span>
+ </button>
+ <button id="refresh" class="refresh" aria-label="Actualizar torneos" type="button">↻</button>
+ </div></header>
 <section class="hero"><div class="over">● FREE FIRE · COMPETITIVO</div><h1>Tu próxima<br><em>victoria</em> empieza acá.</h1><p>Encontrá tu campeonato, inscribí a tu escuadra y competí.</p>
 <div class="stats"><div><strong id="openCount">—</strong><span>Inscripciones abiertas</span></div><div><strong id="allCount">—</strong><span>Torneos disponibles</span></div></div></section>
 <div class="title"><div><small>ENCONTRÁ TU DESAFÍO</small><h2>Explorar torneos</h2></div><span id="when">Actualizando…</span></div>
 <input type="search" id="search" placeholder="Buscar torneo por nombre o código" aria-label="Buscar torneos">
 <div class="filters"><button type="button" data-state="open" class="sel">🔥 Abiertos</button><button type="button" data-state="all">Todos</button><button type="button" data-state="closed">⚔️ En curso</button><button type="button" data-state="finished">🏆 Terminados</button></div>
-<div id="error" hidden class="error"></div><div id="cards"><div class="empty">Buscando torneos de JS Family…</div></div>
+<div id="error" hidden class="error"></div><div id="cards"><div class="empty">Buscando torneos de TORNEOS JS…</div></div>
 <div class="help"><h3>🔐 ¿Ya te inscribiste?</h3><p>Entrá con tu código privado para ver tu rival, sala y resultados.</p><a href="./equipo.html">Consultar mi equipo →</a></div>
 </div>
 <nav><a class="sel" href="?"><span>🏆</span>Torneos</a><a href="./equipo.html"><span>🛡️</span>Mi equipo</a><a href="./llaves.html"><span>⚔️</span>Llaves</a></nav>
@@ -185,12 +211,12 @@ setInterval(()=>{if(document.visibilityState==="visible")load()},90000);load();
 <section id="js-account-view" class="account-section account-hide" aria-live="polite">
   <div id="js-auth-welcome">
     <div class="js-login-icon">JS</div>
-    <div class="js-welcome-kicker">JS FAMILY · FREE FIRE</div>
-    <h1>Bienvenido a<br><em>JS Torneos</em></h1>
+    <div class="js-welcome-kicker">TORNEOS JS · FREE FIRE</div>
+    <h1>Bienvenido a<br><em>TORNEOS JS</em></h1>
     <p>Iniciá sesión o creá tu cuenta para participar en torneos, seguir tus partidas y guardar tus resultados.</p>
   </div>
   <h2 class="js-web-profile-heading">👤 Mi perfil de jugador</h2>
-  <p class="js-web-profile-description">Tu perfil, torneos e inscripciones de JS Family.</p>
+  <p class="js-web-profile-description">Tu perfil, torneos e inscripciones de TORNEOS JS.</p>
   <div id="js-account-status" class="auth-status">Comprobando sesión…</div>
   <div id="js-account-guest" class="account-card">
     <p class="js-guest-intro">Elegí cómo querés entrar</p>
@@ -207,10 +233,10 @@ setInterval(()=>{if(document.visibilityState==="visible")load()},90000);load();
       </div>
       <p>Si creás una cuenta, confirmá el correo y regresá a iniciar sesión.</p>
     </details>
-    <p class="js-guest-note" style="margin-top:15px">¿Es tu primera vez? Tocá <b>Crear cuenta</b>. Si ya tenés una cuenta de JS Torneos, usá <b>Iniciar sesión</b>.</p>
+    <p class="js-guest-note" style="margin-top:15px">¿Es tu primera vez? Tocá <b>Crear cuenta</b>. Si ya tenés una cuenta de TORNEOS JS, usá <b>Iniciar sesión</b>.</p>
   </div>
   <div id="js-account-signed" class="account-hide">
-    <div id="js-web-profile" class="js-web-profile-card" aria-label="Perfil de JS Torneos">
+    <div id="js-web-profile" class="js-web-profile-card" aria-label="Perfil de TORNEOS JS">
       <div id="js-web-cover" class="js-web-profile-cover"></div>
       <div id="js-web-avatar" class="js-web-profile-avatar">JS</div>
       <div class="js-web-profile-details">
@@ -248,7 +274,7 @@ setInterval(()=>{if(document.visibilityState==="visible")load()},90000);load();
     <div class="account-card">
       <div class="account-row" style="justify-content:space-between">
         <strong id="js-google-name">Cuenta Google</strong>
-        <button id="js-google-logout" class="btn-alt" type="button">Salir</button>
+        <button id="js-google-logout" class="btn-alt js-logout-btn" type="button">🚪 Cerrar sesión</button>
       </div>
       <label for="js-game-id">ID de jugador de Free Fire</label>
       <input id="js-game-id" type="text" inputmode="numeric" maxlength="16" placeholder="Ejemplo: 123456789" autocomplete="off">
@@ -272,13 +298,21 @@ setInterval(()=>{if(document.visibilityState==="visible")load()},90000);load();
   <p>Las inscripciones encontradas con el ID de Free Fire de tu perfil.</p>
   <div id="js-my-list"><div class="empty">Ingresá con correo o Google para ver tus participaciones.</div></div>
 </section>
-<section id="js-notices-view" class="account-section account-hide">
-  <h2>🔔 Notificaciones</h2>
-  <p>Avisos sobre cruces, salas y resultados mientras tenés abierta la aplicación.</p>
-  <button id="js-alert-permission" class="btn-alt" type="button">Activar avisos de este dispositivo</button>
-  <div id="js-notice-list" style="margin-top:15px"></div>
-  <p class="tiny">Las notificaciones con la app completamente cerrada requerirán una actualización posterior con Firebase Cloud Messaging.</p>
-</section>
+<div id="js-notice-overlay" class="js-notice-overlay account-hide">
+ <section class="js-notice-panel" role="dialog" aria-modal="true" aria-labelledby="js-notice-title" tabindex="-1">
+  <div class="js-notice-head">
+   <div>
+    <div class="js-notice-kicker">TORNEOS JS</div>
+    <h2 id="js-notice-title">🔔 Notificaciones</h2>
+   </div>
+   <button id="js-notice-close" class="js-notice-close" type="button" aria-label="Cerrar notificaciones">✕</button>
+  </div>
+  <p class="js-notice-explain">Avisos sobre salas, enfrentamientos y resultados.</p>
+  <div id="js-notice-list" class="js-notice-list" aria-live="polite"></div>
+  <button id="js-alert-permission" class="btn-alt js-alert-button" type="button">Activar notificaciones de este dispositivo</button>
+  <p class="tiny js-notice-footer">Los avisos del navegador dependen de sus permisos. Con la página cerrada no se garantizan notificaciones automáticas.</p>
+ </section>
+</div>
 
 <script type="module">
 import {createClient} from "https://esm.sh/@supabase/supabase-js@2";
@@ -290,9 +324,9 @@ import {createClient} from "https://esm.sh/@supabase/supabase-js@2";
  const q=id=>document.getElementById(id);
  const select=(el,show)=>el.classList.toggle("account-hide",!show);
  const make=(tag,txt,cls)=>{const x=document.createElement(tag);if(typeof txt==="string")x.textContent=txt;if(cls)x.className=cls;return x};
- const scenes=["torneos","perfil","mis","avisos"];
+ const scenes=["torneos","perfil","mis"];
  const original=[...document.querySelectorAll(".hero,.title,#search,.filters,#cards,.help")];
- const views={perfil:q("js-account-view"),mis:q("js-my-view"),avisos:q("js-notices-view")};
+ const views={perfil:q("js-account-view"),mis:q("js-my-view")};
  let session=null,profile=null,tournaments=[],fresh=false,activeTab="torneos";
  const storeKey="js-family-player-notices-v2";
  const saved=()=>{try{return JSON.parse(localStorage.getItem(storeKey)||"[]")}catch{return[]}};
@@ -324,8 +358,8 @@ import {createClient} from "https://esm.sh/@supabase/supabase-js@2";
  function menu(){
    const nav=document.querySelector("nav");if(!nav)return;
    nav.replaceChildren();
-   const icons={torneos:"🏆",perfil:"👤",mis:"⚔️",avisos:"🔔"};
-   const names={torneos:"Torneos",perfil:"Perfil",mis:"Mis torneos",avisos:"Avisos"};
+   const icons={torneos:"🏆",perfil:"👤",mis:"⚔️"};
+   const names={torneos:"Torneos",perfil:"Perfil",mis:"Mis torneos"};
    for(const name of scenes){
      const b=make("button",undefined,"player-nav-button"+(activeTab===name?" is-current":""));
      b.append(make("span",icons[name]),make("small",names[name]));
@@ -339,8 +373,16 @@ import {createClient} from "https://esm.sh/@supabase/supabase-js@2";
    for(const [name,node] of Object.entries(views))select(node,name===tab);
    menu();
    if(tab==="mis")loadMy();
-   if(tab==="avisos")showNotices();
+
    window.scrollTo({top:0,behavior:"instant"});
+ }
+ const lastSeenKey="js-torneos-notices-last-read-v1";
+ function noticeUnread(){
+   const seen=Number(localStorage.getItem(lastSeenKey)||0);
+   return notices.some(n=>Date.parse(n.at||"")>seen);
+ }
+ function noticeBellUpdate(){
+   q("js-notice-dot").classList.toggle("account-hide",!noticeUnread());
  }
  function showNotices(){
    const box=q("js-notice-list");box.replaceChildren();
@@ -351,14 +393,37 @@ import {createClient} from "https://esm.sh/@supabase/supabase-js@2";
      box.append(row);
    }
  }
+ let notificationsOpen=false;
+ function openNotices(){
+   if(!session)return;
+   notificationsOpen=true;
+   q("js-notice-overlay").classList.remove("account-hide");
+   q("js-open-notices").setAttribute("aria-expanded","true");
+   showNotices();
+   try{localStorage.setItem(lastSeenKey,String(Date.now()))}catch{}
+   noticeBellUpdate();
+   q("js-notice-close").focus();
+ }
+ function closeNotices(){
+   notificationsOpen=false;
+   q("js-notice-overlay").classList.add("account-hide");
+   q("js-open-notices").setAttribute("aria-expanded","false");
+ }
+ q("js-open-notices").onclick=openNotices;
+ q("js-notice-close").onclick=closeNotices;
+ q("js-notice-overlay").onclick=event=>{if(event.target===q("js-notice-overlay"))closeNotices()};
+ document.addEventListener("keydown",event=>{if(event.key==="Escape"&&notificationsOpen)closeNotices()});
+ noticeBellUpdate();
  function notify(text,id,initial){
    if(known.has(id))return;known.add(id);
    if(initial)return;
    notices.unshift({id,title:text,at:new Date().toISOString()});
    notices=notices.slice(0,60);
    localStorage.setItem(storeKey,JSON.stringify(notices));
+   if(notificationsOpen){showNotices();localStorage.setItem(lastSeenKey,String(Date.now()))}
+   noticeBellUpdate();
    if(document.visibilityState==="visible"&&"Notification" in window&&Notification.permission==="granted"){
-     try{new Notification("JS Family · Torneos",{body:text,tag:id})}catch{}
+     try{new Notification("TORNEOS JS",{body:text,tag:id})}catch{}
    }
  }
  function showMy(){
@@ -564,7 +629,7 @@ import {createClient} from "https://esm.sh/@supabase/supabase-js@2";
    select(q("js-account-guest"),!session);
    select(q("js-account-signed"),!!session);
    showAuthGate(!session);
-   if(!session){profile=null;tournaments=[];renderProfile();status("Ingresá con Google o correo. Si no tenés cuenta, creá una gratis.");showMy();return}
+   if(!session){closeNotices();profile=null;tournaments=[];renderProfile();status("Ingresá con Google o correo. Si no tenés cuenta, creá una gratis.");showMy();return}
    q("js-google-name").textContent=session.user.user_metadata?.full_name||session.user.email||"Cuenta Google";
    status("✅ Sesión iniciada. Tus torneos quedan asociados a esta cuenta.",true);
    try{
@@ -616,7 +681,16 @@ import {createClient} from "https://esm.sh/@supabase/supabase-js@2";
      }
    }catch(e){status("No se pudo ingresar: "+e.message+". Confirmá que Google esté habilitado en Supabase Auth.",false)}
  };
- q("js-google-logout").onclick=async()=>{await sb.auth.signOut();session=null;profile=null;tournaments=[];fresh=false;await current()};
+ q("js-google-logout").onclick=async()=>{
+   const button=q("js-google-logout");button.disabled=true;
+   try{
+     const {error}=await sb.auth.signOut();
+     if(error)throw error;
+     closeNotices();session=null;profile=null;tournaments=[];fresh=false;
+     await current();window.scrollTo({top:0,behavior:"instant"});
+   }catch(e){status("No se pudo cerrar la sesión: "+e.message,false)}
+   finally{button.disabled=false}
+ };
  q("js-id-verify").onclick=async()=>{
    const id=q("js-game-id").value.trim().replace(/\s+/g,"");
    if(!/^[0-9]{5,16}$/.test(id)){status("Ingresá un ID numérico de 5 a 16 cifras.",false);return}
@@ -662,7 +736,7 @@ import {createClient} from "https://esm.sh/@supabase/supabase-js@2";
  q("js-alert-permission").onclick=async()=>{
    if(window.JSNative&&typeof window.JSNative.requestNotifications==="function"){
      window.JSNative.requestNotifications();
-     alert("Se solicitó permiso de avisos para JS Torneos Jugadores.");
+     alert("Se solicitó permiso de avisos para TORNEOS JS.");
      return;
    }
    if(!("Notification" in window)){alert("Tu navegador no permite notificaciones web.");return}
