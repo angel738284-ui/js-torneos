@@ -6,6 +6,7 @@
 <link rel="stylesheet" href="arena-login.css?v=1.1.0">
 <link rel="stylesheet" href="itachi-login.css?v=1.0.1">
 <link rel="stylesheet" href="profile-tiktok.css?v=1.0.2">
+<link rel="stylesheet" href="auto-mis-torneos.css?v=1.0.0">
 <style>
 :root{color-scheme:dark}*{box-sizing:border-box}body{margin:0;background:#080d1a;color:#f6f8fe;font:500 15px/1.45 system-ui,-apple-system,Roboto,sans-serif;min-height:100vh}
 body:before{content:"";position:fixed;inset:0;z-index:-1;background:radial-gradient(ellipse at 90% -20%,#3c607a55,transparent 50%),radial-gradient(ellipse at 0% 50%,#76314833,transparent 50%)}
@@ -292,20 +293,18 @@ setInterval(()=>{if(document.visibilityState==="visible")load()},90000);load();
       <div id="js-game-region" class="tiny"></div>
       <p class="tiny">La verificación identifica el apodo del ID, pero no demuestra que seas el propietario de esa cuenta de Free Fire.</p>
     </div>
-    <div class="account-card">
-      <h3>🔐 Guardar mi código privado</h3>
-      <p>Guardá el código JS-EQ cifrado en tu cuenta para recuperarlo en otro celular. El ID de tu perfil debe figurar en esa inscripción.</p>
-      <input id="js-team-code" type="text" placeholder="JS-EQ-..." autocomplete="off" spellcheck="false">
-      <button type="button" id="js-team-link" class="btn-alt" style="margin-top:10px">💾 Guardar código</button>
-      <h3>Mis códigos guardados</h3><div id="js-saved-codes"></div>
-      <button id="js-saved-refresh" class="btn-alt" type="button">↻ Actualizar códigos</button>
-    </div>
+
   </div>
 </section>
 <section id="js-my-view" class="account-section account-hide">
   <h2>⚔️ Mis torneos</h2>
-  <p>Las inscripciones encontradas con el ID de Free Fire de tu perfil.</p>
-  <div id="js-my-list"><div class="empty">Ingresá con correo o Google para ver tus participaciones.</div></div>
+  <p>Encontramos tus participaciones automáticamente según el ID de Free Fire guardado en tu perfil.</p>
+  <div class="js-auto-tournaments">
+    <div><strong>🎮 ID vinculado: <span id="js-my-game-id">—</span></strong>
+    <p class="tiny">No tenés que ingresar códigos. Se muestran las inscripciones donde figura tu ID, como titular o suplente.</p></div>
+    <button id="js-my-refresh" class="btn-alt" type="button">↻ Actualizar</button>
+  </div>
+  <div id="js-my-list" aria-live="polite"><div class="empty">Iniciá sesión para ver tus participaciones.</div></div>
 </section>
 <div id="js-notice-overlay" class="js-notice-overlay account-hide">
  <section class="js-notice-panel" role="dialog" aria-modal="true" aria-labelledby="js-notice-title" tabindex="-1">
@@ -444,9 +443,10 @@ import {createClient} from "https://esm.sh/@supabase/supabase-js@2";
  }
  function showMy(){
    const root=q("js-my-list");root.replaceChildren();
-   if(!session){root.append(make("div","Ingresá con correo o Google para ver tus torneos.","empty"));return}
-   if(!profile){root.append(make("div","Primero verificá tu ID de Free Fire desde Perfil.","empty"));return}
-   if(!tournaments.length){root.append(make("div","Aún no encontramos equipos inscritos con tu ID.","empty"));return}
+   q("js-my-game-id").textContent=profile?.game_id||"Sin verificar";
+   if(!session){root.append(make("div","Ingresá con Google o correo para ver tus torneos.","empty"));return}
+   if(!profile){root.append(make("div","Verificá tu ID de Free Fire desde Perfil y acá aparecerán tus inscripciones automáticamente.","empty"));return}
+   if(!tournaments.length){root.append(make("div","Todavía no hay inscripciones activas donde figure tu ID "+profile.game_id+". Si te anotaron recién, tocá Actualizar.","empty"));return}
    for(const t of tournaments){
      const card=make("article",undefined,"card");
      card.append(make("h3",t.tournament),make("p","🛡️ "+t.team+" · "+(t.role==="suplente"?"Suplente":"Titular"),"tiny"));
@@ -501,21 +501,6 @@ import {createClient} from "https://esm.sh/@supabase/supabase-js@2";
      const link=make("a","🏆 Ver llaves");link.href="./llaves.html?codigo="+encodeURIComponent(t.code);
      actions.append(link);card.append(actions);root.append(card);
    }
- }
- async function loadSavedCodes(){
-   const el=q("js-saved-codes");el.replaceChildren();
-   if(!session||!profile){el.textContent="Verificá tu ID de Free Fire para ver códigos guardados.";return}
-   try{
-     const out=await apiCall("my_web_codes");
-     if(!out.codes?.length){el.textContent="Sin códigos guardados todavía.";return}
-     for(const item of out.codes){
-       const row=make("div",undefined,"account-card");
-       row.append(make("strong",item.tournament+" · "+item.name),make("p","🔐 "+item.code));
-       const copy=make("button","Copiar","btn-alt");copy.type="button";
-       copy.onclick=async()=>{try{await navigator.clipboard.writeText(item.code);status("Código privado copiado.",true)}catch{status("Seleccioná el código para copiarlo.",false)}};
-       row.append(copy);el.append(row);
-     }
-   }catch(e){el.textContent="⚠️ "+e.message}
  }
  const imageHost="https://chfshxlykvmovwryjnxi.supabase.co/storage/v1/object/public/js-player-profiles/";
  function safeProfileImage(path,updatedAt){
@@ -623,8 +608,18 @@ import {createClient} from "https://esm.sh/@supabase/supabase-js@2";
    }finally{save.disabled=false}
  };
 
+ q("js-my-refresh").onclick=()=>{
+   const btn=q("js-my-refresh");
+   if(btn.disabled)return;
+   btn.disabled=true;
+   loadMy().finally(()=>{btn.disabled=false});
+ };
  async function loadMy(){
    if(!session||!profile){tournaments=[];showMy();return}
+   q("js-my-game-id").textContent=profile.game_id;
+   if(activeTab==="mis"){
+     q("js-my-list").replaceChildren(make("div","🔎 Buscando los torneos registrados con tu ID "+profile.game_id+"…","empty"));
+   }
    try{
      const result=await apiCall("my_tournaments");
      const newer=result.tournaments||[];
@@ -660,7 +655,7 @@ import {createClient} from "https://esm.sh/@supabase/supabase-js@2";
        q("js-game-id").value=profile.game_id;
        q("js-game-nickname").textContent="✅ "+profile.nickname;
        q("js-game-region").textContent="Región: "+profile.region+" · Perfil guardado en tu cuenta";
-       loadMy();loadSavedCodes();
+       loadMy();
      }else{
        q("js-game-nickname").textContent="";
        q("js-game-region").textContent="Ingresá tu ID y tocá Verificar.";
@@ -727,15 +722,6 @@ import {createClient} from "https://esm.sh/@supabase/supabase-js@2";
    }catch(e){status("⚠️ "+e.message,false)}
    finally{q("js-id-verify").disabled=false}
  };
- q("js-team-link").onclick=async()=>{
-   const code=q("js-team-code").value.trim().toUpperCase();
-   try{
-     const result=await apiCall("save_web_code",{team_code:code});
-     q("js-team-code").value="";
-     status("✅ Código guardado: "+result.name,true);loadSavedCodes();loadMy();
-   }catch(e){status("⚠️ "+e.message,false)}
- };
- q("js-saved-refresh").onclick=()=>loadSavedCodes();
  let jsSignupMode=false;
  function setAuthTab(register){
    jsSignupMode=!!register;
