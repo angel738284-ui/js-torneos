@@ -1,7 +1,7 @@
 {
-  "version_code": 19,
-  "version_name": "1.6.5",
-  "apk_url": "https://angel738284-ui.github.io/js-torneos/updates/JS-TORNEOS-JUGADORES-v1.6.5.apk",
-  "sha256": "510c791947dfb3f0ef7eb2030b1bb3af576e8456e326e3e48129a80d693265e7",
-  "notes": "Corrección del detector de actualizaciones: ahora compara la versión realmente instalada en Android y no vuelve a pedir la misma actualización. Mantiene los tres mapas BR: Bermuda, Purgatorio y Kalahari."
+  "version_code": 20,
+  "version_name": "1.6.6",
+  "apk_url": "https://angel738284-ui.github.io/js-torneos/updates/JS-TORNEOS-JUGADORES-v1.6.6.apk",
+  "sha256": "12c3721836948178622c744c20f0df516769959c0f6adf916c7773661f8e7029",
+  "notes": "Seguridad dentro de la APK: en Perfil > Cuenta > Cambiar contraseña podés establecer una nueva clave sin abrir Chrome. Incluye confirmación y código de verificación de Supabase si es necesario; se conservan tus torneos y datos."
 }
