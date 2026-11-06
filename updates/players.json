@@ -1,7 +1,7 @@
 {
-  "version_code": 20,
-  "version_name": "1.6.6",
-  "apk_url": "https://angel738284-ui.github.io/js-torneos/updates/JS-TORNEOS-JUGADORES-v1.6.6.apk",
-  "sha256": "12c3721836948178622c744c20f0df516769959c0f6adf916c7773661f8e7029",
-  "notes": "Seguridad dentro de la APK: en Perfil > Cuenta > Cambiar contraseña podés establecer una nueva clave sin abrir Chrome. Incluye confirmación y código de verificación de Supabase si es necesario; se conservan tus torneos y datos."
+  "version_code": 21,
+  "version_name": "1.6.7",
+  "apk_url": "https://jstorneos.com/updates/JS-TORNEOS-JUGADORES-v1.6.7.apk",
+  "sha256": "73263dcfece8f92781cd963896bcfacdc28524b87a87b2d2c4acfdaa9e6856b3",
+  "notes": "Verificación más simple: ahora solo se exige ID y apodo de Free Fire. No hay bloqueo por región en torneos, BR Solo ni suplentes. Sin pérdida de cuenta o datos."
 }

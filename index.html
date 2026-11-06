@@ -624,7 +624,7 @@ import {normalizeSocialLink,renderSocialLinks} from "./profile-social.js?v=1.0.0
    q("js-admin-from-profile").hidden=profile.is_admin!==true;
    q("js-web-user-bio").textContent=profile.bio||"Todavía no agregaste una biografía.";
    renderSocialLinks(q("js-web-social"),profile);
-   q("js-web-freefire").textContent="✅ Free Fire: "+profile.nickname+" · ID "+profile.game_id+" · Región "+profile.region;
+   q("js-web-freefire").textContent="✅ Free Fire: "+profile.nickname+" · ID "+profile.game_id;
  }
  function fillProfileEdit(){
    if(!profile)return;
@@ -803,7 +803,7 @@ import {normalizeSocialLink,renderSocialLinks} from "./profile-social.js?v=1.0.0
      if(profile){
        q("js-game-id").value=profile.game_id;
        q("js-game-nickname").textContent="✅ "+profile.nickname;
-       q("js-game-region").textContent="Región: "+profile.region+" · Perfil guardado en tu cuenta";
+       q("js-game-region").textContent="✅ Apodo verificado · Perfil guardado en tu cuenta";
        loadMy();
      }else{
        q("js-game-nickname").textContent="";
@@ -865,7 +865,7 @@ import {normalizeSocialLink,renderSocialLinks} from "./profile-social.js?v=1.0.0
      profile=result.profile;
      renderProfile();
      q("js-game-nickname").textContent="✅ "+profile.nickname;
-     q("js-game-region").textContent="Región: "+profile.region+" · Perfil guardado en tu cuenta";
+     q("js-game-region").textContent="✅ Apodo verificado · Perfil guardado en tu cuenta";
      status("✅ Nombre verificado y guardado correctamente.",true);
      await loadMy();
    }catch(e){status("⚠️ "+e.message,false)}
