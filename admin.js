@@ -326,7 +326,7 @@ $("sendRecoveryLink").onclick=async()=>{
  $("recoveryFeedback").textContent="Solicitando correo de recuperación…";
  try{
    const {error}=await db.auth.resetPasswordForEmail(email,{
-     redirectTo:location.origin+location.pathname
+     redirectTo:"https://jstorneos.com/"
    });
    if(error)throw error;
    $("recoveryFeedback").textContent="✅ Si el correo está registrado, recibirás un enlace para cambiar tu contraseña. Revisá también Spam.";

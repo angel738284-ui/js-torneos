@@ -4,6 +4,20 @@
 <meta name="theme-color" content="#080d1a">
 <title>TORNEOS JS · Free Fire</title>
 <link rel="canonical" href="https://jstorneos.com/">
+<script>
+/* La URL principal es el redirect permitido para correos de Supabase Auth.
+   Si el correo es para recuperar una clave de ADMIN, enviar el fragmento
+   completo a la pantalla de restablecimiento antes de iniciar el cliente
+   de jugadores (que de otro modo consumiría la sesión). */
+(function(){
+  const hash=new URLSearchParams(location.hash.slice(1));
+  const query=new URLSearchParams(location.search.slice(1));
+  if(hash.get("type")==="recovery"||query.get("type")==="recovery"){
+    location.replace("/admin.html"+location.search+location.hash);
+  }
+})();
+</script>
+
 <link rel="stylesheet" href="arena-login.css?v=1.1.0">
 <link rel="stylesheet" href="itachi-login.css?v=1.0.1">
 <link rel="stylesheet" href="profile-tiktok.css?v=1.0.4">
