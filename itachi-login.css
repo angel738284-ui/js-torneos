@@ -1,0 +1,32 @@
+
+/* Portada cinematográfica: Itachi 456 real, sin el escudo JS genérico. */
+body.js-auth-required #js-auth-welcome{max-width:700px;padding-top:12px}
+body.js-auth-required #js-auth-welcome .js-arena-eyebrow{font-size:8px;letter-spacing:1.5px;color:#f2b4be}
+body.js-auth-required .js-itachi-cover{display:block;position:relative;width:min(100%,520px);height:auto;margin:3px auto 0;filter:drop-shadow(0 16px 32px #b82d4d44)}
+body.js-auth-required .js-itachi-cover img{display:block;width:100%;height:auto;object-fit:contain;mix-blend-mode:screen;-webkit-mask-image:linear-gradient(180deg,#000 0%,#000 88%,transparent 100%);mask-image:linear-gradient(180deg,#000 0%,#000 88%,transparent 100%)}
+body.js-auth-required #js-auth-welcome .js-welcome-kicker{font-size:9px;letter-spacing:2.1px;margin-top:-12px;position:relative;color:#dba5b2}
+body.js-auth-required #js-auth-welcome h1{font-family:system-ui,-apple-system,Roboto,sans-serif;font-weight:1000;line-height:1.02;letter-spacing:-2px;margin:10px auto;font-size:clamp(36px,8vw,54px);text-transform:uppercase}
+body.js-auth-required #js-auth-welcome h1 em{background:linear-gradient(100deg,#f9c0c6 0%,#fa5174 64%,#bf173a);-webkit-background-clip:text;background-clip:text}
+body.js-auth-required #js-auth-welcome p{font-size:12px;color:#c6bdc8;margin-top:7px}
+body.js-auth-required .js-arena-tags{margin-top:12px}
+body.js-auth-required .js-arena-tags span{border:1px solid #b72c47a6;box-shadow:inset 0 0 14px #d63b5425;background:#160e19d9;color:#fbe0e4}
+body.js-auth-required #js-account-guest.js-arena-panel{border-color:#ac2847;border-top-color:#ff5d78;background:linear-gradient(145deg,#191321,#080b14 88%);box-shadow:0 17px 42px #000c,0 0 25px #9e142d35;overflow:hidden}
+body.js-auth-required #js-account-guest.js-arena-panel:before{content:"";position:absolute;inset:0;pointer-events:none;background:linear-gradient(180deg,transparent 50%,#941b2b0c),url("./images/arena-moon.webp") center top / cover no-repeat;opacity:.065;z-index:0}
+body.js-auth-required #js-account-guest.js-arena-panel>*{position:relative;z-index:1}
+body.js-auth-required .js-auth-tab.active{background:linear-gradient(115deg,#fa3357,#990e2c);box-shadow:0 0 22px #d71c3f65}
+body.js-auth-required .js-auth-submit{background:linear-gradient(110deg,#ef183d,#8a0e27);border-color:#fb516c;box-shadow:0 0 18px #e3233a55}
+body.js-auth-required .js-auth-input{background:#090b14}
+body.js-auth-required .js-auth-google{background:linear-gradient(180deg,#ffffff,#e9eaf1);border:1px solid #fff}
+@media(min-width:780px){
+ body.js-auth-required #js-auth-welcome{max-width:580px}
+ body.js-auth-required .js-itachi-cover{width:min(100%,570px)}
+ body.js-auth-required #js-auth-welcome h1{font-size:clamp(48px,5vw,70px)}
+ body.js-auth-required #js-account-view{column-gap:22px}
+}
+@media(max-width:420px){
+ body.js-auth-required #js-auth-welcome{padding:8px 0 0}
+ body.js-auth-required .js-itachi-cover{margin:-3px auto 0}
+ body.js-auth-required #js-auth-welcome h1{font-size:clamp(33px,9vw,42px)}
+ body.js-auth-required #js-auth-welcome p{max-width:330px}
+ body.js-auth-required #js-account-guest.js-arena-panel{margin-top:13px}
+}
