@@ -6,109 +6,115 @@ window.JSBRAdmin={
   root.replaceChildren();
   if(tour.mode!=="BR")return;
   const make=(tag,label,cls)=>{
-   const el=document.createElement(tag);
-   if(label!==undefined)el.textContent=label;
-   if(cls)el.className=cls;
-   return el;
+   const node=document.createElement(tag);
+   if(label!==undefined)node.textContent=label;
+   if(cls)node.className=cls;
+   return node;
   };
   const registered=teams.filter(t=>t.status==="registered");
-  root.append(make("h3","📨 Sala Battle Royale · todos contra todos"));
-  root.append(make("p","Una sola sala para todos. Enviá el ID y la contraseña una vez: los "+registered.length+
-   " participantes/equipos inscritos los verán desde Mi equipo o la app de jugadores.","small"));
-  let br;
+  root.append(make("h3","🗺 Battle Royale · 3 mapas, 3 salas"));
+  root.append(make("p","Un mismo torneo y los mismos participantes para Bermuda, Purgatorio y Kalahari. Cada mapa tiene su ID y contraseña. Enviá cada sala cuando corresponda; al publicar la siguiente se cierra la anterior.","small"));
+  let br,maps;
   try{
-   const {data,error}=await db.from("js_br_rooms")
-     .select("room_id,room_password,sent_at,is_open,winner_team,finished_at")
-     .eq("tournament_id",tour.id).maybeSingle();
-   if(error)throw error;
-   br=data;
+   const [legacy,three]=await Promise.all([
+    db.from("js_br_rooms").select("room_id,room_password,sent_at,is_open,winner_team,finished_at").eq("tournament_id",tour.id).maybeSingle(),
+    db.rpc("js_br_admin_maps",{p_tournament:tour.id})
+   ]);
+   if(legacy.error)throw legacy.error;
+   if(three.error||!three.data?.ok)throw three.error||Error("No se pudieron consultar las salas BR.");
+   br=legacy.data;maps=three.data.maps||[];
   }catch(e){
-   root.append(make("p","⚠️ No se pudo consultar la sala: "+(e.message||String(e)),"small"));
+   root.append(make("p","⚠️ No se pudieron cargar los mapas: "+(e.message||String(e)),"small"));
    return;
   }
-  const status=make("div",undefined,"br-shared-status");
-  if(br?.winner_team){
-   const winner=teams.find(t=>t.id===br.winner_team);
-   status.textContent="🏆 CAMPEÓN BR: "+(winner?.name||"Ganador")+". Torneo finalizado.";
-  }else if(br?.is_open){
-   status.textContent="🟢 Sala enviada a todos · "+
-     (br.sent_at?new Date(br.sent_at).toLocaleString("es-AR"):"")+
-     " · Inscripciones cerradas.";
-  }else if(br){
-   status.textContent="🔒 Sala cerrada. Podés enviar otra sala general con datos nuevos.";
-  }else{
-   status.textContent="⏳ Sala pendiente de envío. Los jugadores esperan los datos.";
+  const winner=br?.winner_team?teams.find(t=>t.id===br.winner_team):null;
+  if(winner){
+   root.append(make("p","🏆 CAMPEÓN BR: "+(winner.name||"Ganador")+". Torneo finalizado.","br-shared-status"));
   }
-  root.append(status);
-  if(br?.winner_team)return;
-  const fields=make("div",undefined,"br-shared-fields");
-  const labelId=make("label","ID de sala BR");
-  const roomId=make("input");roomId.type="text";roomId.maxLength=60;
-  roomId.placeholder="ID de la sala";roomId.autocomplete="off";
-  roomId.value=br?.room_id||"";
-  const labelPass=make("label","Contraseña (igual para todos)");
-  const pass=make("input");pass.type="text";pass.maxLength=80;
-  pass.autocomplete="off";pass.placeholder="Contraseña de la sala";
-  pass.value=br?.room_password||"";
-  const send=make("button",br?.is_open?"🔁 Reenviar sala a todos":"📨 Enviar sala a todos","good full");
-  send.type="button";send.disabled=!registered.length||tour.status==="finished";
-  send.onclick=async()=>{
-   const rid=roomId.value.trim(),password=pass.value.trim();
-   if(!rid||!password)return showMessage("Escribí el ID y la contraseña.",true);
-   if(!await confirmChange("¿Enviar UNA sola sala BR a los "+registered.length+
-    " participantes/equipos? Todos recibirán el mismo ID y contraseña en su cuenta y las inscripciones se cerrarán."))
-    return;
-   send.disabled=true;
-   try{
-    const {data,error}=await db.rpc("js_br_send_room",{
-     p_tournament:tour.id,p_room_id:rid,p_password:password
-    });
-    if(error||!data?.ok)throw error||Error("No se confirmó el envío");
-    await refresh();
-    showMessage("✅ Sala BR enviada a los "+data.recipient_teams+" equipos/participantes inscritos.");
-   }catch(e){showMessage("No se pudo enviar la sala: "+(e.message||String(e)),true);}
-   finally{send.disabled=false;}
-  };
-  fields.append(labelId,roomId,labelPass,pass,send);root.append(fields);
-  if(br?.is_open){
-   const close=make("button","🔒 Cerrar acceso a la sala","secondary full");
-   close.type="button";close.style.marginTop="10px";
-   close.onclick=async()=>{
-    if(!await confirmChange("¿Cerrar el acceso al ID y contraseña BR? Podrás reenviar la sala luego."))return;
-    close.disabled=true;
+  const lastPublished=Math.max(0,...maps.filter(x=>!!x.sent_at).map(x=>Number(x.map_number)));
+  const hasNewRooms=lastPublished>0;
+  if(br&&!hasNewRooms){
+   const old=make("div",undefined,"item");
+   old.append(make("h3","Sala antigua (formato anterior)"));
+   old.append(make("p",br.is_open?"🟢 Sala antigua habilitada":"🔒 Sala antigua cerrada","small"));
+   if(br.is_open){old.append(make("p","ID: "+br.room_id,"small"),make("p","Contraseña: "+br.room_password,"small"));}
+   root.append(old);
+  }
+  for(const m of maps){
+   const number=Number(m.map_number);
+   const name=String(m.map_name||["Bermuda","Purgatorio","Kalahari"][number-1]||"Mapa");
+   const box=make("section",undefined,"item js-br-map");
+   box.style.cssText="border:1px solid "+(m.is_open?"#5dddb7":"#4b6078")+";border-radius:15px;padding:14px;margin:12px 0;background:#0f1b2ccc";
+   box.append(make("div","MAPA "+number+" · "+name,"team-round"));
+   box.append(make("p",m.is_open?"🟢 Sala publicada":m.sent_at?"🔒 Sala cerrada":"⏳ Sin publicar","small"));
+   const idLabel=make("label","🎮 ID de sala · "+name);
+   const roomId=make("input");roomId.type="text";roomId.maxLength=60;
+   roomId.placeholder="ID de "+name;roomId.autocomplete="off";roomId.value=m.room_id||"";
+   const passLabel=make("label","🔑 Contraseña · "+name);
+   const password=make("input");password.type="text";password.maxLength=80;
+   password.placeholder="Contraseña de "+name;password.autocomplete="off";password.value=m.room_password||"";
+   box.append(idLabel,roomId,passLabel,password);
+   const maySend=!winner&&!!registered.length&&tour.status!=="finished"&&number>=lastPublished&&number<=lastPublished+1;
+   const send=make("button",m.sent_at?"🔁 Reenviar sala "+number:"📨 Publicar sala "+number,"good full");
+   send.type="button";send.disabled=!maySend;
+   send.onclick=async()=>{
+    const rid=roomId.value.trim(),pw=password.value.trim();
+    if(!rid||!pw)return showMessage("Completá ID y contraseña para "+name+".",true);
+    if(!await confirmChange("¿Publicar "+name+" para los "+registered.length+" participantes/equipos? El mapa anterior quedará cerrado automáticamente."))return;
+    send.disabled=true;
     try{
-     const {data,error}=await db.rpc("js_br_close_room",{p_tournament:tour.id});
-     if(error||!data?.ok)throw error||Error("No se confirmó el cierre");
-     await refresh();showMessage("Acceso a la sala BR cerrado.");
-    }catch(e){showMessage(e.message||String(e),true);close.disabled=false;}
+     const {data,error}=await db.rpc("js_br_publish_map",{
+      p_tournament:tour.id,p_map_number:number,p_room_id:rid,p_password:pw
+     });
+     if(error||!data?.ok)throw error||Error("El servidor no confirmó la sala.");
+     await refresh();
+     showMessage("✅ Sala de "+name+" publicada. Los "+data.recipient_teams+" equipos verán el ID y contraseña.");
+    }catch(e){showMessage("No se pudo publicar "+name+": "+(e.message||String(e)),true);send.disabled=false;}
    };
-   root.append(close);
-  }
-  if(br){
-   const line=make("div",undefined,"divider");root.append(line);
-   root.append(make("h3","🏆 Confirmar único ganador BR"));
-   root.append(make("p","Una vez termine la partida, elegí el participante, dúo o escuadra campeón. No hay llaves ni mejor de tres.","small"));
-   const winner=make("select");winner.style.margin="8px 0 11px";
-   winner.append(make("option","Seleccioná al ganador"));
-   winner.firstChild.value="";
-   for(const t of registered){
-    const opt=make("option",t.name);opt.value=t.id;winner.append(opt);
+   box.append(send);
+   if(m.is_open&&!winner){
+    const close=make("button","🔒 Cerrar acceso a "+name,"secondary full");
+    close.type="button";close.style.marginTop="9px";
+    close.onclick=async()=>{
+     if(!await confirmChange("¿Cerrar la sala "+number+" · "+name+"?"))return;
+     close.disabled=true;
+     try{
+      const {data,error}=await db.rpc("js_br_close_map",{p_tournament:tour.id,p_map_number:number});
+      if(error||!data?.ok)throw error||Error("No se confirmó el cierre");
+      await refresh();showMessage("🔒 Sala "+name+" cerrada.");
+     }catch(e){showMessage(e.message||String(e),true);close.disabled=false;}
+    };
+    box.append(close);
    }
-   const finalize=make("button","🏆 Finalizar BR y declarar campeón","good full");
-   finalize.type="button";finalize.disabled=!registered.length;
-   finalize.onclick=async()=>{
-    const selected=registered.find(t=>t.id===winner.value);
-    if(!selected)return showMessage("Elegí quién ganó el Battle Royale.",true);
-    if(!await confirmChange("¿Confirmar que «"+selected.name+"» es el ÚNICO ganador del torneo BR? "+
-      "Esta decisión termina el torneo y se notificará a todos."))return;
-    finalize.disabled=true;
-    try{
-     const {data,error}=await db.rpc("js_br_finish",{p_tournament:tour.id,p_winner_team:selected.id});
-     if(error||!data?.ok)throw error||Error("No se confirmó el campeón");
-     await refresh();showMessage("🏆 Campeón BR confirmado: "+selected.name);
-    }catch(e){showMessage("No se pudo finalizar el BR: "+(e.message||String(e)),true);finalize.disabled=false;}
-   };
-   root.append(winner,finalize);
+   root.append(box);
   }
+  if(!winner){
+   const message=make("p","Secuencia: Bermuda → Purgatorio → Kalahari. Solo podés publicar el mapa siguiente después de enviar el anterior. Se mantiene una única inscripción.","small");
+   root.append(message);
+  }
+  if(!br||winner)return;
+  root.append(make("div",undefined,"divider"),make("h3","🏆 Confirmar ganador final del BR"));
+  root.append(make("p","Después de disputar los tres mapas, elegí al ganador general. No se generan llaves para Battle Royale.","small"));
+  const champion=make("select");champion.style.margin="8px 0 11px";
+  const first=make("option","Seleccioná al ganador");first.value="";champion.append(first);
+  for(const team of registered){
+   const opt=make("option",team.name);opt.value=team.id;champion.append(opt);
+  }
+  const canFinish=hasNewRooms?lastPublished===3:!!br?.sent_at;
+  const finalize=make("button","🏆 Finalizar BR y declarar campeón","good full");
+  finalize.type="button";finalize.disabled=!registered.length||!canFinish;
+  finalize.onclick=async()=>{
+   const selected=registered.find(t=>t.id===champion.value);
+   if(!selected)return showMessage("Elegí quién ganó el torneo BR.",true);
+   if(!await confirmChange("¿Confirmás como campeón a «"+selected.name+"»? Este resultado finalizará el torneo y se notificará a los participantes."))return;
+   finalize.disabled=true;
+   try{
+    const {data,error}=await db.rpc("js_br_finish",{p_tournament:tour.id,p_winner_team:selected.id});
+    if(error||!data?.ok)throw error||Error("No se confirmó el campeón");
+    await refresh();showMessage("🏆 Campeón BR confirmado: "+selected.name);
+   }catch(e){showMessage("No se pudo finalizar el torneo BR: "+(e.message||String(e)),true);finalize.disabled=false;}
+  };
+  root.append(champion,finalize);
+  if(!canFinish)root.append(make("p","Primero publicá los tres mapas para habilitar el ganador final.","small"));
  }
 };
