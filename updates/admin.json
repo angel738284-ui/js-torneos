@@ -1,7 +1,7 @@
 {
-  "version_code": 38,
-  "version_name": "0.6.6",
-  "apk_url": "https://angel738284-ui.github.io/js-torneos/updates/JS-TORNEOS-v0.6.6.apk",
-  "sha256": "bc76531611cd5c10eda5eca20bf3311f769a9c875cc6857dea70d4b4c14e5564",
-  "notes": "Corrección del detector de actualizaciones: ahora compara la versión realmente instalada en Android y no vuelve a pedir la misma actualización. Mantiene los tres mapas BR: Bermuda, Purgatorio y Kalahari."
+  "version_code": 39,
+  "version_name": "0.6.7",
+  "apk_url": "https://jstorneos.com/updates/JS-TORNEOS-v0.6.7.apk",
+  "sha256": "55cda1c61a1e8561ad662adfa03ea8d667b0e43ab8e8bb863af93c54ae6cd5a7",
+  "notes": "Soluciona la apertura del panel de administrador: Crear torneo, listas y gestiones se mantienen dentro de la APK, sin saltar a Chrome. Enlace oficial jstorneos.com. Conserva torneos, cuentas y los 3 mapas BR."
 }
