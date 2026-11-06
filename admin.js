@@ -213,7 +213,7 @@ async function checkUser(){
  if(recoveryMode)return;
  if(error||!user){show("login",true);show("app",false);show("logout",false);return;}
  const {data:a,error:err}=await db.from("js_admins").select("uid").eq("uid",user.id).maybeSingle();
- if(err||!a){show("login",true);show("app",false);show("logout",true);message("Cuenta creada, pero todavía no autorizada. Agregá tu correo a js_admins desde Supabase SQL Editor.",true);return;}
+ if(err||!a){show("login",true);show("app",false);show("logout",true);message("Esta cuenta no tiene permisos para administrar torneos.",true);return;}
  show("login",false);show("app",true);show("logout",true);navigate("homeScreen");await loadTours();window.JSAdminBans?.load();
 }
 $("detailPrizeKind").onchange=()=>prizeFormState("detailPrizeKind","detailPrizeQty","detailPrizeDetails");
@@ -397,11 +397,6 @@ $("signIn").onclick=async()=>{
  const email=$("email").value.trim(),password=$("password").value;
  const {error}=await db.auth.signInWithPassword({email,password});if(error)return message(error.message,true);
  await checkUser();
-};
-$("signUp").onclick=async()=>{
- const email=$("email").value.trim(),password=$("password").value;
- const {error}=await db.auth.signUp({email,password});
- message(error?error.message:"Cuenta creada. Confirmá tu email si es necesario, y autorízala en js_admins desde SQL Editor.",!!error);
 };
 $("logout").onclick=async()=>{await db?.auth.signOut();user=null;show("detail",false);await checkUser()};
 $("create").onclick=async()=>{
