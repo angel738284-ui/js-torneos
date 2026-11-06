@@ -1,1 +1,875 @@
-<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>TORNEOS JS · Inscripciones</title><meta http-equiv="refresh" content="0;url=torneos.html"></head><body><p><a href="torneos.html">Abrir TORNEOS JS web para jugadores</a></p></body></html>
+<!doctype html>
+<html lang="es"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#080d1a">
+<title>TORNEOS JS · Free Fire</title>
+<link rel="canonical" href="https://jstorneos.com/">
+<link rel="stylesheet" href="arena-login.css?v=1.1.0">
+<link rel="stylesheet" href="itachi-login.css?v=1.0.1">
+<link rel="stylesheet" href="profile-tiktok.css?v=1.0.4">
+<link rel="stylesheet" href="auto-mis-torneos.css?v=1.0.0">
+<link rel="stylesheet" href="js-friends.css?v=1.0.0">
+<link rel="stylesheet" href="profile-social.css?v=1.0.0">
+<style>
+:root{color-scheme:dark}*{box-sizing:border-box}body{margin:0;background:#080d1a;color:#f6f8fe;font:500 15px/1.45 system-ui,-apple-system,Roboto,sans-serif;min-height:100vh}
+body:before{content:"";position:fixed;inset:0;z-index:-1;background:radial-gradient(ellipse at 90% -20%,#3c607a55,transparent 50%),radial-gradient(ellipse at 0% 50%,#76314833,transparent 50%)}
+.wrap{max-width:780px;margin:auto;padding:20px 17px 120px}header{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px}
+.logo{width:52px;height:52px;background:linear-gradient(145deg,#f36379,#852943);border-radius:16px;display:grid;place-items:center;font-size:25px;font-weight:1000;letter-spacing:-2px}
+.brand{display:flex;gap:10px;align-items:center}.brand b{font-size:19px;letter-spacing:.5px}.brand small{display:block;color:#9faec8;font-size:10px;letter-spacing:2px}
+.refresh{background:#18243a;color:#fff;border:1px solid #35465c;border-radius:12px;width:45px;height:45px;font-size:26px}
+.hero{padding:30px 22px 0;background:linear-gradient(120deg,#282b45,#112539);border:1px solid #3c4d65;border-radius:23px;overflow:hidden}
+.over{color:#a6eae0;font-size:10px;letter-spacing:2px;font-weight:900}.hero h1{font-size:clamp(30px,7vw,50px);letter-spacing:-1.5px;line-height:1.06;margin:15px 0 11px}
+.hero h1 em{color:#ff8393;font-style:normal}.hero p{color:#c1cee2;margin:0 0 25px;font-size:13px}
+.stats{margin:0 -22px;padding:15px 22px;background:#09101d77;border-top:1px solid #ffffff16;display:flex;gap:25px}.stats strong{font-size:27px;display:block}.stats span{color:#9eafc9;font-size:11px}
+.title{display:flex;justify-content:space-between;align-items:end;margin:30px 2px 15px}.title small{color:#ff8393;letter-spacing:2px;font-weight:900;font-size:10px}.title h2{margin:2px 0;font-size:25px}.title>span{font-size:10px;color:#98a8c0}
+input{height:51px;width:100%;border:1px solid #34445a;border-radius:13px;background:#151e30;color:white;padding:0 15px;font:inherit}input:focus{outline:2px solid #79dfeb}
+.filters{display:flex;gap:8px;overflow:auto;padding:14px 0 15px}.filters button{border:1px solid #314257;background:#18263c;color:#bdc9db;white-space:nowrap;padding:10px 13px;border-radius:24px;font-size:12px;font-weight:850}
+.filters button.sel{background:#e9536e;color:white;border-color:#ff8193}#cards{display:grid;gap:15px}
+.card{padding:18px;background:linear-gradient(155deg,#1a2a40,#121b2c);border:1px solid #31435b;border-radius:20px}.card.open{border-color:#377e74}
+.head{display:flex;justify-content:space-between;gap:10px;align-items:start}.head h3{margin:0;font-size:19px}.code{color:#92a8c2;font-size:11px;margin-top:4px;letter-spacing:1px}
+.badge{font-size:10px;border-radius:8px;padding:7px 9px;font-weight:900;white-space:nowrap;background:#4d3a28;color:#ffe0a4}.badge.yes{background:#17483d;color:#6bf3c3}
+.info{display:flex;gap:12px;flex-wrap:wrap;margin:15px 0;color:#bfccdf;font-size:12px}.prize{color:#ffe2aa;background:#ffcb6013;border:1px solid #e1b36133;border-radius:11px;padding:10px 11px;margin:12px 0;font-size:12px}
+.count{display:flex;justify-content:space-between;font-size:12px;margin:12px 0 7px}.bar{height:7px;background:#344358;border-radius:10px;overflow:hidden}
+.fill{height:100%;background:linear-gradient(90deg,#20cdad,#7cf4e4)}.actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:17px}
+.actions a{border:1px solid #49627f;border-radius:12px;background:#29394f;color:#fff;min-height:45px;display:grid;place-items:center;text-align:center;padding:8px;font-size:13px;font-weight:900;text-decoration:none}
+.actions a.primary{background:linear-gradient(120deg,#f25c76,#a72b54);border-color:#fa889b}.empty{padding:35px 15px;border:1px dashed #3c526a;border-radius:16px;text-align:center;color:#c0cee0}
+.help{background:#172338;border:1px solid #33465e;border-radius:16px;padding:17px;margin-top:25px}.help h3{margin:0 0 5px}
+.help p{font-size:12px;color:#b0c0d6;margin:0 0 12px}.help a{color:#7be5e4;font-weight:900}
+nav{position:fixed;bottom:0;left:0;right:0;border-top:1px solid #344358;background:#091120f2;display:flex;justify-content:space-around;padding:9px 10px calc(12px + env(safe-area-inset-bottom));z-index:10}
+nav a{color:#aab9ce;text-decoration:none;text-align:center;font-size:11px;font-weight:850;display:grid;gap:2px}nav span{font-size:21px}
+nav a.sel{color:white}.error{border:1px solid #df8791;border-radius:10px;background:#4c2732;padding:12px;color:#ffc5ce;margin:8px 0}button,a{cursor:pointer}
+
+/* Cuenta y Mis Torneos - JS Family */
+.account-section{margin:24px 0 14px;background:linear-gradient(140deg,#1e2a43,#111c31);border:1px solid #405570;border-radius:21px;padding:19px}
+.account-section h2{font-size:22px;margin:0 0 6px}
+.account-section h3{margin:20px 0 5px;font-size:17px}
+.account-section p{font-size:13px;color:#b8c7dc;margin:4px 0 14px}
+.account-row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.account-section label{display:block;color:#b5c5d9;font-weight:800;font-size:12px;margin:12px 0 6px}
+.account-section input{width:100%;height:50px;border-radius:12px;background:#111929;border:1px solid #46607d;color:#fff;padding:10px 14px;font:inherit}
+.account-section input:focus{outline:2px solid #64dfec}
+.btn-action{background:linear-gradient(130deg,#f15c76,#b52a51);color:#fff;border:1px solid #ff8ca0;border-radius:12px;min-height:46px;padding:10px 16px;font:900 14px system-ui;cursor:pointer}
+.btn-alt{background:#283a53;color:white;border:1px solid #4c6789;border-radius:12px;padding:10px 15px;min-height:43px;font:850 13px system-ui}
+.auth-status{font-size:12px;padding:10px;background:#121b30;border-radius:10px;color:#bbd0e8}
+.auth-status.good{border:1px solid #3e8f78;color:#83efbf}
+.auth-status.warn{border:1px solid #b36a72;color:#ffd1d8}
+.account-card{padding:15px;border:1px solid #3d506b;border-radius:14px;background:#141e32;margin:12px 0}
+.account-card strong{color:white}
+.account-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin:13px 0}
+.mini{background:#0b1628;padding:10px;border-radius:10px}
+.mini span{display:block;font-size:11px;color:#96abc6}
+.mini b{font-size:16px;overflow-wrap:anywhere}
+.account-section .verified-name{font-size:19px;font-weight:950;color:#88f7c2}
+.player-nav-button{border:0;background:transparent;color:#a8b9d1;font:850 11px system-ui;display:grid;justify-items:center;gap:3px;min-width:67px;padding:5px}
+.player-nav-button span{font-size:20px}.player-nav-button.is-current{color:#fff}
+.account-hide{display:none!important}
+.notice-line{display:flex;align-items:center;gap:9px;border:1px solid #344963;border-radius:12px;padding:12px;margin:9px 0;color:#dbe8f7}
+.tiny{font-size:11px!important;color:#9eb3cf!important}
+
+/* Perfil completo: portada y avatar guardados en Supabase, mismo perfil de la APK */
+body.player-account-screen .wrap{padding-bottom:0}
+body.player-account-screen header{margin-bottom:5px}
+.account-section{width:min(100% - 28px,780px);margin:14px auto 28px}
+.js-web-profile-card{background:#111c2d;border:1px solid #365474;border-radius:20px;overflow:hidden;margin:15px 0 20px}
+.js-web-profile-cover{height:178px;background:linear-gradient(125deg,#412b60,#1c4461 60%,#101e31);
+ background-size:cover;background-position:center}
+.js-web-profile-avatar{width:108px;height:108px;border-radius:50%;border:5px solid #141d30;
+ margin:-53px 0 0 17px;position:relative;overflow:hidden;background:linear-gradient(135deg,#dd668b,#49356f);
+ display:flex;align-items:center;justify-content:center;font-size:26px;font-weight:950;color:#fff}
+.js-web-profile-avatar img{width:100%;height:100%;object-fit:cover}
+.js-web-profile-details{padding:15px 18px 22px;overflow-wrap:anywhere}
+.js-web-profile-details h3{font-size:24px;margin:0 0 4px}
+.js-web-profile-handle{color:#b5c4dc;font-size:13px;font-weight:750}
+.js-web-profile-bio{white-space:pre-wrap;font-size:14px;color:#e3eafd;margin:16px 0;line-height:1.6}
+.js-web-profile-verified{font-size:12px;color:#a5efcc;font-weight:750;margin-top:10px}
+.js-web-profile-admin{display:inline-block;background:#614025;border:1px solid #c59e49;
+ padding:6px 10px;border-radius:10px;color:#ffe3a0;font-size:12px;font-weight:900;margin:7px 0}
+.js-web-profile-summary{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;margin:17px 0 5px}
+.js-web-profile-stat{padding:12px 5px;text-align:center;background:#101b2e;border:1px solid #364e6d;border-radius:12px}
+.js-web-profile-stat strong{display:block;font-size:21px;color:#dbfbed}
+.js-web-profile-stat small{font-size:11px;color:#b3c5de}
+#js-web-editor[hidden]{display:none}
+#js-web-editor{padding:16px;background:#111d31;border:1px solid #466a85;border-radius:15px;margin:14px 0}
+#js-web-editor label{font-weight:850}
+#js-web-editor textarea{width:100%;min-height:85px;resize:vertical;background:#0c182a;
+ border:1px solid #47607e;border-radius:10px;padding:11px;color:#fff;font:inherit}
+#js-web-editor input[type=file]{height:auto;min-height:50px;padding:10px;font-size:12px}
+#js-web-editor button{margin:12px 5px 0 0}
+
+/* Acceso inicial obligatorio a la portada. No altera las inscripciones guardadas. */
+#js-auth-loading{display:none}
+body.js-auth-checking #js-auth-loading{display:flex;position:fixed;inset:0;z-index:1000;align-items:center;justify-content:center;flex-direction:column;gap:10px;background:radial-gradient(ellipse at 50% 6%,#42233d,transparent 56%),#090e1a;text-align:center}
+.js-login-icon{width:75px;height:75px;display:grid;place-items:center;font-size:28px;font-weight:1000;background:linear-gradient(130deg,#e95a76,#802944);border-radius:20px;box-shadow:0 12px 40px #f05a7833}
+#js-auth-loading strong{font-size:22px;letter-spacing:1px}
+#js-auth-loading p{font-size:13px;color:#afc0d4}
+body.js-auth-checking .wrap,body.js-auth-checking nav,body.js-auth-checking .account-section{display:none!important}
+body.js-auth-required .wrap,body.js-auth-required nav,body.js-auth-required #js-my-view,body.js-auth-required #js-notices-view{display:none!important}
+body.js-auth-required{background:radial-gradient(ellipse at 80% 0,#42284075,transparent 50%),radial-gradient(ellipse at 0 75%,#203b5c55,transparent 55%),#080d1a;min-height:100vh}
+body.js-auth-required #js-account-view{display:block!important;width:min(100% - 28px,480px);margin:0 auto 40px;padding:25px 16px 22px;background:transparent;border:0;box-shadow:none}
+body.js-auth-required #js-account-view .js-web-profile-heading,
+body.js-auth-required #js-account-view .js-web-profile-description{display:none!important}
+#js-auth-welcome{display:none}
+body.js-auth-required #js-auth-welcome{display:block;text-align:center;margin:23px auto 20px}
+#js-auth-welcome .js-login-icon{margin:0 auto 14px}
+#js-auth-welcome .js-welcome-kicker{font-size:11px;letter-spacing:2px;color:#8ceaca;font-weight:900}
+#js-auth-welcome h1{font-size:clamp(28px,8vw,40px);line-height:1.13;letter-spacing:-1.3px;margin:13px 0 11px}
+#js-auth-welcome h1 em{font-style:normal;color:#fc829c}
+#js-auth-welcome p{font-size:13px;color:#b6c7d9;max-width:340px;margin:0 auto}
+body.js-auth-required #js-account-guest{margin:16px auto 0;padding:21px 18px;border-radius:20px;border:1px solid #536079;background:linear-gradient(155deg,#1a2840,#10192a);box-shadow:0 15px 44px #0006}
+body.js-auth-required #js-account-guest>.js-guest-intro{color:#e1e9f5;text-align:center;font-weight:850;margin:0 0 17px}
+body.js-auth-required #js-google-login{width:100%;min-height:51px;border-radius:13px}
+body.js-auth-required #js-account-guest details{background:#101a2d;padding:13px!important;margin-top:18px!important}
+body.js-auth-required #js-account-guest details summary{color:#e4eefb}
+body.js-auth-required #js-account-guest .account-row{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+body.js-auth-required #js-account-guest .account-row button{min-width:0;padding:10px 4px;min-height:45px;font-size:12px;border-radius:10px}
+body.js-auth-required #js-account-status{border-radius:12px;padding:13px 14px}
+body.js-auth-required #js-account-guest .js-guest-note{color:#b7c5d7;font-size:12px;line-height:1.55}
+body.js-auth-required #js-account-view label{margin-top:10px}
+body.js-auth-required #js-account-view input{font-size:16px}
+
+/* TORNEOS JS: campanita superior y panel de notificaciones. */
+.js-header-actions{display:flex;align-items:center;gap:8px}
+.js-bell{position:relative;background:#18243a;color:white;border:1px solid #35465c;border-radius:12px;width:45px;height:45px;display:grid;place-items:center;font-size:21px}
+.js-bell:hover,.js-bell:focus-visible{border-color:#7debd6}
+.js-notice-dot{position:absolute;right:7px;top:6px;width:10px;height:10px;border-radius:50%;background:#fd647d;border:2px solid #18243a}
+.js-notice-overlay{position:fixed;inset:0;z-index:500;background:#050913d9;display:flex;align-items:flex-start;justify-content:center;padding:env(safe-area-inset-top) 14px 20px;overflow:auto}
+.js-notice-panel{position:relative;max-width:580px;width:100%;max-height:calc(100dvh - 36px);overflow-y:auto;background:linear-gradient(145deg,#182640,#0f1c2d);border:1px solid #49607f;border-radius:20px;padding:19px 17px 24px;margin:clamp(24px,12vh,90px) auto 0;box-shadow:0 20px 70px #000b}
+.js-notice-head{display:flex;justify-content:space-between;align-items:flex-start;gap:9px}
+.js-notice-kicker{font-size:10px;font-weight:900;letter-spacing:1.7px;color:#a1eadc}
+.js-notice-head h2{font-size:21px;margin:5px 0 10px}
+.js-notice-close{border:1px solid #5b6b81;background:#253750;color:white;border-radius:11px;min-width:41px;min-height:41px;font-size:19px}
+.js-notice-explain{color:#aebfd3;font-size:12px;margin:0 0 15px}
+.js-notice-list{display:grid;gap:8px;margin-bottom:12px}
+.js-notice-list .notice-line{display:flex;flex-direction:column;align-items:flex-start;gap:5px;margin:0;font-size:13px}
+.js-notice-list .notice-line small{font-size:10px;color:#a6bcd7}
+.js-alert-button{margin:13px 0 4px;width:100%}
+.js-notice-footer{line-height:1.5;margin-top:12px}
+.js-logout-btn{border-color:#9a5b69!important;color:#ffc8d0!important;background:#342437!important}
+@media(max-width:380px){.brand b{font-size:16px}.brand small{font-size:8px}.logo{width:43px;height:43px}.js-header-actions{gap:5px}.js-bell,.refresh{width:41px;height:41px}}
+body.js-auth-required #js-notice-overlay,body.js-auth-checking #js-notice-overlay{display:none!important}
+</style></head>
+<body class="js-auth-checking">
+<div id="js-auth-loading" role="status" aria-live="polite">
+  <div class="js-login-icon">JS</div>
+  <strong>JS TORNEOS</strong>
+  <p>Comprobando tu sesión…</p>
+</div>
+<div class="wrap"><header><div class="brand"><div class="logo">JS</div><div><b>TORNEOS JS</b><small>TORNEOS · FREE FIRE</small></div></div><div class="js-header-actions">
+ <button id="js-open-notices" class="js-bell" type="button" aria-label="Abrir notificaciones" aria-expanded="false" aria-controls="js-notice-overlay">
+  <span aria-hidden="true">🔔</span><span id="js-notice-dot" class="js-notice-dot account-hide" aria-hidden="true"></span>
+ </button>
+ <button id="refresh" class="refresh" aria-label="Actualizar torneos" type="button">↻</button>
+ </div></header>
+<section class="hero"><div class="over">● FREE FIRE · COMPETITIVO</div><h1>Tu próxima<br><em>victoria</em> empieza acá.</h1><p>Encontrá tu campeonato, inscribí a tu escuadra y competí.</p>
+<div class="stats"><div><strong id="openCount">—</strong><span>Inscripciones abiertas</span></div><div><strong id="allCount">—</strong><span>Torneos disponibles</span></div></div></section>
+<div class="title"><div><small>ENCONTRÁ TU DESAFÍO</small><h2>Explorar torneos</h2></div><span id="when">Actualizando…</span></div>
+<input type="search" id="search" placeholder="Buscar torneo por nombre o código" aria-label="Buscar torneos">
+<div class="filters"><button type="button" data-state="open" class="sel">🔥 Abiertos</button><button type="button" data-state="all">Todos</button><button type="button" data-state="closed">⚔️ En curso</button><button type="button" data-state="finished">🏆 Terminados</button></div>
+<div id="error" hidden class="error"></div><div id="cards"><div class="empty">Buscando torneos de TORNEOS JS…</div></div>
+<div class="help"><h3>🔐 ¿Ya te inscribiste?</h3><p>Entrá con tu código privado para ver tu rival, sala y resultados.</p><a href="./equipo.html">Consultar mi equipo →</a></div>
+</div>
+<nav><a class="sel" href="?"><span>🏆</span>Torneos</a><a href="./equipo.html"><span>🛡️</span>Mi equipo</a><a href="./llaves.html"><span>⚔️</span>Llaves</a></nav>
+<script>
+(function(){
+"use strict";
+const q=id=>document.getElementById(id);
+let list=[],mode="open",term="",busy=false;
+const e=(tag,text,cls)=>{const n=document.createElement(tag);if(typeof text==="string")n.textContent=text;if(cls)n.className=cls;return n};
+const fmt=d=>{if(!d)return"Por confirmar";const dt=new Date(d);return Number.isNaN(dt.getTime())?"Por confirmar":new Intl.DateTimeFormat("es-AR",{day:"numeric",month:"short",hour:"2-digit",minute:"2-digit",timeZone:"America/Argentina/Buenos_Aires"}).format(dt)+" h Arg."};
+const allowed=t=>t.status==="open"&&Number(t.registered)<Number(t.max_teams);
+function draw(){
+const root=q("cards");root.replaceChildren();
+const rows=list.filter(t=>(mode==="all"||mode==="open"&&allowed(t)||mode==="closed"&&t.status==="closed"||mode==="finished"&&t.status==="finished")&&(t.name+" "+t.code+" "+t.mode).toLowerCase().includes(term));
+if(!rows.length){root.append(e("div",term?"No encontramos torneos con ese nombre.":mode==="open"?"No hay inscripciones abiertas por ahora.":"No hay torneos en esta categoría.","empty"));return;}
+for(const t of rows){
+const c=e("article",undefined,"card"+(allowed(t)?" open":""));
+const h=e("div",undefined,"head"),name=e("div");name.append(e("h3",t.name),e("div",t.code,"code"));
+const full=t.status==="open"&&!allowed(t),pill=e("span",allowed(t)?"Abierto":full?"Sin cupos":t.status==="closed"?"En curso":"Finalizado","badge"+(allowed(t)?" yes":""));
+h.append(name,pill);c.append(h);
+const details=e("div",undefined,"info");
+details.append(e("span","🎮 "+(t.mode==="BY"?"Duelo de Escuadras":t.mode)),e("span","👥 "+t.team_size+" titular(es) por equipo"),e("span","🗓️ "+fmt(t.starts_at)));
+c.append(details);
+const prize=String(t.prize_details||"").trim();if(prize||Number(t.prize_quantity)>0)c.append(e("div","🏆 Premio: "+(Number(t.prize_quantity)>0?t.prize_quantity+" ":"")+String(t.prize_kind||"").replace(/_/g," ")+(prize?" · "+prize:""),"prize"));
+const n=e("div",undefined,"count");n.append(e("span","Equipos inscriptos"),e("b",t.registered+" / "+t.max_teams));c.append(n);
+const bar=e("div",undefined,"bar"),fill=e("div",undefined,"fill");fill.style.width=Math.min(100,100*Number(t.registered)/Math.max(1,Number(t.max_teams)))+"%";bar.append(fill);c.append(bar);
+const actions=e("div",undefined,"actions");
+const a=e("a",allowed(t)?"✍️ Inscribirme":"📋 Ver torneo",allowed(t)?"primary":"");a.href="./inscripcion.html?codigo="+encodeURIComponent(t.code);
+const b=e("a","🏆 Ver llaves");b.href="./llaves.html?codigo="+encodeURIComponent(t.code);
+actions.append(a,b);c.append(actions);root.append(c);
+}
+}
+async function load(){
+if(busy)return;busy=true;q("refresh").disabled=true;q("error").hidden=true;
+try{
+const ctrl=new AbortController(),timeout=setTimeout(()=>ctrl.abort(),15000);let res;
+try{res=await fetch("https://chfshxlykvmovwryjnxi.supabase.co/functions/v1/js-jugadores?feed=1",{cache:"no-store",signal:ctrl.signal});}finally{clearTimeout(timeout)}
+const data=await res.json();if(!res.ok||!Array.isArray(data.tournaments))throw Error(data.error||"No se pudo cargar");
+list=data.tournaments.filter(t=>t&&t.code&&t.name);q("openCount").textContent=list.filter(allowed).length;q("allCount").textContent=list.length;
+q("when").textContent="Actualizado "+new Date().toLocaleTimeString("es-AR",{hour:"2-digit",minute:"2-digit"});draw();
+}catch(err){q("error").hidden=false;q("error").textContent="No se pudo cargar. Tocá ↻ para reintentar. "+(err.message||"");if(!list.length)q("cards").replaceChildren(e("div","Conexión no disponible.","empty"));}
+finally{busy=false;q("refresh").disabled=false}
+}
+document.querySelectorAll("[data-state]").forEach(b=>b.onclick=()=>{mode=b.dataset.state;document.querySelectorAll("[data-state]").forEach(x=>x.classList.toggle("sel",x===b));draw()});
+q("search").oninput=ev=>{term=ev.target.value.trim().toLowerCase();draw()};
+q("refresh").onclick=load;document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible")load()});
+setInterval(()=>{if(document.visibilityState==="visible")load()},90000);load();
+})();
+</script>
+<section id="js-account-view" class="account-section account-hide" aria-live="polite">
+  <div id="js-auth-welcome">
+    <div class="js-arena-eyebrow"><i></i> COMUNIDAD COMPETITIVA <span>FREE FIRE</span></div>
+    <div class="js-arena-crest js-itachi-cover"><img src="./images/torneos-js-itachi-456.webp" alt="Itachi con traje verde 456, luna roja y logo TORNEOS JS" width="850" height="608" fetchpriority="high" decoding="async"></div>
+    <div class="js-welcome-kicker">FREE FIRE · TEMPORADA COMPETITIVA</div>
+    <h1>ENTRÁ A<br><em>LA ARENA.</em></h1>
+    <p>Competí, ganá y dejá tu marca. Tu camino a la victoria comienza acá.</p>
+    <div class="js-arena-tags"><span>⚔️ PVP</span><span>🏆 BATTLE ROYALE</span><span>💎 PREMIOS</span></div>
+  </div>
+  <h2 class="js-web-profile-heading">👤 Mi perfil de jugador</h2>
+  <p class="js-web-profile-description">Tu perfil, torneos e inscripciones de TORNEOS JS.</p>
+  <div id="js-account-guest" class="account-card js-arena-panel">
+    <div class="js-auth-tabs" role="tablist" aria-label="Acceso a TORNEOS JS">
+      <button id="js-auth-tab-login" class="js-auth-tab active" role="tab" aria-selected="true" type="button" aria-controls="js-auth-form">INICIAR SESIÓN</button>
+      <button id="js-auth-tab-register" class="js-auth-tab" role="tab" aria-selected="false" type="button" aria-controls="js-auth-form">CREAR CUENTA</button>
+    </div>
+    <h3 class="js-auth-head" id="js-auth-head">BIENVENIDO DE NUEVO</h3>
+    <p class="js-auth-description" id="js-auth-description">Entrá y seguí compitiendo en TORNEOS JS.</p>
+    <button id="js-google-login" class="js-auth-google" type="button"><span class="js-google-mark" aria-hidden="true">G</span> Continuar con Google <span aria-hidden="true">→</span></button>
+    <div class="js-auth-separator">O CONTINUÁ CON TU CORREO</div>
+    <div id="js-auth-form" role="tabpanel" aria-labelledby="js-auth-tab-login">
+      <label for="js-email-address">CORREO ELECTRÓNICO</label>
+      <div class="js-auth-input"><span aria-hidden="true">✉</span><input id="js-email-address" type="email" autocomplete="email" inputmode="email" placeholder="nombre@correo.com"></div>
+      <label for="js-email-password">CONTRASEÑA</label>
+      <div class="js-auth-input"><span aria-hidden="true">🔒</span><input id="js-email-password" type="password" autocomplete="current-password" minlength="8" placeholder="Ingresá tu contraseña"><button id="js-auth-show-password" type="button" aria-pressed="false" aria-label="Mostrar contraseña">◉</button></div>
+      <div class="js-auth-help"><small id="js-auth-password-tip" class="account-hide">Mínimo 8 caracteres</small><button id="js-auth-forgot" type="button">¿Olvidaste tu contraseña?</button></div>
+      <button id="js-email-signin" type="button" class="js-auth-submit">ENTRAR AL TORNEO <span>↗</span></button>
+      <button id="js-email-signup" type="button" class="js-auth-submit account-hide">CREAR MI CUENTA <span>↗</span></button>
+    </div>
+    <div id="js-account-status" class="auth-status js-auth-status" aria-live="polite" role="status"></div>
+    <div class="js-auth-bottom"><span id="js-auth-switch-caption">¿Todavía no tenés cuenta?</span><button type="button" id="js-auth-switch-bottom">Registrate gratis</button></div>
+  </div>
+  <div class="js-arena-foot">TORNEOS JS · COMPETÍ · GANÁ · DESTACATE</div>
+  <div id="js-account-signed" class="account-hide">
+    <div id="js-web-profile" class="js-web-profile-card" aria-label="Perfil de TORNEOS JS">
+      <div id="js-web-cover" class="js-web-profile-cover"></div>
+      <div id="js-web-avatar" class="js-web-profile-avatar">JS</div>
+      <div class="js-web-profile-details">
+        <h3 id="js-web-display-name">Cargando perfil…</h3>
+        <div id="js-web-user-handle" class="js-web-profile-handle"></div>
+        <div id="js-web-admin-badge"></div>
+        <p id="js-web-user-bio" class="js-web-profile-bio"></p>
+        <div id="js-web-social" class="js-social-links" aria-label="Redes sociales del jugador" hidden></div>
+        <p id="js-web-freefire" class="js-web-profile-verified"></p>
+        <div id="js-web-profile-stats" class="js-web-profile-summary">
+          <div class="js-web-profile-stat"><strong id="js-web-stat-tours">—</strong><small>Torneos</small></div>
+          <div class="js-web-profile-stat"><strong id="js-web-stat-wins">—</strong><small>Victorias</small></div>
+          <div class="js-web-profile-stat"><strong id="js-web-stat-champions">—</strong><small>Campeonatos</small></div>
+        </div>
+        <div class="account-row" style="margin-top:12px">
+          <button id="js-web-edit-toggle" class="btn-alt" type="button">✏️ Editar perfil</button>
+          <button id="js-web-profile-refresh" class="btn-alt" type="button">↻ Actualizar perfil</button>
+        </div>
+        <div id="js-web-editor" hidden>
+          <label for="js-web-display-edit">Nombre para mostrar</label>
+          <input id="js-web-display-edit" maxlength="42" autocomplete="nickname">
+          <label for="js-web-username-edit">Nombre de usuario (@)</label>
+          <input id="js-web-username-edit" maxlength="22" autocapitalize="off" autocomplete="off">
+          <label for="js-web-bio-edit">Biografía</label>
+          <textarea id="js-web-bio-edit" maxlength="180" placeholder="Contá algo sobre vos…"></textarea>
+          <label class="js-social-edit-label" for="js-web-instagram-edit">📷 Instagram</label>
+          <input id="js-web-instagram-edit" maxlength="350" inputmode="url" autocomplete="off" placeholder="https://www.instagram.com/tu_usuario/">
+          <label class="js-social-edit-label" for="js-web-tiktok-edit">♪ TikTok</label>
+          <input id="js-web-tiktok-edit" maxlength="350" inputmode="url" autocomplete="off" placeholder="https://www.tiktok.com/@tu_usuario">
+          <p class="js-social-help">Pegá el enlace completo o escribí @usuario. Son opcionales y los podés quitar cuando quieras.</p>
+          <label for="js-web-avatar-file">Foto de perfil (JPG, PNG o WebP)</label>
+          <input id="js-web-avatar-file" type="file" accept="image/jpeg,image/png,image/webp">
+          <label for="js-web-cover-file">Portada del perfil</label>
+          <input id="js-web-cover-file" type="file" accept="image/jpeg,image/png,image/webp">
+          <p id="js-web-edit-status" class="tiny" role="status"></p>
+          <button id="js-web-edit-save" class="btn-action" type="button">Guardar cambios</button>
+          <button id="js-web-edit-cancel" class="btn-alt" type="button">Cancelar</button>
+        </div>
+      </div>
+    </div>
+    <div class="account-card">
+      <div class="account-row" style="justify-content:space-between">
+        <strong id="js-google-name">Cuenta Google</strong>
+        <button id="js-google-logout" class="btn-alt js-logout-btn" type="button">🚪 Cerrar sesión</button>
+      </div>
+      <label for="js-game-id">ID de jugador de Free Fire</label>
+      <input id="js-game-id" type="text" inputmode="numeric" maxlength="16" placeholder="Ejemplo: 123456789" autocomplete="off">
+      <button id="js-id-verify" class="btn-alt" type="button" style="margin-top:12px;width:100%">🔎 Verificar o cambiar ID de Free Fire</button>
+      <div id="js-game-nickname" class="verified-name" style="margin-top:14px"></div>
+      <div id="js-game-region" class="tiny"></div>
+      <p class="tiny">La verificación identifica el apodo del ID, pero no demuestra que seas el propietario de esa cuenta de Free Fire.</p>
+    </div>
+    <div class="js-profile-end" aria-label="Fin de tu perfil">
+      <span class="js-profile-end-line" aria-hidden="true"></span>
+      <span class="js-profile-end-text">✦ FIN DE TU PERFIL ✦</span>
+      <span class="js-profile-end-line" aria-hidden="true"></span>
+    </div>
+  </div>
+</section>
+<section id="js-my-view" class="account-section account-hide">
+  <h2>⚔️ Mis torneos</h2>
+  <p>Encontramos tus participaciones automáticamente según el ID de Free Fire guardado en tu perfil.</p>
+  <div class="js-auto-tournaments">
+    <div><strong>🎮 ID vinculado: <span id="js-my-game-id">—</span></strong>
+    <p class="tiny">No tenés que ingresar códigos. Se muestran las inscripciones donde figura tu ID, como titular o suplente.</p></div>
+    <button id="js-my-refresh" class="btn-alt" type="button">↻ Actualizar</button>
+  </div>
+  <div id="js-my-list" aria-live="polite"><div class="empty">Iniciá sesión para ver tus participaciones.</div></div>
+</section>
+<section id="js-friends-view" class="account-section account-hide">
+  <div class="js-friends-intro">
+    <span class="tag">TORNEOS JS · COMUNIDAD</span>
+    <h2>👥 Mis amigos</h2>
+    <p>Buscá jugadores por su ID de Free Fire, agregalos e invitalos a participar de los torneos.</p>
+  </div>
+  <div class="js-friends-card">
+    <h3>🔎 Buscar jugador por ID</h3>
+    <p>El jugador debe tener una cuenta de TORNEOS JS con su ID de Free Fire verificado.</p>
+    <div class="js-friends-search-row">
+      <input id="js-friends-id" type="text" inputmode="numeric" maxlength="16" placeholder="ID de Free Fire" aria-label="ID de Free Fire" autocomplete="off">
+      <button id="js-friends-search" type="button">Buscar</button>
+    </div>
+    <p id="js-friends-status" role="status" aria-live="polite"></p>
+    <div id="js-friend-search-result"></div>
+    <div id="js-friend-profile"></div>
+  </div>
+  <div class="js-friends-card">
+    <div class="js-friends-section-head">
+      <h3>🤝 Amigos agregados (<span id="js-friends-count">0</span>)</h3>
+      <button id="js-friends-refresh" type="button">↻ Actualizar</button>
+    </div>
+    <div id="js-friends-list" class="js-friend-list"></div>
+  </div>
+  <div class="js-friends-card">
+    <h3>📩 Solicitudes de amistad</h3>
+    <div id="js-friends-requests" class="js-friend-list"></div>
+  </div>
+  <div class="js-friends-card">
+    <h3>🏆 Invitaciones a torneos</h3>
+    <div id="js-friends-invites" class="js-friend-list"></div>
+  </div>
+</section>
+<div id="js-notice-overlay" class="js-notice-overlay account-hide">
+ <section class="js-notice-panel" role="dialog" aria-modal="true" aria-labelledby="js-notice-title" tabindex="-1">
+  <div class="js-notice-head">
+   <div>
+    <div class="js-notice-kicker">TORNEOS JS</div>
+    <h2 id="js-notice-title">🔔 Notificaciones</h2>
+   </div>
+   <button id="js-notice-close" class="js-notice-close" type="button" aria-label="Cerrar notificaciones">✕</button>
+  </div>
+  <p class="js-notice-explain">Avisos sobre salas, enfrentamientos y resultados.</p>
+  <div id="js-notice-list" class="js-notice-list" aria-live="polite"></div>
+  <button id="js-alert-permission" class="btn-alt js-alert-button" type="button">Activar notificaciones de este dispositivo</button>
+  <p class="tiny js-notice-footer">Los avisos del navegador dependen de sus permisos. Con la página cerrada no se garantizan notificaciones automáticas.</p>
+ </section>
+</div>
+
+<script type="module">
+import {createClient} from "https://esm.sh/@supabase/supabase-js@2";
+import {initFriends} from "./js-friends-ui.js?v=1.0.0";
+import {normalizeSocialLink,renderSocialLinks} from "./profile-social.js?v=1.0.0";
+(function(){
+ "use strict";
+ const conf={url:"https://chfshxlykvmovwryjnxi.supabase.co",key:"sb_publishable_rS9X7AX-LPQeBJCCPJdshw_S0WckOOv"};
+ const api=conf.url+"/functions/v1/js-jugadores-cuenta";
+ const sb=createClient(conf.url,conf.key,{auth:{flowType:"pkce",detectSessionInUrl:true,persistSession:true,autoRefreshToken:true}});
+ const q=id=>document.getElementById(id);
+ const select=(el,show)=>el.classList.toggle("account-hide",!show);
+ const make=(tag,txt,cls)=>{const x=document.createElement(tag);if(typeof txt==="string")x.textContent=txt;if(cls)x.className=cls;return x};
+ const scenes=["perfil","torneos","mis","amigos"];
+ const original=[...document.querySelectorAll(".hero,.title,#search,.filters,#cards,.help")];
+ const views={perfil:q("js-account-view"),mis:q("js-my-view"),amigos:q("js-friends-view")};
+ let session=null,profile=null,tournaments=[],fresh=false,activeTab="perfil";
+ let friendsController=null;
+ const storeKey="js-family-player-notices-v2";
+ const saved=()=>{try{return JSON.parse(localStorage.getItem(storeKey)||"[]")}catch{return[]}};
+ let notices=Array.isArray(saved())?saved():[];
+ let known=new Set();
+ const status=(msg,ok)=>{
+   const node=q("js-account-status");
+   node.textContent=msg;
+   node.className="auth-status js-auth-status"+(ok===true?" good":ok===false?" warn":"");
+ };
+ async function apiCall(action,fields){
+   const {data}=await sb.auth.getSession();
+   if(!data.session?.access_token)throw Error("Ingresá con correo o Google primero.");
+   const response=await fetch(api,{
+     method:"POST",headers:{"content-type":"application/json","authorization":"Bearer "+data.session.access_token},
+     cache:"no-store",body:JSON.stringify(Object.assign({action:action},fields||{}))
+   });
+   let result;try{result=await response.json()}catch{throw Error("No se pudo leer la respuesta del servidor")}
+   if(!response.ok||result.ok!==true)throw Error(result.error||"Error del servidor");
+   return result;
+ }
+ function showAuthGate(guest){
+   const body=document.body;
+   const wasGuest=body.classList.contains("js-auth-required");
+   const wasChecking=body.classList.contains("js-auth-checking");
+   body.classList.remove("js-auth-checking");
+   body.classList.toggle("js-auth-required",guest);
+   // El perfil es la primera pantalla después del login, sin forzar cambios
+   // cuando el jugador está navegando entre las otras pestañas.
+   if(guest||wasGuest||wasChecking) switchTab("perfil");
+ }
+ function menu(){
+   const nav=document.querySelector("nav");if(!nav)return;
+   nav.replaceChildren();
+   const icons={torneos:"🏆",perfil:"👤",mis:"⚔️",amigos:"👥"};
+   const names={torneos:"Torneos",perfil:"Perfil",mis:"Mis torneos",amigos:"Amigos"};
+   for(const name of scenes){
+     const b=make("button",undefined,"player-nav-button"+(activeTab===name?" is-current":""));
+     b.append(make("span",icons[name]),make("small",names[name]));
+     b.onclick=()=>switchTab(name);b.dataset.tab=name;nav.append(b);
+   }
+ }
+ function switchTab(tab){
+   activeTab=tab;
+   document.body.classList.toggle("player-account-screen",tab!=="torneos");
+   document.body.classList.toggle("js-profile-tab",tab==="perfil"&&!document.body.classList.contains("js-auth-required"));
+   const brandLabel=document.querySelector("header .brand b");
+   if(brandLabel) brandLabel.textContent=tab==="perfil"&&profile?.username?
+     "@"+profile.username:tab==="perfil"?"Mi perfil":"TORNEOS JS";
+   for(const x of original)x.classList.toggle("account-hide",tab!=="torneos");
+   for(const [name,node] of Object.entries(views))select(node,name===tab);
+   menu();
+   if(tab==="mis")loadMy();
+   if(tab==="amigos")friendsController?.refresh();
+
+   window.scrollTo({top:0,behavior:"instant"});
+ }
+ const lastSeenKey="js-torneos-notices-last-read-v1";
+ function noticeUnread(){
+   const seen=Number(localStorage.getItem(lastSeenKey)||0);
+   return notices.some(n=>Date.parse(n.at||"")>seen);
+ }
+ function noticeBellUpdate(){
+   q("js-notice-dot").classList.toggle("account-hide",!noticeUnread());
+ }
+ function showNotices(){
+   const box=q("js-notice-list");box.replaceChildren();
+   if(!notices.length)box.append(make("p","No hay avisos nuevos todavía.","tiny"));
+   for(const n of notices.slice(0,60)){
+     const row=make("div",undefined,"notice-line");
+     row.append(make("span",n.title),make("small",new Date(n.at).toLocaleString("es-AR")));
+     box.append(row);
+   }
+ }
+ let notificationsOpen=false;
+ function openNotices(){
+   if(!session)return;
+   notificationsOpen=true;
+   q("js-notice-overlay").classList.remove("account-hide");
+   q("js-open-notices").setAttribute("aria-expanded","true");
+   showNotices();
+   try{localStorage.setItem(lastSeenKey,String(Date.now()))}catch{}
+   noticeBellUpdate();
+   q("js-notice-close").focus();
+ }
+ function closeNotices(){
+   notificationsOpen=false;
+   q("js-notice-overlay").classList.add("account-hide");
+   q("js-open-notices").setAttribute("aria-expanded","false");
+ }
+ q("js-open-notices").onclick=openNotices;
+ q("js-notice-close").onclick=closeNotices;
+ q("js-notice-overlay").onclick=event=>{if(event.target===q("js-notice-overlay"))closeNotices()};
+ document.addEventListener("keydown",event=>{if(event.key==="Escape"&&notificationsOpen)closeNotices()});
+ noticeBellUpdate();
+ function notify(text,id,initial){
+   if(known.has(id))return;known.add(id);
+   if(initial)return;
+   notices.unshift({id,title:text,at:new Date().toISOString()});
+   notices=notices.slice(0,60);
+   localStorage.setItem(storeKey,JSON.stringify(notices));
+   if(notificationsOpen){showNotices();localStorage.setItem(lastSeenKey,String(Date.now()))}
+   noticeBellUpdate();
+   if(document.visibilityState==="visible"&&"Notification" in window&&Notification.permission==="granted"){
+     try{new Notification("TORNEOS JS",{body:text,tag:id})}catch{}
+   }
+ }
+ function showMy(){
+   const root=q("js-my-list");root.replaceChildren();
+   q("js-my-game-id").textContent=profile?.game_id||"Sin verificar";
+   if(!session){root.append(make("div","Ingresá con Google o correo para ver tus torneos.","empty"));return}
+   if(!profile){root.append(make("div","Verificá tu ID de Free Fire desde Perfil y acá aparecerán tus inscripciones automáticamente.","empty"));return}
+   if(!tournaments.length){root.append(make("div","Todavía no hay inscripciones activas donde figure tu ID "+profile.game_id+". Si te anotaron recién, tocá Actualizar.","empty"));return}
+   for(const t of tournaments){
+     const card=make("article",undefined,"card");
+     card.append(make("h3",t.tournament),make("p","🛡️ "+t.team+" · "+(t.role==="suplente"?"Suplente":"Titular"),"tiny"));
+     card.append(make("p","Estado: "+(t.status==="open"?"Inscripciones abiertas":t.status==="closed"?"En competencia":"Finalizado"),"tiny"));
+     if(t.mode==="BR"){
+       const br=t.br_room||{status:"not_sent"};
+       const mapRooms=Array.isArray(t.br_maps)?t.br_maps:[];
+       const modern=mapRooms.length===3&&(mapRooms.some(m=>!!m.sent_at)||!br.sent_at);
+       if(modern){
+         card.append(make("p","🗺 3 mapas · Bermuda · Purgatorio · Kalahari","tiny"));
+         for(const m of mapRooms){
+           const name=m.map_name||["Bermuda","Purgatorio","Kalahari"][Number(m.map_number)-1]||"Mapa";
+           const frame=make("div",undefined,"item");
+           frame.style.cssText="border:1px solid "+(m.status==="active"?"#60cdaa":"#435670")+";border-radius:12px;padding:12px;margin:10px 0";
+           frame.append(make("strong","MAPA "+m.map_number+" · "+name));
+           const label=m.status==="active"?"🟢 Sala disponible":
+             m.status==="closed"?"🔒 Sala cerrada":
+             m.status==="finished"?"🏆 Finalizado":"⏳ Esperando publicación";
+           frame.append(make("p",label,"tiny"));
+           if(m.status==="active"&&m.room_id&&m.room_password){
+             const id=make("div","🎮 ID de sala: "+m.room_id,"notice-line");
+             const pw=make("div","🔑 Contraseña: "+m.room_password,"notice-line");
+             frame.append(id,pw);
+           }
+           card.append(frame);
+         }
+         if(br.status==="finished"&&br.winner_name)card.append(make("div","🏆 Campeón: "+br.winner_name,"notice-line"));
+       }else{
+         const note=br.status==="active"?"🟢 Sala BR habilitada":
+           br.status==="finished"?"🏆 Campeón: "+(br.winner_name||"Ganador confirmado"):
+           br.status==="closed"?"🔒 Sala BR cerrada":"⏳ Esperando la sala BR";
+         card.append(make("div",note,"notice-line"));
+         if(br.status==="active"&&br.room_id&&br.room_password)
+           card.append(make("div","🎮 ID de sala: "+br.room_id+" · 🔑 Contraseña: "+br.room_password,"notice-line"));
+       }
+     }
+     for(const game of t.matches||[]){
+       card.append(make("p","⚔️ Ronda "+game.round+" · Rival: "+(game.opponent||"Por definir"),"tiny"));
+       if(game.room_status==="active"&&game.room_id&&game.room_password&&game.room_expires_at&&
+          Date.parse(game.room_expires_at)>Date.now()){
+         const credential=make("div","🎮 ID: "+game.room_id+" · 🔑 Contraseña: "+game.room_password,"notice-line");
+         credential.dataset.expiry=game.room_expires_at;
+         card.append(credential);
+       }
+       let label=game.result==="win"?"🏆 Ronda "+game.round+": ganaron":
+         game.result==="lose"?"❌ Ronda "+game.round+": eliminados":
+         game.room_status==="active"?"⏱️ ¡Sala enviada! Solo 10 minutos":
+         "⚔️ Ronda "+game.round+": pendiente";
+       card.append(make("div",label,"notice-line"));
+     }
+     const actions=make("div",undefined,"actions");
+     const link=make("a","🏆 Ver llaves");link.href="./llaves.html?codigo="+encodeURIComponent(t.code);
+     actions.append(link);card.append(actions);root.append(card);
+   }
+ }
+ const imageHost="https://chfshxlykvmovwryjnxi.supabase.co/storage/v1/object/public/js-player-profiles/";
+ function safeProfileImage(path,updatedAt){
+   if(typeof path!=="string"||!/^[0-9a-f-]{36}\/(?:avatar|banner)\.webp$/i.test(path))return "";
+   return imageHost+path.split("/").map(encodeURIComponent).join("/")+"?t="+encodeURIComponent(updatedAt||"0");
+ }
+ function renderProfile(){
+   const container=q("js-web-profile");
+   if(!profile){container.style.display="none";return}
+   container.style.display="";
+   const cover=q("js-web-cover"),avatar=q("js-web-avatar");
+   const coverURL=safeProfileImage(profile.banner_path,profile.updated_at);
+   cover.style.backgroundImage=coverURL?'linear-gradient(0deg,#101c3033,#101c3033),url("'+coverURL+'")':"";
+   avatar.replaceChildren();
+   const avatarURL=safeProfileImage(profile.avatar_path,profile.updated_at);
+   if(avatarURL){
+     const img=make("img");
+     img.src=avatarURL;
+     img.alt="Foto de perfil de "+(profile.display_name||profile.nickname||"jugador");
+     img.onerror=()=>{avatar.replaceChildren(make("span",(profile.display_name||profile.nickname||"JS").slice(0,2).toUpperCase()))};
+     avatar.append(img);
+   }else avatar.append(make("span",(profile.display_name||profile.nickname||"JS").slice(0,2).toUpperCase()));
+   q("js-web-display-name").textContent=profile.display_name||profile.nickname||"Jugador JS";
+   q("js-web-user-handle").textContent=profile.username?"@"+profile.username:"ID "+profile.game_id;
+   if(activeTab==="perfil"){
+     const brandLabel=document.querySelector("header .brand b");
+     if(brandLabel) brandLabel.textContent=profile.username?"@"+profile.username:"Mi perfil";
+   }
+   const badge=q("js-web-admin-badge");badge.replaceChildren();
+   if(profile.is_admin===true)badge.append(make("span","🛡️ ADM · Administrador","js-web-profile-admin"));
+   q("js-web-user-bio").textContent=profile.bio||"Todavía no agregaste una biografía.";
+   renderSocialLinks(q("js-web-social"),profile);
+   q("js-web-freefire").textContent="✅ Free Fire: "+profile.nickname+" · ID "+profile.game_id+" · Región "+profile.region;
+ }
+ function fillProfileEdit(){
+   if(!profile)return;
+   q("js-web-display-edit").value=profile.display_name||profile.nickname||"";
+   q("js-web-username-edit").value=profile.username||"js"+profile.game_id?.slice(-8);
+   q("js-web-bio-edit").value=profile.bio||"";
+   q("js-web-instagram-edit").value=profile.instagram_url||"";
+   q("js-web-tiktok-edit").value=profile.tiktok_url||"";
+   q("js-web-avatar-file").value="";
+   q("js-web-cover-file").value="";
+   q("js-web-edit-status").textContent="";
+ }
+ q("js-web-edit-toggle").onclick=()=>{
+   if(!profile)return status("Verificá primero tu ID de Free Fire.",false);
+   fillProfileEdit();
+   q("js-web-editor").hidden=!q("js-web-editor").hidden;
+ };
+ q("js-web-edit-cancel").onclick=()=>{q("js-web-editor").hidden=true};
+ q("js-web-profile-refresh").onclick=()=>current();
+ function processedPhoto(file,kind){
+   return new Promise((resolve,reject)=>{
+     if(!file){resolve(null);return}
+     if(file.size>10*1024*1024)return reject(Error("La imagen debe pesar menos de 10 MB."));
+     if(!["image/jpeg","image/png","image/webp"].includes(file.type))
+       return reject(Error("Solo se admiten imágenes JPG, PNG y WebP."));
+     const uri=URL.createObjectURL(file),image=new Image();
+     image.onload=()=>{
+       URL.revokeObjectURL(uri);
+       const w=kind==="avatar"?480:1100,h=kind==="avatar"?480:480;
+       const scale=Math.max(w/image.width,h/image.height),sw=w/scale,sh=h/scale;
+       const canvas=document.createElement("canvas");canvas.width=w;canvas.height=h;
+       const context=canvas.getContext("2d");
+       if(!context)return reject(Error("No se pudo leer la foto."));
+       context.fillStyle="#0f1b2c";context.fillRect(0,0,w,h);
+       context.drawImage(image,(image.width-sw)/2,(image.height-sh)/2,sw,sh,0,0,w,h);
+       canvas.toBlob(blob=>blob&&blob.size<=2097152?resolve(blob):reject(Error("No se pudo comprimir la imagen.")),"image/webp",0.79);
+     };
+     image.onerror=()=>{URL.revokeObjectURL(uri);reject(Error("Archivo de imagen inválido."))};
+     image.src=uri;
+   });
+ }
+ async function uploadWebPhoto(kind,file){
+   if(!file)return kind==="avatar"?profile.avatar_path:null;
+   const processed=await processedPhoto(file,kind);
+   const path=session.user.id+"/"+kind+".webp";
+   const {error}=await sb.storage.from("js-player-profiles").upload(path,processed,
+     {contentType:"image/webp",upsert:true,cacheControl:"60"});
+   if(error)throw Error("Error subiendo "+(kind==="avatar"?"la foto":"la portada")+": "+error.message);
+   return path;
+ }
+ q("js-web-edit-save").onclick=async()=>{
+   if(!session||!profile)return;
+   const display_name=q("js-web-display-edit").value.trim();
+   const username=q("js-web-username-edit").value.trim().toLowerCase();
+   const bio=q("js-web-bio-edit").value.trim();
+   if(display_name.length<2||display_name.length>42)return status("El nombre debe tener entre 2 y 42 caracteres.",false);
+   if(!/^[a-z0-9_]{3,22}$/.test(username))return status("El @usuario debe tener entre 3 y 22 caracteres (letras, números o _).",false);
+   const save=q("js-web-edit-save");save.disabled=true;
+   const indication=q("js-web-edit-status");
+   try{
+     const instagram_url=normalizeSocialLink(q("js-web-instagram-edit").value,"instagram");
+     const tiktok_url=normalizeSocialLink(q("js-web-tiktok-edit").value,"tiktok");
+     indication.textContent="Guardando tu perfil en Supabase…";
+     const avatarFile=q("js-web-avatar-file").files[0],bannerFile=q("js-web-cover-file").files[0];
+     const avatar=avatarFile?await uploadWebPhoto("avatar",avatarFile):profile.avatar_path;
+     const banner=bannerFile?await uploadWebPhoto("banner",bannerFile):profile.banner_path;
+     const result=await apiCall("profile_update",{
+       display_name,username,bio,avatar_path:avatar,banner_path:banner,
+       instagram_url,tiktok_url
+     });
+     profile=result.profile;
+     renderProfile();
+     q("js-web-editor").hidden=true;
+     status("✅ Perfil actualizado: foto, biografía y redes sociales guardadas en tu cuenta.",true);
+   }catch(e){
+     indication.textContent="⚠️ "+e.message;
+     status("No se pudieron guardar los cambios: "+e.message,false);
+   }finally{save.disabled=false}
+ };
+
+ q("js-my-refresh").onclick=()=>{
+   const btn=q("js-my-refresh");
+   if(btn.disabled)return;
+   btn.disabled=true;
+   loadMy().finally(()=>{btn.disabled=false});
+ };
+ async function loadMy(){
+   if(!session||!profile){tournaments=[];showMy();return}
+   q("js-my-game-id").textContent=profile.game_id;
+   if(activeTab==="mis"){
+     q("js-my-list").replaceChildren(make("div","🔎 Buscando los torneos registrados con tu ID "+profile.game_id+"…","empty"));
+   }
+   try{
+     const result=await apiCall("my_tournaments");
+     const newer=result.tournaments||[];
+     for(const t of newer)for(const game of t.matches||[]){
+       const label=t.team+" · Ronda "+game.round;
+       if(game.room_status==="active")notify("🚨 Sala disponible: "+label,"room:"+game.match_id+":"+game.room_expires_at,!fresh);
+       if(game.result==="win")notify("🏆 Ganaste: "+label,"win:"+game.match_id,!fresh);
+       if(game.result==="lose")notify("📋 Partida finalizada: "+label,"lose:"+game.match_id,!fresh);
+     }
+     tournaments=newer;fresh=true;showMy();
+     if(result.stats){
+       q("js-web-stat-tours").textContent=String(Number(result.stats.tournaments)||0);
+       q("js-web-stat-wins").textContent=String(Number(result.stats.victories)||0);
+       q("js-web-stat-champions").textContent=String(Number(result.stats.championships)||0);
+     }
+   }catch(e){q("js-my-list").replaceChildren(make("div",e.message,"empty"))}
+ }
+ async function current(){
+   const {data,error}=await sb.auth.getSession();
+   if(error){showAuthGate(true);status("No se pudo comprobar tu sesión. Recargá la página para intentar de nuevo.",false);return}
+   session=data.session;
+   select(q("js-account-guest"),!session);
+   select(q("js-account-signed"),!!session);
+   showAuthGate(!session);
+   if(!session){closeNotices();profile=null;tournaments=[];renderProfile();status("Ingresá con Google o correo. Si no tenés cuenta, creá una gratis.");showMy();return}
+   q("js-google-name").textContent=session.user.user_metadata?.full_name||session.user.email||"Cuenta Google";
+   status("✅ Sesión iniciada. Tus torneos quedan asociados a esta cuenta.",true);
+   try{
+     const result=await apiCall("profile");
+     profile=result.profile;
+     renderProfile();
+     if(profile){
+       q("js-game-id").value=profile.game_id;
+       q("js-game-nickname").textContent="✅ "+profile.nickname;
+       q("js-game-region").textContent="Región: "+profile.region+" · Perfil guardado en tu cuenta";
+       loadMy();
+     }else{
+       q("js-game-nickname").textContent="";
+       q("js-game-region").textContent="Ingresá tu ID y tocá Verificar.";
+       tournaments=[];showMy();
+     }
+   }catch(e){status("⚠️ "+e.message,false)}
+ }
+ window.JSPlayerGoogleCallback=async function(returnUrl){
+   try{
+     const callback=new URL(returnUrl);
+     if(callback.protocol!=="jsjugadores:"||callback.hostname!=="auth-callback")
+       throw Error("Respuesta OAuth no autorizada");
+     const code=callback.searchParams.get("code");
+     const authError=callback.searchParams.get("error_description");
+     if(authError)throw Error(authError);
+     if(!code)throw Error("No llegó el código de acceso de Google");
+     const result=await sb.auth.exchangeCodeForSession(code);
+     if(result.error)throw result.error;
+     status("✅ Google conectado correctamente.",true);
+     await current();
+   }catch(e){status("No se pudo completar el ingreso: "+(e.message||"Error de sesión"),false)}
+ };
+ q("js-google-login").onclick=async()=>{
+   try{
+     status("Abriendo Google…");
+     const native=Boolean(window.JSNative&&typeof window.JSNative.openGoogleOAuth==="function");
+     const {data,error}=await sb.auth.signInWithOAuth({
+       provider:"google",
+       options:{
+         redirectTo:native?"jsjugadores://auth-callback":location.origin+location.pathname,
+         skipBrowserRedirect:native
+       }
+     });
+     if(error)throw error;
+     if(native){
+       if(!data?.url)throw Error("Google no devolvió un enlace de ingreso");
+       window.JSNative.openGoogleOAuth(data.url);
+     }
+   }catch(e){status("No se pudo ingresar: "+e.message+". Confirmá que Google esté habilitado en Supabase Auth.",false)}
+ };
+ q("js-google-logout").onclick=async()=>{
+   const button=q("js-google-logout");button.disabled=true;
+   try{
+     const {error}=await sb.auth.signOut();
+     if(error)throw error;
+     closeNotices();session=null;profile=null;tournaments=[];fresh=false;
+     await current();window.scrollTo({top:0,behavior:"instant"});
+   }catch(e){status("No se pudo cerrar la sesión: "+e.message,false)}
+   finally{button.disabled=false}
+ };
+ q("js-id-verify").onclick=async()=>{
+   const id=q("js-game-id").value.trim().replace(/\s+/g,"");
+   if(!/^[0-9]{5,16}$/.test(id)){status("Ingresá un ID numérico de 5 a 16 cifras.",false);return}
+   q("js-id-verify").disabled=true;
+   status("Consultando el apodo de Free Fire…");
+   try{
+     const result=await apiCall("verify_id",{game_id:id});
+     profile=result.profile;
+     renderProfile();
+     q("js-game-nickname").textContent="✅ "+profile.nickname;
+     q("js-game-region").textContent="Región: "+profile.region+" · Perfil guardado en tu cuenta";
+     status("✅ Nombre verificado y guardado correctamente.",true);
+     await loadMy();
+   }catch(e){status("⚠️ "+e.message,false)}
+   finally{q("js-id-verify").disabled=false}
+ };
+ let jsSignupMode=false;
+ function setAuthTab(register){
+   jsSignupMode=!!register;
+   q("js-auth-tab-login").classList.toggle("active",!register);
+   q("js-auth-tab-register").classList.toggle("active",!!register);
+   q("js-auth-tab-login").setAttribute("aria-selected",String(!register));
+   q("js-auth-tab-register").setAttribute("aria-selected",String(!!register));
+   q("js-auth-form").setAttribute("aria-labelledby",register?"js-auth-tab-register":"js-auth-tab-login");
+   q("js-email-signin").classList.toggle("account-hide",!!register);
+   q("js-email-signup").classList.toggle("account-hide",!register);
+   q("js-auth-forgot").classList.toggle("account-hide",!!register);
+   q("js-auth-password-tip").classList.toggle("account-hide",!register);
+   q("js-email-password").autocomplete=register?"new-password":"current-password";
+   q("js-auth-head").textContent=register?"CREÁ TU CUENTA":"BIENVENIDO DE NUEVO";
+   q("js-auth-description").textContent=register?"Empezá a competir en los torneos de Free Fire.":"Entrá y seguí compitiendo en TORNEOS JS.";
+   q("js-auth-switch-caption").textContent=register?"¿Ya tenés cuenta?":"¿Todavía no tenés cuenta?";
+   q("js-auth-switch-bottom").textContent=register?"Iniciar sesión":"Registrate gratis";
+   q("js-account-status").textContent="";
+ }
+ q("js-auth-tab-login").onclick=()=>setAuthTab(false);
+ q("js-auth-tab-register").onclick=()=>setAuthTab(true);
+ q("js-auth-switch-bottom").onclick=()=>setAuthTab(!jsSignupMode);
+ q("js-auth-show-password").onclick=()=>{
+   const input=q("js-email-password");const reveal=input.type==="password";
+   input.type=reveal?"text":"password";
+   q("js-auth-show-password").setAttribute("aria-pressed",String(reveal));
+   q("js-auth-show-password").setAttribute("aria-label",reveal?"Ocultar contraseña":"Mostrar contraseña");
+ };
+ q("js-email-address").addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();q("js-email-password").focus()}});
+ q("js-email-password").addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();q(jsSignupMode?"js-email-signup":"js-email-signin").click()}});
+ q("js-auth-forgot").onclick=async()=>{
+   const email=q("js-email-address").value.trim();
+   if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))return status("Ingresá tu correo para recuperar la contraseña.",false);
+   const btn=q("js-auth-forgot");btn.disabled=true;
+   try{
+     const {error}=await sb.auth.resetPasswordForEmail(email,{redirectTo:location.origin+location.pathname});
+     if(error)throw error;
+     status("Si el correo tiene una cuenta, recibirás instrucciones para recuperar la contraseña.",true);
+   }catch(e){status("No se pudo enviar el enlace: "+e.message,false)}
+   finally{btn.disabled=false}
+ };
+ setAuthTab(false);
+ q("js-email-signin").onclick=async()=>{
+   try{
+     const {error}=await sb.auth.signInWithPassword({email:q("js-email-address").value.trim(),password:q("js-email-password").value});
+     if(error)throw error;await current();
+   }catch(e){status("⚠️ "+e.message,false)}
+ };
+ q("js-email-signup").onclick=async()=>{
+   const email=q("js-email-address").value.trim(),password=q("js-email-password").value;
+   if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)||password.length<8)
+     return status("Ingresá un correo válido y una contraseña de 8 caracteres o más.",false);
+   try{
+     const {data,error}=await sb.auth.signUp({email,password,options:{emailRedirectTo:location.origin+location.pathname}});
+     if(error)throw error;
+     if(data.session)await current();
+     else status("✅ Revisá tu correo, confirmá la cuenta y volvé a iniciar sesión.",true);
+   }catch(e){status("⚠️ "+e.message,false)}
+ };
+ q("js-alert-permission").onclick=async()=>{
+   if(window.JSNative&&typeof window.JSNative.requestNotifications==="function"){
+     window.JSNative.requestNotifications();
+     alert("Se solicitó permiso de avisos para TORNEOS JS.");
+     return;
+   }
+   if(!("Notification" in window)){alert("Tu navegador no permite notificaciones web.");return}
+   try{
+     const permission=await Notification.requestPermission();
+     alert(permission==="granted"?"Avisos habilitados mientras la app está activa.":"No se concedió permiso.");
+   }catch{alert("No se pudo habilitar el permiso desde este navegador.")}
+ };
+ friendsController=initFriends({
+   q,make,apiCall,safeProfileImage,
+   getAccount:()=>({session,profile})
+ });
+ sb.auth.onAuthStateChange((event)=>{if(event==="SIGNED_IN"||event==="SIGNED_OUT")setTimeout(current,0)});
+ menu();
+ current();
+ setInterval(()=>{if(session&&profile&&document.visibilityState==="visible")loadMy()},45000);
+ setInterval(()=>{
+   for(const el of document.querySelectorAll("[data-expiry]")){
+     if(Date.parse(el.dataset.expiry||"")<=Date.now()){
+       el.textContent="⌛ La sala venció. Esperá nuevos datos del administrador.";
+       el.removeAttribute("data-expiry");
+     }
+   }
+ },3000);
+ document.addEventListener("visibilitychange",()=>{
+   if(document.visibilityState!=="visible"||!session||!profile)return;
+   loadMy();
+   if(activeTab==="amigos")friendsController?.refresh();
+ });
+})();
+</script>
+</body></html>
