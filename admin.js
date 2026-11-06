@@ -3,6 +3,7 @@ const $=id=>document.getElementById(id);
 const show=(id,on)=>$(id).classList.toggle("hidden",!on);
 const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c]));
 let db=null,user=null,opened=null,teamCache=[],matchCache=[],finalGameCache=[],roomCache=new Map(),currentConfig=null,currentTourTab="teams",savingFinalGame=false;
+let recoveryMode=/(?:^|[&#?])type=recovery(?:[&#&]|$)/.test(location.hash+location.search);
 const message=(txt,bad=false)=>{let n=$("notice");n.textContent=txt;n.className="status show"+(bad?" error":"");n.scrollIntoView({behavior:"smooth",block:"nearest"});};
 // Confirmación dentro de la página: Android WebView no tiene que implementar window.confirm().
 function askConfirm(question){
@@ -186,10 +187,30 @@ function launch(){
  }
  if(!window.supabase){message("No cargó la biblioteca de Supabase. Revisá Internet.",true);return;}
  try{db=window.supabase.createClient(url,currentConfig.publishableKey,{auth:{persistSession:true,autoRefreshToken:true}});}catch(e){message(e.message,true);return;}
- show("setup",false);checkUser();
+ show("setup",false);
+ // Supabase entrega una sesión temporal al abrir el correo de recuperación.
+ // No ejecutar el panel normal hasta que el dueño cambie su contraseña.
+ db.auth.onAuthStateChange((event)=>{
+   if(event==="PASSWORD_RECOVERY"){
+     recoveryMode=true;
+     showRecoveryUpdate();
+   }
+ });
+ if(recoveryMode){
+   showRecoveryUpdate();
+   return;
+ }
+ checkUser();
+}
+function showRecoveryUpdate(){
+ show("login",false);show("app",false);show("logout",false);
+ show("adminRecoveryRequest",false);
+ show("adminRecoveryUpdate",true);
 }
 async function checkUser(){
+ if(recoveryMode)return;
  const {data,error}=await db.auth.getUser();user=data?.user||null;
+ if(recoveryMode)return;
  if(error||!user){show("login",true);show("app",false);show("logout",false);return;}
  const {data:a,error:err}=await db.from("js_admins").select("uid").eq("uid",user.id).maybeSingle();
  if(err||!a){show("login",true);show("app",false);show("logout",true);message("Cuenta creada, pero todavía no autorizada. Agregá tu correo a js_admins desde Supabase SQL Editor.",true);return;}
@@ -283,6 +304,66 @@ $("saveConfig").onclick=()=>{
  if(!/^https:\/\/[a-z\d-]+\.supabase\.co\/?$/.test(url)||key.length<20){message("Revisá la URL y la clave pública de Supabase.",true);return;}
  localStorage.setItem("js_torneo_cfg",JSON.stringify({supabaseUrl:url.replace(/\/$/,""),publishableKey:key,siteUrl:site}));
  launch();
+};
+$("forgotPassword").onclick=()=>{
+ $("recoveryEmail").value=$("email").value.trim();
+ $("recoveryFeedback").textContent="";
+ show("login",false);
+ show("adminRecoveryRequest",true);
+};
+$("cancelRecovery").onclick=()=>{
+ show("adminRecoveryRequest",false);show("login",true);
+};
+$("sendRecoveryLink").onclick=async()=>{
+ if(!db)return message("No se pudo conectar con Supabase.",true);
+ const email=$("recoveryEmail").value.trim();
+ if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){
+   $("recoveryFeedback").textContent="Ingresá un correo válido.";return;
+ }
+ const button=$("sendRecoveryLink");
+ if(button.disabled)return;
+ button.disabled=true;
+ $("recoveryFeedback").textContent="Solicitando correo de recuperación…";
+ try{
+   const {error}=await db.auth.resetPasswordForEmail(email,{
+     redirectTo:location.origin+location.pathname
+   });
+   if(error)throw error;
+   $("recoveryFeedback").textContent="✅ Si el correo está registrado, recibirás un enlace para cambiar tu contraseña. Revisá también Spam.";
+ }catch(error){
+   $("recoveryFeedback").textContent="⚠️ No se pudo solicitar el enlace: "+(error.message||"Error");
+ }finally{button.disabled=false}
+};
+$("saveRecoveryPassword").onclick=async()=>{
+ if(!db||!recoveryMode)return;
+ const password=$("recoveryPassword").value;
+ if(password.length<8||password.length>128){
+   $("recoveryUpdateFeedback").textContent="La contraseña debe tener al menos 8 caracteres.";return;
+ }
+ if(password!==$("recoveryPasswordRepeat").value){
+   $("recoveryUpdateFeedback").textContent="Las contraseñas no coinciden.";return;
+ }
+ const button=$("saveRecoveryPassword");
+ if(button.disabled)return;
+ button.disabled=true;
+ $("recoveryUpdateFeedback").textContent="Actualizando contraseña…";
+ try{
+   const {data:session}=await db.auth.getSession();
+   if(!session?.session)throw Error("El enlace venció o no se pudo verificar. Solicitá uno nuevo.");
+   const {error}=await db.auth.updateUser({password});
+   if(error)throw error;
+   $("recoveryPassword").value="";
+   $("recoveryPasswordRepeat").value="";
+   await db.auth.signOut();
+   recoveryMode=false;
+   history.replaceState(null,"",location.pathname);
+   show("adminRecoveryUpdate",false);
+   show("login",true);
+   $("password").value="";
+   message("✅ Contraseña actualizada. Ya podés iniciar sesión con tu correo y la nueva contraseña.");
+ }catch(error){
+   $("recoveryUpdateFeedback").textContent="⚠️ "+(error.message||"No se pudo cambiar la contraseña.");
+ }finally{button.disabled=false}
 };
 $("signIn").onclick=async()=>{
  const email=$("email").value.trim(),password=$("password").value;
