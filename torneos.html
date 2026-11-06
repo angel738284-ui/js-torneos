@@ -13,7 +13,7 @@
   const hash=new URLSearchParams(location.hash.slice(1));
   const query=new URLSearchParams(location.search.slice(1));
   if(hash.get("type")==="recovery"||query.get("type")==="recovery"){
-    location.replace("/admin.html"+location.search+location.hash);
+    location.replace("/recuperar.html"+location.search+location.hash);
   }
 })();
 </script>
@@ -822,17 +822,7 @@ import {normalizeSocialLink,renderSocialLinks} from "./profile-social.js?v=1.0.0
  };
  q("js-email-address").addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();q("js-email-password").focus()}});
  q("js-email-password").addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();q(jsSignupMode?"js-email-signup":"js-email-signin").click()}});
- q("js-auth-forgot").onclick=async()=>{
-   const email=q("js-email-address").value.trim();
-   if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))return status("Ingresá tu correo para recuperar la contraseña.",false);
-   const btn=q("js-auth-forgot");btn.disabled=true;
-   try{
-     const {error}=await sb.auth.resetPasswordForEmail(email,{redirectTo:location.origin+location.pathname});
-     if(error)throw error;
-     status("Si el correo tiene una cuenta, recibirás instrucciones para recuperar la contraseña.",true);
-   }catch(e){status("No se pudo enviar el enlace: "+e.message,false)}
-   finally{btn.disabled=false}
- };
+ q("js-auth-forgot").onclick=()=>{window.location.assign("./recuperar.html")};
  setAuthTab(false);
  q("js-email-signin").onclick=async()=>{
    try{

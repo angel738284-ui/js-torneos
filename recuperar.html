@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0a1122">
+<title>Recuperar contraseña · TORNEOS JS</title>
+<link rel="canonical" href="https://jstorneos.com/recuperar.html">
+<style>
+:root{color-scheme:dark}*{box-sizing:border-box}
+body{background:radial-gradient(ellipse at 80% 0%,#4b1838,#090e1b 57%);color:#f7f9ff;font:500 15px/1.5 system-ui,Roboto,sans-serif;min-height:100vh;margin:0;padding:25px 15px 80px}
+main{max-width:480px;margin:15px auto}
+h1{font-size:28px;letter-spacing:-1px;margin:10px 0 4px}h2{margin:5px 0 10px;font-size:19px}
+p{color:#b7c4d6;font-size:13px;line-height:1.6}
+a{color:#a4ead9;font-weight:700;text-decoration:none}
+.brand{display:flex;align-items:center;gap:12px;margin-bottom:26px}
+.logo{width:55px;height:55px;display:grid;place-items:center;border-radius:15px;background:linear-gradient(135deg,#ee5174,#8e234c);font-weight:950;font-size:26px}
+.card{padding:24px 18px;border:1px solid #45536b;border-radius:22px;background:linear-gradient(155deg,#1a253b,#101827);box-shadow:0 14px 40px #0007}
+label{display:block;font-size:12px;font-weight:800;color:#cbd6e6;margin:18px 0 8px}
+input{background:#0c1425;border:1px solid #52607c;border-radius:12px;width:100%;min-height:52px;padding:12px;color:white;outline:0;font:500 16px system-ui}
+input:focus{border-color:#f56b93;box-shadow:0 0 0 2px #e44f763b}
+button{cursor:pointer;width:100%;margin:15px 0 0;padding:14px 12px;border:1px solid #e66a91;border-radius:13px;font:800 15px system-ui;background:linear-gradient(130deg,#f05a75,#a71e50);color:white}
+button.secondary{background:#27354e;border-color:#5c6a80}
+button:disabled{opacity:.5;cursor:wait}
+[hidden]{display:none!important}
+.notice{padding:12px;border:1px solid #40516a;border-radius:12px;color:#cbd6e7;background:#141e31;margin:15px 0 0;overflow-wrap:anywhere}
+.foot{margin:24px 0;text-align:center}
+</style>
+</head>
+<body>
+<main>
+<div class="brand"><div class="logo">JS</div><div><strong>TORNEOS JS</strong><p style="margin:0">Recuperación segura de cuenta</p></div></div>
+<div class="card">
+<h1>🔐 Recuperar contraseña</h1>
+<p>Recibí un código de seis dígitos en tu correo, confirmalo acá y elegí una contraseña nueva. No necesitás abrir el enlace del mensaje.</p>
+<div id="step-email">
+<label for="email">Correo electrónico</label>
+<input id="email" type="email" autocomplete="email" inputmode="email" placeholder="tu@correo.com">
+<button id="send" type="button">📧 Enviar código de recuperación</button>
+</div>
+<div id="step-otp">
+<label for="otp">Código de 6 dígitos del correo</label>
+<input id="otp" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="6" pattern="[0-9]{6}" placeholder="000000">
+<button id="verify" class="secondary" type="button">✓ Verificar código</button>
+</div>
+<div id="step-password" hidden>
+<h2>🔑 Elegí tu nueva contraseña</h2>
+<label for="password">Nueva contraseña (mínimo 8 caracteres)</label>
+<input id="password" type="password" autocomplete="new-password" minlength="8" maxlength="128">
+<label for="password2">Repetí la contraseña</label>
+<input id="password2" type="password" autocomplete="new-password" minlength="8" maxlength="128">
+<button id="update" type="button">✓ Guardar contraseña nueva</button>
+</div>
+<div id="feedback" class="notice" role="status" aria-live="polite">Podés solicitar un nuevo código aunque el enlace anterior haya vencido.</div>
+<div id="success" hidden><p>✅ Ya podés iniciar sesión con tu contraseña nueva.</p><a href="./admin.html">Entrar al panel de administrador</a><p><a href="./">Volver a TORNEOS JS</a></p></div>
+</div>
+<div class="foot"><a href="./admin.html">← Panel administrador</a> · <a href="./">Inicio TORNEOS JS</a></div>
+</main>
+<script src="./config.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script src="./recuperar.js?v=1.0.0" defer></script>
+</body></html>

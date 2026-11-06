@@ -334,6 +334,34 @@ $("sendRecoveryLink").onclick=async()=>{
    $("recoveryFeedback").textContent="⚠️ No se pudo solicitar el enlace: "+(error.message||"Error");
  }finally{button.disabled=false}
 };
+$("verifyRecoveryCode").onclick=async()=>{
+ if(!db)return message("No se pudo conectar con Supabase.",true);
+ const email=$("recoveryEmail").value.trim();
+ const token=$("recoveryOtpCode").value.trim();
+ const feedback=$("recoveryOtpFeedback");
+ if(!/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(email)){
+   feedback.textContent="Ingresá primero el correo de tu cuenta.";return;
+ }
+ if(!/^\\d{6}$/.test(token)){
+   feedback.textContent="El código debe tener exactamente seis números.";return;
+ }
+ const button=$("verifyRecoveryCode");
+ if(button.disabled)return;
+ button.disabled=true;
+ feedback.textContent="Verificando código…";
+ try{
+   const {data,error}=await db.auth.verifyOtp({email,token,type:"recovery"});
+   if(error)throw error;
+   if(!data?.session)throw Error("No se pudo confirmar la sesión. Solicitá un código nuevo.");
+   $("recoveryOtpCode").value="";
+   recoveryMode=true;
+   history.replaceState(null,"",location.pathname);
+   showRecoveryUpdate();
+   $("recoveryPassword").focus();
+ }catch(error){
+   feedback.textContent="⚠️ "+(error.message||"Código inválido o vencido.");
+ }finally{button.disabled=false}
+};
 $("saveRecoveryPassword").onclick=async()=>{
  if(!db||!recoveryMode)return;
  const password=$("recoveryPassword").value;

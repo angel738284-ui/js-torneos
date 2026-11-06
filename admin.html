@@ -22,6 +22,13 @@
 <button id="cancelRecovery" class="secondary" type="button">← Volver</button>
 </div>
 <p id="recoveryFeedback" class="small" role="status" aria-live="polite"></p>
+<div class="divider"></div>
+<h3>🔢 Recuperar con código de correo</h3>
+<p class="small">Si tu correo contiene un código de seis dígitos, escribilo acá. No hace falta abrir ningún enlace.</p>
+<label for="recoveryOtpCode">Código de 6 dígitos</label>
+<input id="recoveryOtpCode" type="text" inputmode="numeric" pattern="[0-9]{6}" maxlength="6" autocomplete="one-time-code" placeholder="000000">
+<button id="verifyRecoveryCode" class="secondary full" type="button" style="margin-top:12px">✓ Verificar código</button>
+<p id="recoveryOtpFeedback" class="small" role="status" aria-live="polite"></p>
 </section>
 <section id="adminRecoveryUpdate" class="panel hidden">
 <h2>🔑 Crear contraseña nueva</h2>
@@ -184,4 +191,4 @@
 </div></div>
 <div class="divider"></div><h3>🎁 Premio del torneo</h3><div class="grid"><div><label>Tipo</label><select id="detailPrizeKind"><option value="ninguno">Sin premio</option><option value="diamantes">Diamantes 💎</option><option value="pases">Pases 🎟️</option><option value="otro">Otro</option></select></div><div><label>Cantidad</label><input id="detailPrizeQty" type="number" min="1" max="10000000" value="1"></div></div><label>Descripción</label><input id="detailPrizeDetails" maxlength="160" placeholder="Ej. 2 Booyah Pass"><button id="savePrize" class="secondary" style="margin:12px 0">Guardar premio</button><div class="divider"></div><div class="controls"><button id="archiveTour" class="secondary">Archivar torneo</button><button id="restoreTour" class="secondary hidden">Restaurar torneo</button><button id="deleteTour" class="ghost">🗑️ Eliminar definitivamente</button></div></div>
 </div>
-</section></div><script src="config.js"></script><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script><script src="rules-format.js?v=0.3.4"></script><script src="rules-presets.js?v=0.3.4"></script><script src="bracket-view.js?v=0.6.4"></script><script src="attendance-admin.js?v=0.5.1"></script><script src="resultados-admin.js?v=0.4.4"></script><script src="admin-roster.js?v=0.4.6"></script><script src="admin-waitlist.js?v=0.5.0"></script><script src="admin-br.js?v=0.7.0"></script><script src="admin-bans.js?v=0.6.1"></script><script src="admin.js?v=0.6.6"></script><script src="admin-extra.js?v=0.5.1"></script><script>(function(){var button=document.getElementById("checkAppUpdate");if(window.JSUpdates&&typeof window.JSUpdates.checkForUpdates==="function"){button.style.display="inline-block";button.onclick=function(){window.JSUpdates.checkForUpdates()};}})();</script></body></html>
+</section></div><script src="config.js"></script><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script><script src="rules-format.js?v=0.3.4"></script><script src="rules-presets.js?v=0.3.4"></script><script src="bracket-view.js?v=0.6.4"></script><script src="attendance-admin.js?v=0.5.1"></script><script src="resultados-admin.js?v=0.4.4"></script><script src="admin-roster.js?v=0.4.6"></script><script src="admin-waitlist.js?v=0.5.0"></script><script src="admin-br.js?v=0.7.0"></script><script src="admin-bans.js?v=0.6.1"></script><script src="admin.js?v=0.6.7"></script><script src="admin-extra.js?v=0.5.1"></script><script>(function(){var button=document.getElementById("checkAppUpdate");if(window.JSUpdates&&typeof window.JSUpdates.checkForUpdates==="function"){button.style.display="inline-block";button.onclick=function(){window.JSUpdates.checkForUpdates()};}})();</script></body></html>
