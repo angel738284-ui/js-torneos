@@ -1,0 +1,199 @@
+<!doctype html><html lang="es"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0a101b">
+<title>JS Torneos · Tres mapas BR</title>
+<style>
+:root{color-scheme:dark;--bg:#0a101b;--panel:#171f30;--line:#35435c;--text:#f4f7ff;--pink:#f05d7c;--green:#78efca;--muted:#b1bed1}
+*{box-sizing:border-box}body{background:radial-gradient(circle at 100% 0,#5325366e,transparent 37%),var(--bg);margin:0;color:var(--text);font:15px/1.5 system-ui,-apple-system,sans-serif;min-height:100vh}
+main{max-width:750px;margin:auto;padding:19px 15px 100px}header{display:flex;align-items:center;gap:12px;margin-bottom:23px}.logo{background:linear-gradient(135deg,#f65d78,#8d1d46);font-size:24px;font-weight:1000;border-radius:14px;width:50px;height:50px;display:grid;place-items:center}h1{font-size:25px;line-height:1.17;margin:0}h2{font-size:19px;margin:5px 0 14px}h3{font-size:18px;margin:2px 0 6px}p{color:var(--muted);margin:8px 0 13px}.small{font-size:12px}.sub{font-size:11px;letter-spacing:1.6px;color:#f4a1af;font-weight:900}.panel{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:18px;margin-bottom:15px}.hero{border-color:#7e4353;background:linear-gradient(120deg,#392336,#141e31);padding:22px}.hero h1{font-size:32px;margin:6px 0}.hero p{color:#dec6d1}
+button,input,select{font:inherit}input,select{background:#101829;color:white;border:1px solid #56627a;border-radius:11px;width:100%;min-height:47px;padding:10px 12px}input:focus,select:focus{outline:2px solid #ee8399}label{color:#ccd4e2;font-size:12px;font-weight:800;display:block;margin:12px 0 5px}
+button{cursor:pointer;min-height:42px;padding:10px 14px;font-weight:850;color:white;background:#2d3a53;border:1px solid #557090;border-radius:12px}button.primary{background:linear-gradient(120deg,#f45676,#b42f54);border-color:#f8899b}button.secondary{background:#202a3d}button:disabled{opacity:.45;cursor:not-allowed}.row{display:flex;gap:9px;align-items:center;flex-wrap:wrap}.row>*{min-width:0}.row button{flex:1}button.full{width:100%;margin-top:12px}.muted{color:var(--muted)}.tag{padding:5px 9px;background:#364054;color:#d7e3f4;border-radius:99px;font-size:11px;font-weight:900}.tag.active{background:#165443;color:#9affe0}.tag.wait{background:#594124;color:#ffe4a9}.tag.closed{background:#46323b;color:#ffbfc8}
+.maps{display:grid;gap:13px}.map{border:1px solid #344f69;border-radius:16px;padding:17px;background:#111d30}.map[data-active="true"]{border-color:#55c7a3;background:#122d2c}.mapTitle{display:flex;justify-content:space-between;gap:10px;align-items:center}.mapNumber{font-size:10px;letter-spacing:1.5px;color:#e998a8;font-weight:1000}.map h3{font-size:21px;margin:5px 0}.fieldgrid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.copygroup{display:flex;gap:8px;align-items:center}.copygroup input{flex:1}.copygroup button{flex-shrink:0}.note{font-size:12px;background:#242c41;border:1px solid #58617a;color:#d5dfec;padding:11px 12px;border-radius:11px;margin:12px 0}.note.good{border-color:#4a967b;color:#a6f7dd;background:#17332f}.err{background:#502a36;border:1px solid #ce7791;color:#ffc1ce}.hidden{display:none!important}.empty{text-align:center;border:1px dashed #52617a;border-radius:14px;padding:20px;color:#b6c4d7}#message{position:sticky;top:7px;z-index:3}footer{text-align:center;color:#8697b0;font-size:11px;padding:15px}
+@media(max-width:540px){.fieldgrid{grid-template-columns:1fr}.panel{padding:15px}.hero h1{font-size:28px}}
+</style></head><body><main>
+<header><div class="logo">JS</div><div><span class="sub">JS FAMILY · FREE FIRE</span><h1>TRES MAPAS BR</h1></div></header>
+<div class="panel hero"><div class="sub">UN TORNEO · TRES SALAS</div><h1>BERMUDA · PURGATORIO · KALAHARI</h1><p>Una inscripción para los tres mapas. Cada sala tiene su propio ID y contraseña. El organizador las habilita en orden.</p></div>
+<div id="message" role="status" aria-live="polite"></div>
+<div class="row" style="margin-bottom:14px"><button id="tabAdmin" class="primary" type="button">⚙ Organizador</button><button id="tabPlayer" type="button">🎮 Jugador</button></div>
+<section id="authPanel" class="panel">
+<h2>Iniciar sesión</h2><p class="small">Usá el correo y la contraseña de tu cuenta de JS Torneos. No ingreses la contraseña de Free Fire.</p>
+<label>Correo de JS Torneos</label><input id="email" type="email" autocomplete="username" placeholder="correo@ejemplo.com">
+<label>Contraseña de JS Torneos</label><input id="password" type="password" autocomplete="current-password" placeholder="Tu contraseña">
+<button class="primary full" id="signin" type="button">Entrar</button>
+<div class="row" style="margin-top:10px"><button type="button" id="google" class="secondary">Continuar con Google</button><button type="button" id="signout" class="secondary hidden">Cerrar sesión</button></div>
+<p id="signedAs" class="small"></p>
+</section>
+<section id="adminPanel" class="hidden">
+<div class="panel">
+<div class="sub">ADMINISTRAR TRES SALAS</div><h2>Elegí tu torneo BR</h2>
+<p class="small">Solo aparecen torneos BR que creaste con tu cuenta de administrador.</p>
+<select id="adminTour"></select>
+<button type="button" class="full secondary" id="adminRefresh">↻ Actualizar torneos</button>
+</div>
+<div class="panel"><h2>Mapas del torneo</h2><div id="adminMaps" class="maps"></div></div>
+</section>
+<section id="playerPanel" class="hidden">
+<div class="panel"><div class="sub">JUGADORES REGISTRADOS</div><h2>Mis torneos BR</h2>
+<p class="small">Iniciá sesión con la cuenta que tiene vinculado tu ID de Free Fire. También podés usar el código privado de tu equipo.</p>
+<select id="playerTour"></select><button id="playerRefresh" class="secondary full" type="button">Ver mis salas</button></div>
+<div class="panel"><h2>O ingresar con código privado</h2>
+<p class="small">Para jugadores sin cuenta. Usá el código privado de tu equipo o inscripción, NO el código público del torneo.</p>
+<label>Código privado del equipo</label><input id="teamCode" placeholder="JS-EQ-..." maxlength="30" spellcheck="false" autocapitalize="characters">
+<button type="button" class="secondary full" id="teamAccessBtn">Consultar mis tres mapas</button></div>
+<div class="panel"><h2>🗺 Salas de los tres mapas</h2><div id="playerMaps" class="maps"></div></div>
+</section>
+<footer>JS Torneos es una herramienta comunitaria independiente de Garena. Los datos de las salas solo se muestran a participantes autorizados.</footer>
+</main>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script>
+(function(){
+'use strict';
+var URL_BASE='https://chfshxlykvmovwryjnxi.supabase.co';
+var PUBLISHABLE='sb_publishable_rS9X7AX-LPQeBJCCPJdshw_S0WckOOv';
+var sb=window.supabase.createClient(URL_BASE,PUBLISHABLE,{auth:{persistSession:true,autoRefreshToken:true}});
+var byId=function(id){return document.getElementById(id)};
+var maps=['Bermuda','Purgatorio','Kalahari'],view='admin',me=null,adminTours=[],playerTours=[],chosenAdmin='',chosenPlayer='';
+function show(id,on){byId(id).classList.toggle('hidden',!on)}
+function say(msg,bad){var div=byId('message');div.textContent=msg;div.className='note'+(bad?' err':'');setTimeout(function(){if(div.textContent===msg)div.textContent=''},6000)}
+function el(tag,cl,txt){var o=document.createElement(tag);if(cl)o.className=cl;if(txt!==undefined)o.textContent=txt;return o}
+function btn(label,cl,fun){var b=el('button',cl,label);b.type='button';b.addEventListener('click',fun);return b}
+function tag(status){var t=el('span','tag '+(status==='active'?'active':status==='pending'?'wait':'closed'),status==='active'?'🟢 Disponible':status==='pending'?'⏳ Pendiente':status==='closed'?'🔒 Cerrado':'🏆 Finalizado');return t}
+function secret(label,value){var wrap=el('div'),lab=el('label','',label),line=el('div','copygroup'),input=el('input');input.readOnly=true;input.value=value;line.append(input,btn('Copiar','secondary',function(){navigator.clipboard.writeText(input.value).then(function(){say('Copiado al portapapeles')},function(){input.select();say('Seleccioná y copiá el dato')} )}));wrap.append(lab,line);return wrap}
+async function rpc(name,args){var result=await sb.rpc(name,args);if(result.error)throw new Error(result.error.message);return result.data}
+async function session(){var {data,error}=await sb.auth.getSession();if(error)throw error;me=data.session;byId('signedAs').textContent=me?'Sesión iniciada: '+(me.user.email||'Cuenta Google'):'Sin sesión iniciada';show('signout',!!me)}
+function mode(next){view=next;byId('tabAdmin').className=next==='admin'?'primary':'';byId('tabPlayer').className=next==='player'?'primary':'';show('adminPanel',next==='admin');show('playerPanel',next==='player');if(next==='admin')loadAdmin();else loadPlayer()}
+function fillSelect(select,items,placeholder){select.replaceChildren();var first=el('option','',placeholder);first.value='';select.append(first);items.forEach(function(t){var opt=el('option','',t.name+' · '+t.code+' · '+t.status);opt.value=t.id;select.append(opt)})}
+async function loadAdmin(){
+ var node=byId('adminMaps');node.replaceChildren();
+ if(!me){node.append(el('div','empty','Iniciá sesión como organizador.'));return}
+ try{
+  var result=await sb.from('js_tournaments').select('id,name,code,status,mode,br_format').eq('mode','BR').order('created_at',{ascending:false}).limit(80);
+  if(result.error)throw result.error;adminTours=result.data||[];
+  fillSelect(byId('adminTour'),adminTours,'Elegí un torneo BR');
+  if(chosenAdmin&&adminTours.some(function(x){return x.id===chosenAdmin}))byId('adminTour').value=chosenAdmin;
+  if(byId('adminTour').value)await renderAdminMaps(byId('adminTour').value);
+  else node.append(el('div','empty','Elegí el torneo BR para editar sus tres salas.'));
+ }catch(e){say(e.message||'No se pudo cargar el panel',true)}
+}
+async function renderAdminMaps(id){
+ if(!id)return;
+ chosenAdmin=id;
+ var node=byId('adminMaps');node.replaceChildren();
+ try{
+  var data=await rpc('js_br_admin_maps',{p_tournament:id});
+  (data.maps||[]).forEach(function(r){
+   var box=el('section','map');box.dataset.active=String(!!r.is_open);
+   var title=el('div','mapTitle'),label=el('div');
+   label.append(el('div','mapNumber','MAPA '+r.map_number),el('h3','',r.map_name));
+   title.append(label,tag(!r.sent_at?'pending':r.is_open?'active':'closed'));box.append(title);
+   var grid=el('div','fieldgrid'),one=el('div'),two=el('div'),rid=el('input'),pass=el('input');
+   rid.placeholder='ID de la sala de '+r.map_name;rid.value=r.room_id||'';rid.maxLength=60;
+   pass.placeholder='Contraseña de '+r.map_name;pass.value=r.room_password||'';pass.maxLength=80;
+   one.append(el('label','','ID de la sala'),rid);two.append(el('label','','Contraseña de la sala'),pass);
+   grid.append(one,two);box.append(grid);
+   var row=el('div','row');row.style.marginTop='12px';
+   var send=btn(r.sent_at?'🔁 Reenviar mapa '+r.map_number:'📨 Publicar mapa '+r.map_number,'primary',async function(){
+     if(!rid.value.trim()||!pass.value.trim()){say('Completá el ID y contraseña del mapa '+r.map_number,true);return}
+     if(!confirm('¿Publicar '+r.map_name+' a los participantes inscritos? El mapa anterior quedará cerrado.'))return;
+     send.disabled=true;
+     try{
+       var result=await rpc('js_br_publish_map',{p_tournament:id,p_map_number:r.map_number,p_room_id:rid.value.trim(),p_password:pass.value.trim()});
+       say('✓ Mapa '+r.map_number+' ('+r.map_name+') enviado a '+result.recipient_teams+' equipos.');
+       await renderAdminMaps(id);
+     }catch(e){say(e.message,true)}finally{send.disabled=false}
+   });
+   if(data.status==='finished')send.disabled=true;
+   row.append(send);
+   if(r.is_open){
+    row.append(btn('🔒 Cerrar sala','secondary',async function(){
+      if(!confirm('¿Cerrar el acceso al mapa '+r.map_number+'?'))return;
+      try{await rpc('js_br_close_map',{p_tournament:id,p_map_number:r.map_number});say('Sala cerrada');await renderAdminMaps(id)}
+      catch(e){say(e.message,true)}
+    }));
+   }
+   box.append(row);
+   if(r.sent_at)box.append(el('p','small','Último envío: '+new Date(r.sent_at).toLocaleString('es-AR')));
+   node.append(box);
+  });
+  node.append(el('div','note','El mismo torneo y sus participantes sirven para Bermuda, Purgatorio y Kalahari. Primero publicá el mapa 1, luego el 2 y finalmente el 3. Solo el mapa actual queda abierto.'));
+ }catch(e){say(e.message,true);node.append(el('div','empty','No pudimos consultar las salas'))}
+}
+function renderPlayerMaps(rows){
+ var root=byId('playerMaps');root.replaceChildren();
+ if(!Array.isArray(rows)||!rows.length){root.append(el('div','empty','Todavía no hay mapas publicados.'));return}
+ rows.forEach(function(r){
+  var box=el('section','map');box.dataset.active=String(r.status==='active');
+  var title=el('div','mapTitle'),name=el('div');name.append(el('div','mapNumber','MAPA '+r.map_number),el('h3','',r.map_name));
+  title.append(name,tag(r.status));box.append(title);
+  if(r.status==='active'&&r.room_id&&r.room_password){
+   box.append(secret('🎮 ID de '+r.map_name,r.room_id),secret('🔑 Contraseña de '+r.map_name,r.room_password));
+  }else{
+   var msg=r.status==='pending'?'El organizador todavía no habilitó esta sala.':
+     r.status==='finished'?'El torneo finalizó. Las credenciales quedaron ocultas.':'Esta sala ya se cerró. Esperá al próximo mapa.';
+   box.append(el('p','small',msg));
+  }
+  root.append(box);
+ });
+}
+async function loadPlayer(){
+ var target=byId('playerMaps');target.replaceChildren();
+ if(!me){target.append(el('div','empty','Iniciá sesión o usá el código privado de tu equipo.'));return}
+ try{
+  var response=await sb.functions.invoke('js-jugadores-cuenta',{body:{action:'my_tournaments'}});
+  if(response.error)throw new Error(response.data?.error||response.error.message);
+  var all=response.data?.tournaments||[];
+  var unique=new Map();
+  all.filter(function(x){return x.mode==='BR'}).forEach(function(x){unique.set(x.tournament_id,{id:x.tournament_id,name:x.tournament,code:x.code,status:x.status})});
+  playerTours=Array.from(unique.values());
+  fillSelect(byId('playerTour'),playerTours,'Elegí uno de tus torneos BR');
+  if(chosenPlayer&&playerTours.some(function(x){return x.id===chosenPlayer}))byId('playerTour').value=chosenPlayer;
+  if(byId('playerTour').value)await refreshPlayer();
+  else target.append(el('div','empty','Elegí un torneo BR en el que estés inscrito.'));
+ }catch(e){say(e.message,true)}
+}
+async function refreshPlayer(){
+ var id=byId('playerTour').value;
+ if(!id)return;
+ chosenPlayer=id;
+ try{var data=await rpc('js_br_player_maps',{p_tournament:id});renderPlayerMaps(data.maps||[]);say('Salas actualizadas.')}
+ catch(e){say(e.message,true)}
+}
+async function accessByCode(){
+ var access=byId('teamCode').value.trim().toUpperCase().replace(/\s+/g,'');
+ if(!/^JS-EQ-[A-HJ-NP-Z2-9]{20}$/.test(access)){say('El código privado debe comenzar con JS-EQ-',true);return}
+ try{
+  var req=await fetch(URL_BASE+'/functions/v1/torneo',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({action:'team_dashboard',team_code:access}),cache:'no-store'});
+  var data=await req.json();if(!req.ok)throw new Error(data.error||'No se pudo acceder');
+  if(data.mode!=='BR')throw new Error('Ese código corresponde a un torneo que no es BR');
+  renderPlayerMaps(data.br_maps||[]);
+  say('Mostrando las salas de '+data.tournament+' para '+data.team+'.');
+ }catch(e){say(e.message,true)}
+}
+async function signIn(){
+ try{
+ var email=byId('email').value.trim(),password=byId('password').value;
+ var res=await sb.auth.signInWithPassword({email:email,password:password});
+ if(res.error)throw res.error;
+ await session();say('Sesión iniciada');mode(view);
+ }catch(e){say(e.message||'Credenciales incorrectas',true)}
+}
+async function google(){
+ try{
+  var r=await sb.auth.signInWithOAuth({provider:'google',options:{redirectTo:location.href}});
+  if(r.error)throw r.error;
+ }catch(e){say('Si Google no vuelve a esta página, usá el código privado de equipo o correo.',true)}
+}
+byId('tabAdmin').onclick=function(){mode('admin')};
+byId('tabPlayer').onclick=function(){mode('player')};
+byId('signin').onclick=signIn;byId('google').onclick=google;
+byId('signout').onclick=async function(){await sb.auth.signOut();me=null;adminTours=[];playerTours=[];byId('adminMaps').replaceChildren();byId('playerMaps').replaceChildren();await session();mode(view)};
+byId('adminTour').onchange=function(){renderAdminMaps(this.value)};
+byId('adminRefresh').onclick=loadAdmin;
+byId('playerRefresh').onclick=async function(){await loadPlayer();if(byId('playerTour').value)await refreshPlayer()};
+byId('playerTour').onchange=refreshPlayer;
+byId('teamAccessBtn').onclick=accessByCode;
+sb.auth.onAuthStateChange(function(event){if(event==='SIGNED_IN'||event==='SIGNED_OUT')setTimeout(async function(){await session();if(me)mode(view)},80)});
+session().then(function(){mode(location.hash==='#jugador'?'player':'admin')}).catch(function(e){say(e.message,true)});
+})();
+</script>
+</body></html>
