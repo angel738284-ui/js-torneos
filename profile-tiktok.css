@@ -204,3 +204,53 @@ body.js-profile-tab:not(.js-auth-required):not(.js-auth-checking) .wrap{
 body.js-profile-tab:not(.js-auth-required):not(.js-auth-checking) #js-account-view{
   margin-top:0;
 }
+
+
+/* PROFUNDIDAD FINAL DE PERFIL (móvil y escritorio)
+   La navegación es fija. Reservar su altura por debajo del contenido
+   evita que tape el último campo e impida llegar al marco de cierre. */
+body.js-profile-tab:not(.js-auth-required):not(.js-auth-checking) #js-account-view {
+  height:auto;
+  max-height:none;
+  overflow:visible;
+  padding-bottom:calc(126px + env(safe-area-inset-bottom, 0px));
+}
+body.js-profile-tab:not(.js-auth-required):not(.js-auth-checking) #js-account-signed>.account-card {
+  margin:20px 16px 0;
+  padding:19px 17px 24px;
+  border-radius:17px;
+  border:1px solid #4b536b;
+  box-shadow:0 10px 32px #0005, inset 0 1px #ffffff09;
+  background:linear-gradient(160deg,#172134,#0e1422);
+}
+body.js-profile-tab:not(.js-auth-required):not(.js-auth-checking) .js-profile-end {
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:12px;
+  margin:24px 22px 0;
+  padding:10px 0 6px;
+}
+.js-profile-end-line {
+  flex:1;
+  max-width:155px;
+  height:1px;
+  background:linear-gradient(90deg,transparent,#814256,transparent);
+}
+.js-profile-end-text {
+  color:#a1aabe;
+  font-size:10px;
+  font-weight:800;
+  white-space:nowrap;
+  letter-spacing:1.2px;
+}
+body.js-profile-tab:not(.js-auth-required):not(.js-auth-checking) {
+  overflow-y:visible;
+  overscroll-behavior-y:auto;
+}
+@media(max-width:380px){
+  body.js-profile-tab:not(.js-auth-required):not(.js-auth-checking) #js-account-signed>.account-card{
+    margin-left:12px;margin-right:12px;padding-left:13px;padding-right:13px;
+  }
+  .js-profile-end{gap:6px!important}
+}
