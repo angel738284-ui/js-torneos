@@ -1,0 +1,48 @@
+/* Amistades compartidas con la APK de TORNEOS JS */
+#js-friends-view{padding:0 0 calc(120px + env(safe-area-inset-bottom,0px));border:0;background:none;box-shadow:none;width:min(100% - 28px,780px)}
+.js-friends-intro{padding:22px 6px 8px}
+.js-friends-intro .tag{font-size:10px;letter-spacing:2px;color:#fc91a6;font-weight:950}
+#js-friends-view .js-friends-intro h2{font-size:30px;line-height:1.1;letter-spacing:-1px;margin:9px 0 13px;color:#fafbff}
+#js-friends-view .js-friends-intro p{font-size:13px;color:#bdcadd;margin-bottom:10px;max-width:570px}
+.js-friends-card{background:linear-gradient(142deg,#16233a,#101727);border:1px solid #394d6b;border-radius:20px;padding:19px 17px;margin:14px 0 20px;box-shadow:0 10px 26px #0003}
+#js-friends-view .js-friends-card h3{font-size:19px;margin:2px 0 12px;color:#eff4ff;line-height:1.3}
+#js-friends-view .js-friends-card p{color:#b8c8de;line-height:1.55;font-size:12px}
+.js-friends-search-row{display:flex;gap:9px;align-items:center;margin:14px 0 6px}
+.js-friends-search-row input{flex:1;min-width:0;font-size:16px}
+.js-friends-btn,#js-friends-search,#js-friends-refresh{display:inline-flex;align-items:center;justify-content:center;border:1px solid #408077;background:#164940;color:#a2f1da;text-decoration:none;border-radius:12px;min-height:42px;padding:9px 12px;font-weight:850;font-size:12px;font-family:inherit;text-align:center;cursor:pointer}
+.js-friends-btn:hover,#js-friends-search:hover,#js-friends-refresh:hover{filter:brightness(1.08)}
+.js-friends-btn:disabled,#js-friends-refresh:disabled,#js-friends-search:disabled{opacity:.5;cursor:wait}
+.js-friends-btn.neutral{background:#2a3449;border-color:#46556e;color:#e0e9f5}
+.js-friends-btn.danger{background:#48283b;border-color:#8d4960;color:#ffd0db}
+.js-friends-section-head{display:flex;gap:12px;align-items:center;justify-content:space-between;margin-bottom:10px;flex-wrap:wrap}
+#js-friends-view .js-friends-section-head h3{margin:0}
+.js-friend-list{display:grid;gap:12px}
+.js-friend-row{background:#0e1728;border:1px solid #344762;border-radius:15px;padding:15px 13px;overflow-wrap:anywhere}
+.js-friend-row>strong{display:block;font-size:13px;color:#f3f5fc;margin-bottom:9px}
+.js-friend-main{display:grid;gap:4px}
+.js-friend-main strong{font-size:16px;color:#f6f7ff;line-height:1.35}
+.js-friend-main span{font-size:12px;color:#9daec7}
+.js-friend-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:13px}
+.js-friend-note{font-size:12px;color:#a4e6c5;padding:10px 5px}
+.js-friends-empty{padding:19px 10px;margin:0!important;border:1px dashed #39516a;border-radius:13px;text-align:center;color:#9eb1c9;background:#0b1422}
+#js-friends-status{min-height:19px;margin:12px 0 8px;font-size:12px;color:#b7cbe4;overflow-wrap:anywhere}
+#js-friends-status[data-kind=error]{color:#ffc1c8}
+#js-friends-status[data-kind=ok]{color:#86e8c6}
+.js-friend-invite-panel:not(:empty){margin-top:15px}
+.js-invite-picker{display:grid;gap:10px;background:#101c30;border:1px solid #405476;border-radius:13px;padding:13px}
+.js-invite-picker span{font-size:12px;font-weight:850;color:#dce5f6}
+.js-invite-picker select{width:100%;min-height:47px;outline:none;border-radius:11px;padding:9px 10px;border:1px solid #495a79;background:#172438;color:#fff;font-size:14px}
+#js-friend-profile:not(:empty){margin:13px 0}
+.js-public-profile{background:#111927;border:1px solid #89405d;border-radius:18px;overflow:hidden;padding-bottom:17px;box-shadow:0 14px 24px #0006}
+.js-public-cover{height:145px;background:linear-gradient(120deg,#4b2647,#10273b);background-size:cover;background-position:center}
+.js-public-head{display:flex;gap:13px;align-items:center;padding:0 17px 10px}
+.js-public-avatar{width:86px;height:86px;flex-shrink:0;display:grid;place-items:center;overflow:hidden;border-radius:50%;border:4px solid #111927;margin-top:-36px;background:#843958;font-size:23px;font-weight:900}
+.js-public-avatar img{width:100%;height:100%;object-fit:cover}
+.js-public-head>div:last-child{display:grid;gap:4px;min-width:0}
+.js-public-head strong{font-size:17px;color:white;overflow-wrap:anywhere}
+.js-public-head span{font-size:11px;color:#a9b8c8;overflow-wrap:anywhere}
+.js-friend-admin{font-size:10px;padding:3px 6px;background:#704d24;color:#ffe1a0;border-radius:6px;justify-self:start}
+#js-friends-view .js-friend-bio{white-space:pre-wrap;font-size:13px;margin:5px 18px 13px}
+.js-public-profile>.js-friends-btn{margin-left:18px}
+body.player-account-screen nav .player-nav-button{min-width:0;flex:1;padding:5px 2px}
+@media(max-width:380px){.js-friends-search-row{gap:6px}#js-friends-search{padding:9px 11px}.js-friends-card{padding:15px 12px}.js-friend-actions{gap:6px}body.player-account-screen nav .player-nav-button{font-size:10px}}

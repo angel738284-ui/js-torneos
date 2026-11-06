@@ -7,6 +7,7 @@
 <link rel="stylesheet" href="itachi-login.css?v=1.0.1">
 <link rel="stylesheet" href="profile-tiktok.css?v=1.0.3">
 <link rel="stylesheet" href="auto-mis-torneos.css?v=1.0.0">
+<link rel="stylesheet" href="js-friends.css?v=1.0.0">
 <style>
 :root{color-scheme:dark}*{box-sizing:border-box}body{margin:0;background:#080d1a;color:#f6f8fe;font:500 15px/1.45 system-ui,-apple-system,Roboto,sans-serif;min-height:100vh}
 body:before{content:"";position:fixed;inset:0;z-index:-1;background:radial-gradient(ellipse at 90% -20%,#3c607a55,transparent 50%),radial-gradient(ellipse at 0% 50%,#76314833,transparent 50%)}
@@ -310,6 +311,39 @@ setInterval(()=>{if(document.visibilityState==="visible")load()},90000);load();
   </div>
   <div id="js-my-list" aria-live="polite"><div class="empty">Iniciá sesión para ver tus participaciones.</div></div>
 </section>
+<section id="js-friends-view" class="account-section account-hide">
+  <div class="js-friends-intro">
+    <span class="tag">TORNEOS JS · COMUNIDAD</span>
+    <h2>👥 Mis amigos</h2>
+    <p>Buscá jugadores por su ID de Free Fire, agregalos e invitalos a participar de los torneos.</p>
+  </div>
+  <div class="js-friends-card">
+    <h3>🔎 Buscar jugador por ID</h3>
+    <p>El jugador debe tener una cuenta de TORNEOS JS con su ID de Free Fire verificado.</p>
+    <div class="js-friends-search-row">
+      <input id="js-friends-id" type="text" inputmode="numeric" maxlength="16" placeholder="ID de Free Fire" aria-label="ID de Free Fire" autocomplete="off">
+      <button id="js-friends-search" type="button">Buscar</button>
+    </div>
+    <p id="js-friends-status" role="status" aria-live="polite"></p>
+    <div id="js-friend-search-result"></div>
+    <div id="js-friend-profile"></div>
+  </div>
+  <div class="js-friends-card">
+    <div class="js-friends-section-head">
+      <h3>🤝 Amigos agregados (<span id="js-friends-count">0</span>)</h3>
+      <button id="js-friends-refresh" type="button">↻ Actualizar</button>
+    </div>
+    <div id="js-friends-list" class="js-friend-list"></div>
+  </div>
+  <div class="js-friends-card">
+    <h3>📩 Solicitudes de amistad</h3>
+    <div id="js-friends-requests" class="js-friend-list"></div>
+  </div>
+  <div class="js-friends-card">
+    <h3>🏆 Invitaciones a torneos</h3>
+    <div id="js-friends-invites" class="js-friend-list"></div>
+  </div>
+</section>
 <div id="js-notice-overlay" class="js-notice-overlay account-hide">
  <section class="js-notice-panel" role="dialog" aria-modal="true" aria-labelledby="js-notice-title" tabindex="-1">
   <div class="js-notice-head">
@@ -328,6 +362,7 @@ setInterval(()=>{if(document.visibilityState==="visible")load()},90000);load();
 
 <script type="module">
 import {createClient} from "https://esm.sh/@supabase/supabase-js@2";
+import {initFriends} from "./js-friends-ui.js?v=1.0.0";
 (function(){
  "use strict";
  const conf={url:"https://chfshxlykvmovwryjnxi.supabase.co",key:"sb_publishable_rS9X7AX-LPQeBJCCPJdshw_S0WckOOv"};
@@ -336,10 +371,11 @@ import {createClient} from "https://esm.sh/@supabase/supabase-js@2";
  const q=id=>document.getElementById(id);
  const select=(el,show)=>el.classList.toggle("account-hide",!show);
  const make=(tag,txt,cls)=>{const x=document.createElement(tag);if(typeof txt==="string")x.textContent=txt;if(cls)x.className=cls;return x};
- const scenes=["perfil","torneos","mis"];
+ const scenes=["perfil","torneos","mis","amigos"];
  const original=[...document.querySelectorAll(".hero,.title,#search,.filters,#cards,.help")];
- const views={perfil:q("js-account-view"),mis:q("js-my-view")};
+ const views={perfil:q("js-account-view"),mis:q("js-my-view"),amigos:q("js-friends-view")};
  let session=null,profile=null,tournaments=[],fresh=false,activeTab="perfil";
+ let friendsController=null;
  const storeKey="js-family-player-notices-v2";
  const saved=()=>{try{return JSON.parse(localStorage.getItem(storeKey)||"[]")}catch{return[]}};
  let notices=Array.isArray(saved())?saved():[];
@@ -373,8 +409,8 @@ import {createClient} from "https://esm.sh/@supabase/supabase-js@2";
  function menu(){
    const nav=document.querySelector("nav");if(!nav)return;
    nav.replaceChildren();
-   const icons={torneos:"🏆",perfil:"👤",mis:"⚔️"};
-   const names={torneos:"Torneos",perfil:"Perfil",mis:"Mis torneos"};
+   const icons={torneos:"🏆",perfil:"👤",mis:"⚔️",amigos:"👥"};
+   const names={torneos:"Torneos",perfil:"Perfil",mis:"Mis torneos",amigos:"Amigos"};
    for(const name of scenes){
      const b=make("button",undefined,"player-nav-button"+(activeTab===name?" is-current":""));
      b.append(make("span",icons[name]),make("small",names[name]));
@@ -392,6 +428,7 @@ import {createClient} from "https://esm.sh/@supabase/supabase-js@2";
    for(const [name,node] of Object.entries(views))select(node,name===tab);
    menu();
    if(tab==="mis")loadMy();
+   if(tab==="amigos")friendsController?.refresh();
 
    window.scrollTo({top:0,behavior:"instant"});
  }
@@ -797,6 +834,10 @@ import {createClient} from "https://esm.sh/@supabase/supabase-js@2";
      alert(permission==="granted"?"Avisos habilitados mientras la app está activa.":"No se concedió permiso.");
    }catch{alert("No se pudo habilitar el permiso desde este navegador.")}
  };
+ friendsController=initFriends({
+   q,make,apiCall,safeProfileImage,
+   getAccount:()=>({session,profile})
+ });
  sb.auth.onAuthStateChange((event)=>{if(event==="SIGNED_IN"||event==="SIGNED_OUT")setTimeout(current,0)});
  menu();
  current();
@@ -809,7 +850,11 @@ import {createClient} from "https://esm.sh/@supabase/supabase-js@2";
      }
    }
  },3000);
- document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible"&&session&&profile)loadMy()});
+ document.addEventListener("visibilitychange",()=>{
+   if(document.visibilityState!=="visible"||!session||!profile)return;
+   loadMy();
+   if(activeTab==="amigos")friendsController?.refresh();
+ });
 })();
 </script>
 </body></html>
