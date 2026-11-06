@@ -1,0 +1,21 @@
+/* Enlaces a redes del jugador: logos Instagram y TikTok reconocibles. */
+.js-social-links{display:flex;flex-wrap:wrap;gap:10px;margin:13px 0 16px}
+.js-social-links[hidden]{display:none!important}
+.js-social-link{
+ display:inline-flex;align-items:center;gap:9px;padding:7px 14px 7px 7px;
+ min-height:42px;text-decoration:none;color:#fafaff;border-radius:13px;
+ border:1px solid #424e68;background:#172034;font-size:12px;font-weight:850;
+ box-shadow:0 4px 15px #0003;transition:border-color .15s,background-color .15s
+}
+.js-social-link:hover,.js-social-link:focus-visible{border-color:#ea6688;background:#27314b;outline-offset:2px}
+.js-social-icon{width:30px;height:30px;flex:none;display:grid;place-items:center;color:white;border-radius:9px}
+.js-social-link--instagram .js-social-icon{background:linear-gradient(35deg,#ffc555 0%,#fc3878 46%,#8338c4 82%,#405de6 100%)}
+.js-social-link--tiktok .js-social-icon{background:#080a10;box-shadow:inset 2px 0 #25f4ee,inset -2px 0 #fe2c55}
+.js-social-icon svg{display:block}
+#js-web-editor .js-social-edit-label{display:flex;align-items:center;gap:7px;margin-top:16px}
+#js-web-editor .js-social-edit-label .js-social-icon{width:24px;height:24px;border-radius:7px}
+#js-web-editor .js-social-edit-label svg{width:15px;height:15px}
+#js-web-editor .js-social-help{font-size:11px!important;color:#a8bad0!important;margin:6px 0 5px!important}
+#js-web-profile .js-social-links{margin:13px 0 15px}
+.js-public-profile .js-social-links{padding:0 17px;margin:7px 0 14px}
+@media(max-width:380px){.js-social-links{gap:7px}.js-social-link{font-size:11px;padding-right:9px}}

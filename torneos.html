@@ -8,6 +8,7 @@
 <link rel="stylesheet" href="profile-tiktok.css?v=1.0.3">
 <link rel="stylesheet" href="auto-mis-torneos.css?v=1.0.0">
 <link rel="stylesheet" href="js-friends.css?v=1.0.0">
+<link rel="stylesheet" href="profile-social.css?v=1.0.0">
 <style>
 :root{color-scheme:dark}*{box-sizing:border-box}body{margin:0;background:#080d1a;color:#f6f8fe;font:500 15px/1.45 system-ui,-apple-system,Roboto,sans-serif;min-height:100vh}
 body:before{content:"";position:fixed;inset:0;z-index:-1;background:radial-gradient(ellipse at 90% -20%,#3c607a55,transparent 50%),radial-gradient(ellipse at 0% 50%,#76314833,transparent 50%)}
@@ -255,6 +256,7 @@ setInterval(()=>{if(document.visibilityState==="visible")load()},90000);load();
         <div id="js-web-user-handle" class="js-web-profile-handle"></div>
         <div id="js-web-admin-badge"></div>
         <p id="js-web-user-bio" class="js-web-profile-bio"></p>
+        <div id="js-web-social" class="js-social-links" aria-label="Redes sociales del jugador" hidden></div>
         <p id="js-web-freefire" class="js-web-profile-verified"></p>
         <div id="js-web-profile-stats" class="js-web-profile-summary">
           <div class="js-web-profile-stat"><strong id="js-web-stat-tours">—</strong><small>Torneos</small></div>
@@ -272,6 +274,11 @@ setInterval(()=>{if(document.visibilityState==="visible")load()},90000);load();
           <input id="js-web-username-edit" maxlength="22" autocapitalize="off" autocomplete="off">
           <label for="js-web-bio-edit">Biografía</label>
           <textarea id="js-web-bio-edit" maxlength="180" placeholder="Contá algo sobre vos…"></textarea>
+          <label class="js-social-edit-label" for="js-web-instagram-edit">📷 Instagram</label>
+          <input id="js-web-instagram-edit" maxlength="350" inputmode="url" autocomplete="off" placeholder="https://www.instagram.com/tu_usuario/">
+          <label class="js-social-edit-label" for="js-web-tiktok-edit">♪ TikTok</label>
+          <input id="js-web-tiktok-edit" maxlength="350" inputmode="url" autocomplete="off" placeholder="https://www.tiktok.com/@tu_usuario">
+          <p class="js-social-help">Pegá el enlace completo o escribí @usuario. Son opcionales y los podés quitar cuando quieras.</p>
           <label for="js-web-avatar-file">Foto de perfil (JPG, PNG o WebP)</label>
           <input id="js-web-avatar-file" type="file" accept="image/jpeg,image/png,image/webp">
           <label for="js-web-cover-file">Portada del perfil</label>
@@ -363,6 +370,7 @@ setInterval(()=>{if(document.visibilityState==="visible")load()},90000);load();
 <script type="module">
 import {createClient} from "https://esm.sh/@supabase/supabase-js@2";
 import {initFriends} from "./js-friends-ui.js?v=1.0.0";
+import {normalizeSocialLink,renderSocialLinks} from "./profile-social.js?v=1.0.0";
 (function(){
  "use strict";
  const conf={url:"https://chfshxlykvmovwryjnxi.supabase.co",key:"sb_publishable_rS9X7AX-LPQeBJCCPJdshw_S0WckOOv"};
@@ -573,6 +581,7 @@ import {initFriends} from "./js-friends-ui.js?v=1.0.0";
    const badge=q("js-web-admin-badge");badge.replaceChildren();
    if(profile.is_admin===true)badge.append(make("span","🛡️ ADM · Administrador","js-web-profile-admin"));
    q("js-web-user-bio").textContent=profile.bio||"Todavía no agregaste una biografía.";
+   renderSocialLinks(q("js-web-social"),profile);
    q("js-web-freefire").textContent="✅ Free Fire: "+profile.nickname+" · ID "+profile.game_id+" · Región "+profile.region;
  }
  function fillProfileEdit(){
@@ -580,6 +589,8 @@ import {initFriends} from "./js-friends-ui.js?v=1.0.0";
    q("js-web-display-edit").value=profile.display_name||profile.nickname||"";
    q("js-web-username-edit").value=profile.username||"js"+profile.game_id?.slice(-8);
    q("js-web-bio-edit").value=profile.bio||"";
+   q("js-web-instagram-edit").value=profile.instagram_url||"";
+   q("js-web-tiktok-edit").value=profile.tiktok_url||"";
    q("js-web-avatar-file").value="";
    q("js-web-cover-file").value="";
    q("js-web-edit-status").textContent="";
@@ -632,17 +643,20 @@ import {initFriends} from "./js-friends-ui.js?v=1.0.0";
    const save=q("js-web-edit-save");save.disabled=true;
    const indication=q("js-web-edit-status");
    try{
+     const instagram_url=normalizeSocialLink(q("js-web-instagram-edit").value,"instagram");
+     const tiktok_url=normalizeSocialLink(q("js-web-tiktok-edit").value,"tiktok");
      indication.textContent="Guardando tu perfil en Supabase…";
      const avatarFile=q("js-web-avatar-file").files[0],bannerFile=q("js-web-cover-file").files[0];
      const avatar=avatarFile?await uploadWebPhoto("avatar",avatarFile):profile.avatar_path;
      const banner=bannerFile?await uploadWebPhoto("banner",bannerFile):profile.banner_path;
      const result=await apiCall("profile_update",{
-       display_name,username,bio,avatar_path:avatar,banner_path:banner
+       display_name,username,bio,avatar_path:avatar,banner_path:banner,
+       instagram_url,tiktok_url
      });
      profile=result.profile;
      renderProfile();
      q("js-web-editor").hidden=true;
-     status("✅ Perfil actualizado: nombre, foto y portada sincronizados con la APK.",true);
+     status("✅ Perfil actualizado: foto, biografía y redes sociales guardadas en tu cuenta.",true);
    }catch(e){
      indication.textContent="⚠️ "+e.message;
      status("No se pudieron guardar los cambios: "+e.message,false);

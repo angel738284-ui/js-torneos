@@ -1,5 +1,6 @@
 /* Amigos de TORNEOS JS — mismas amistades e invitaciones de la APK.
    Toda operación pasa por js-jugadores-cuenta con JWT de Supabase. */
+import {renderSocialLinks} from "./profile-social.js?v=1.0.0";
 export function initFriends({q,make,apiCall,getAccount,safeProfileImage}){
   let snapshot={friends:[],invitations:[]},searched=null,loading=false,lastUserId=null;
   const label=(msg,kind="")=>{
@@ -105,6 +106,9 @@ export function initFriends({q,make,apiCall,getAccount,safeProfileImage}){
       top.append(avatar,info);
       card.append(top);
       card.append(make("p",p.bio||"Sin biografía.","js-friend-bio"));
+      const socials=make("div",undefined,"js-social-links");
+      renderSocialLinks(socials,p);
+      card.append(socials);
       card.append(button("✕ Cerrar perfil",()=>root.replaceChildren(),"neutral"));
       root.append(card);
       root.scrollIntoView({behavior:"smooth",block:"nearest"});
