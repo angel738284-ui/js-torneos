@@ -2,8 +2,8 @@
 /* Portada cinematográfica: Itachi 456 real, sin el escudo JS genérico. */
 body.js-auth-required #js-auth-welcome{max-width:700px;padding-top:12px}
 body.js-auth-required #js-auth-welcome .js-arena-eyebrow{font-size:8px;letter-spacing:1.5px;color:#f2b4be}
-body.js-auth-required .js-itachi-cover{display:block;position:relative;width:min(100%,520px);height:auto;margin:3px auto 0;filter:drop-shadow(0 16px 32px #b82d4d44)}
-body.js-auth-required .js-itachi-cover img{display:block;width:100%;height:auto;object-fit:contain;mix-blend-mode:screen;-webkit-mask-image:linear-gradient(180deg,#000 0%,#000 88%,transparent 100%);mask-image:linear-gradient(180deg,#000 0%,#000 88%,transparent 100%)}
+body.js-auth-required .js-itachi-cover{display:block;position:relative;width:min(100%,520px);height:auto;margin:15px auto 0;filter:drop-shadow(0 16px 32px #b82d4d44);-webkit-mask-image:linear-gradient(90deg,transparent 0%,#000 10%,#000 90%,transparent 100%);mask-image:linear-gradient(90deg,transparent 0%,#000 10%,#000 90%,transparent 100%)}
+body.js-auth-required .js-itachi-cover img{display:block;width:100%;height:auto;object-fit:contain;mix-blend-mode:screen;-webkit-mask-image:linear-gradient(180deg,transparent 0%,#000 16%,#000 85%,transparent 100%);mask-image:linear-gradient(180deg,transparent 0%,#000 16%,#000 85%,transparent 100%)}
 body.js-auth-required #js-auth-welcome .js-welcome-kicker{font-size:9px;letter-spacing:2.1px;margin-top:-12px;position:relative;color:#dba5b2}
 body.js-auth-required #js-auth-welcome h1{font-family:system-ui,-apple-system,Roboto,sans-serif;font-weight:1000;line-height:1.02;letter-spacing:-2px;margin:10px auto;font-size:clamp(36px,8vw,54px);text-transform:uppercase}
 body.js-auth-required #js-auth-welcome h1 em{background:linear-gradient(100deg,#f9c0c6 0%,#fa5174 64%,#bf173a);-webkit-background-clip:text;background-clip:text}
@@ -25,7 +25,7 @@ body.js-auth-required .js-auth-google{background:linear-gradient(180deg,#ffffff,
 }
 @media(max-width:420px){
  body.js-auth-required #js-auth-welcome{padding:8px 0 0}
- body.js-auth-required .js-itachi-cover{margin:-3px auto 0}
+ body.js-auth-required .js-itachi-cover{margin:10px auto 0}
  body.js-auth-required #js-auth-welcome h1{font-size:clamp(33px,9vw,42px)}
  body.js-auth-required #js-auth-welcome p{max-width:330px}
  body.js-auth-required #js-account-guest.js-arena-panel{margin-top:13px}
