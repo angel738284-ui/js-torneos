@@ -196,11 +196,11 @@ body.js-profile-tab:not(.js-auth-required):not(.js-auth-checking) #js-web-editor
  body.js-profile-tab:not(.js-auth-required):not(.js-auth-checking) #js-web-profile .account-row>.btn-alt{font-size:11px}
 }
 
-/* Corrige el hueco entre la barra superior y la portada en móvil.
-   El perfil está separado del contenedor .wrap; acercarlo no modifica
-   la altura de su banner, foto, perfil ni las demás pestañas. */
-@media (max-width:639px) {
-  body.js-profile-tab:not(.js-auth-required):not(.js-auth-checking) #js-account-view {
-    margin-top:-88px;
-  }
+/* El encabezado está dentro de .wrap, pero el perfil va fuera de él.
+   Quitar el padding inferior de .wrap elimina la franja vacía entre ambos. */
+body.js-profile-tab:not(.js-auth-required):not(.js-auth-checking) .wrap{
+  padding-bottom:0;
+}
+body.js-profile-tab:not(.js-auth-required):not(.js-auth-checking) #js-account-view{
+  margin-top:0;
 }
