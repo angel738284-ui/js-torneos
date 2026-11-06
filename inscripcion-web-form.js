@@ -169,7 +169,7 @@ async function loadTournament(){
   $("date").textContent=data.starts_at?"Fecha: "+new Date(data.starts_at).toLocaleString("es-AR"):"Fecha por confirmar";
   $("regionRuleTitle").textContent="🌎 Región permitida: "+(data.allowed_region||"SAC");
   $("regionRuleNote").textContent="Solo pueden anotarse jugadores y suplentes verificados de "+(data.allowed_region||"SAC")+". Los ID de otras regiones se rechazan al verificar.";
-  $("publicBracketLink").href="https://angel738284-ui.github.io/js-torneos/llaves.html?codigo="+encodeURIComponent(data.code);
+  $("publicBracketLink").href="./llaves.html?codigo="+encodeURIComponent(data.code);
   $("rulesSection").dataset.mode=data.mode||"";
   const hasRules=Boolean(data.rules && data.rules.trim());
   show("rulesSection",hasRules);

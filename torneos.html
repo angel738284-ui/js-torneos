@@ -96,9 +96,9 @@ body.player-account-screen header{margin-bottom:5px}
 <input type="search" id="search" placeholder="Buscar torneo por nombre o código" aria-label="Buscar torneos">
 <div class="filters"><button type="button" data-state="open" class="sel">🔥 Abiertos</button><button type="button" data-state="all">Todos</button><button type="button" data-state="closed">⚔️ En curso</button><button type="button" data-state="finished">🏆 Terminados</button></div>
 <div id="error" hidden class="error"></div><div id="cards"><div class="empty">Buscando torneos de JS Family…</div></div>
-<div class="help"><h3>🔐 ¿Ya te inscribiste?</h3><p>Entrá con tu código privado para ver tu rival, sala y resultados.</p><a href="https://angel738284-ui.github.io/js-torneos/equipo.html">Consultar mi equipo →</a></div>
+<div class="help"><h3>🔐 ¿Ya te inscribiste?</h3><p>Entrá con tu código privado para ver tu rival, sala y resultados.</p><a href="./equipo.html">Consultar mi equipo →</a></div>
 </div>
-<nav><a class="sel" href="?"><span>🏆</span>Torneos</a><a href="https://angel738284-ui.github.io/js-torneos/equipo.html"><span>🛡️</span>Mi equipo</a><a href="https://angel738284-ui.github.io/js-torneos/llaves.html"><span>⚔️</span>Llaves</a></nav>
+<nav><a class="sel" href="?"><span>🏆</span>Torneos</a><a href="./equipo.html"><span>🛡️</span>Mi equipo</a><a href="./llaves.html"><span>⚔️</span>Llaves</a></nav>
 <script>
 (function(){
 "use strict";
@@ -123,8 +123,8 @@ const prize=String(t.prize_details||"").trim();if(prize||Number(t.prize_quantity
 const n=e("div",undefined,"count");n.append(e("span","Equipos inscriptos"),e("b",t.registered+" / "+t.max_teams));c.append(n);
 const bar=e("div",undefined,"bar"),fill=e("div",undefined,"fill");fill.style.width=Math.min(100,100*Number(t.registered)/Math.max(1,Number(t.max_teams)))+"%";bar.append(fill);c.append(bar);
 const actions=e("div",undefined,"actions");
-const a=e("a",allowed(t)?"✍️ Inscribirme":"📋 Ver torneo",allowed(t)?"primary":"");a.href="https://angel738284-ui.github.io/js-torneos/inscripcion.html?codigo="+encodeURIComponent(t.code);
-const b=e("a","🏆 Ver llaves");b.href="https://angel738284-ui.github.io/js-torneos/llaves.html?codigo="+encodeURIComponent(t.code);
+const a=e("a",allowed(t)?"✍️ Inscribirme":"📋 Ver torneo",allowed(t)?"primary":"");a.href="./inscripcion.html?codigo="+encodeURIComponent(t.code);
+const b=e("a","🏆 Ver llaves");b.href="./llaves.html?codigo="+encodeURIComponent(t.code);
 actions.append(a,b);c.append(actions);root.append(c);
 }
 }
@@ -366,7 +366,7 @@ import {createClient} from "https://esm.sh/@supabase/supabase-js@2";
        card.append(make("div",label,"notice-line"));
      }
      const actions=make("div",undefined,"actions");
-     const link=make("a","🏆 Ver llaves");link.href="https://angel738284-ui.github.io/js-torneos/llaves.html?codigo="+encodeURIComponent(t.code);
+     const link=make("a","🏆 Ver llaves");link.href="./llaves.html?codigo="+encodeURIComponent(t.code);
      actions.append(link);card.append(actions);root.append(card);
    }
  }

@@ -500,7 +500,7 @@ async function updateTeam(teamId,status){if(!await askConfirm("¿Cambiar el esta
 $("refresh").onclick=async()=>{await loadTours();if(opened)await openTour(opened.id);message("Inscripciones actualizadas.")};
 $("closeDetail").onclick=()=>{opened=null;navigate("homeScreen");};
 $("copyCode").onclick=()=>copy(opened.code);
-const siteRoot=()=>String(currentConfig.siteUrl||location.href.replace(/\/admin\.html.*$/,"")).replace(/\/$/,"");
+const siteRoot=()=>String(["jstorneos.com","www.jstorneos.com"].includes(location.hostname)?location.origin:(currentConfig.siteUrl||location.href.replace(/\/admin\.html.*$/,""))).replace(/\/$/,"");
 const enrollmentLink=()=>siteRoot()+"/inscripcion.html?codigo="+encodeURIComponent(opened.code);
 $("copyLink").onclick=()=>{if(!currentConfig.siteUrl && location.protocol==="file:")return message("Configurá la URL pública del sitio antes de compartir inscripciones.",true);copy(enrollmentLink())};
 async function copy(text){try{await navigator.clipboard.writeText(text);message("Copiado: "+text);}catch{prompt("Copiá este texto:",text)}}
