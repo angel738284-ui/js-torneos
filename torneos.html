@@ -5,6 +5,7 @@
 <title>TORNEOS JS · Free Fire</title>
 <link rel="stylesheet" href="arena-login.css?v=1.1.0">
 <link rel="stylesheet" href="itachi-login.css?v=1.0.1">
+<link rel="stylesheet" href="profile-tiktok.css?v=1.0.0">
 <style>
 :root{color-scheme:dark}*{box-sizing:border-box}body{margin:0;background:#080d1a;color:#f6f8fe;font:500 15px/1.45 system-ui,-apple-system,Roboto,sans-serif;min-height:100vh}
 body:before{content:"";position:fixed;inset:0;z-index:-1;background:radial-gradient(ellipse at 90% -20%,#3c607a55,transparent 50%),radial-gradient(ellipse at 0% 50%,#76314833,transparent 50%)}
@@ -332,10 +333,10 @@ import {createClient} from "https://esm.sh/@supabase/supabase-js@2";
  const q=id=>document.getElementById(id);
  const select=(el,show)=>el.classList.toggle("account-hide",!show);
  const make=(tag,txt,cls)=>{const x=document.createElement(tag);if(typeof txt==="string")x.textContent=txt;if(cls)x.className=cls;return x};
- const scenes=["torneos","perfil","mis"];
+ const scenes=["perfil","torneos","mis"];
  const original=[...document.querySelectorAll(".hero,.title,#search,.filters,#cards,.help")];
  const views={perfil:q("js-account-view"),mis:q("js-my-view")};
- let session=null,profile=null,tournaments=[],fresh=false,activeTab="torneos";
+ let session=null,profile=null,tournaments=[],fresh=false,activeTab="perfil";
  const storeKey="js-family-player-notices-v2";
  const saved=()=>{try{return JSON.parse(localStorage.getItem(storeKey)||"[]")}catch{return[]}};
  let notices=Array.isArray(saved())?saved():[];
@@ -359,10 +360,12 @@ import {createClient} from "https://esm.sh/@supabase/supabase-js@2";
  function showAuthGate(guest){
    const body=document.body;
    const wasGuest=body.classList.contains("js-auth-required");
+   const wasChecking=body.classList.contains("js-auth-checking");
    body.classList.remove("js-auth-checking");
    body.classList.toggle("js-auth-required",guest);
-   if(guest) switchTab("perfil");
-   else if(wasGuest) switchTab("torneos");
+   // El perfil es la primera pantalla después del login, sin forzar cambios
+   // cuando el jugador está navegando entre las otras pestañas.
+   if(guest||wasGuest||wasChecking) switchTab("perfil");
  }
  function menu(){
    const nav=document.querySelector("nav");if(!nav)return;
@@ -378,6 +381,10 @@ import {createClient} from "https://esm.sh/@supabase/supabase-js@2";
  function switchTab(tab){
    activeTab=tab;
    document.body.classList.toggle("player-account-screen",tab!=="torneos");
+   document.body.classList.toggle("js-profile-tab",tab==="perfil"&&!document.body.classList.contains("js-auth-required"));
+   const brandLabel=document.querySelector("header .brand b");
+   if(brandLabel) brandLabel.textContent=tab==="perfil"&&profile?.username?
+     "@"+profile.username:tab==="perfil"?"Mi perfil":"TORNEOS JS";
    for(const x of original)x.classList.toggle("account-hide",tab!=="torneos");
    for(const [name,node] of Object.entries(views))select(node,name===tab);
    menu();
@@ -533,6 +540,10 @@ import {createClient} from "https://esm.sh/@supabase/supabase-js@2";
    }else avatar.append(make("span",(profile.display_name||profile.nickname||"JS").slice(0,2).toUpperCase()));
    q("js-web-display-name").textContent=profile.display_name||profile.nickname||"Jugador JS";
    q("js-web-user-handle").textContent=profile.username?"@"+profile.username:"ID "+profile.game_id;
+   if(activeTab==="perfil"){
+     const brandLabel=document.querySelector("header .brand b");
+     if(brandLabel) brandLabel.textContent=profile.username?"@"+profile.username:"Mi perfil";
+   }
    const badge=q("js-web-admin-badge");badge.replaceChildren();
    if(profile.is_admin===true)badge.append(make("span","🛡️ ADM · Administrador","js-web-profile-admin"));
    q("js-web-user-bio").textContent=profile.bio||"Todavía no agregaste una biografía.";

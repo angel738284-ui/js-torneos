@@ -1,0 +1,197 @@
+/* Perfil TORNEOS JS: disposición inspirada en redes sociales, navegación en 3 pestañas.
+   Solo se aplica a usuarios con sesión, en la pestaña Perfil. */
+body.js-profile-tab:not(.js-auth-required):not(.js-auth-checking){
+ background:#090b11;
+ color:#f5f7fb;
+}
+body.js-profile-tab:not(.js-auth-required):not(.js-auth-checking) .wrap{
+ width:100%;
+ max-width:810px;
+ padding:0 0 105px;
+}
+body.js-profile-tab:not(.js-auth-required):not(.js-auth-checking) header{
+ padding:10px 18px 12px;
+ margin:0;
+ background:#090b11;
+ border-bottom:1px solid #252b3a;
+ min-height:64px;
+ display:flex;
+ align-items:center;
+ justify-content:space-between;
+}
+body.js-profile-tab:not(.js-auth-required):not(.js-auth-checking) header .brand .logo,
+body.js-profile-tab:not(.js-auth-required):not(.js-auth-checking) header .brand small{
+ display:none!important;
+}
+body.js-profile-tab:not(.js-auth-required):not(.js-auth-checking) header .brand b{
+ color:#fff;
+ font-size:18px;
+ font-weight:900;
+ line-height:1.25;
+ letter-spacing:0;
+ max-width:calc(100vw - 160px);
+ overflow:hidden;
+ text-overflow:ellipsis;
+ white-space:nowrap;
+ display:block;
+}
+body.js-profile-tab:not(.js-auth-required):not(.js-auth-checking) header .brand{min-width:0}
+body.js-profile-tab:not(.js-auth-required):not(.js-auth-checking) header .refresh{display:none!important}
+body.js-profile-tab:not(.js-auth-required):not(.js-auth-checking) header .js-bell{
+ border:0;
+ background:none;
+ width:42px;height:42px;
+ font-size:22px;
+}
+body.js-profile-tab:not(.js-auth-required):not(.js-auth-checking) #js-account-view{
+ display:block;
+ width:100%;
+ max-width:810px;
+ padding:0;
+ margin:0 auto;
+ background:transparent;
+ border:0;
+ border-radius:0;
+ box-shadow:none;
+}
+body.js-profile-tab:not(.js-auth-required):not(.js-auth-checking) #js-account-view>.js-web-profile-heading,
+body.js-profile-tab:not(.js-auth-required):not(.js-auth-checking) #js-account-view>.js-web-profile-description{
+ display:none!important;
+}
+body.js-profile-tab:not(.js-auth-required):not(.js-auth-checking) #js-account-signed{
+ display:block;
+}
+body.js-profile-tab:not(.js-auth-required):not(.js-auth-checking) #js-web-profile{
+ margin:0;
+ border:0;
+ border-radius:0;
+ overflow:visible;
+ background:transparent;
+ box-shadow:none;
+}
+body.js-profile-tab:not(.js-auth-required):not(.js-auth-checking) #js-web-cover{
+ height:clamp(172px,27vw,240px);
+ border-radius:0;
+ background-position:center center;
+ background-color:#151c2c;
+}
+body.js-profile-tab:not(.js-auth-required):not(.js-auth-checking) #js-web-avatar{
+ width:108px;
+ height:108px;
+ margin:-53px 20px 0 auto;
+ border:5px solid #090b11;
+ box-shadow:0 5px 18px #000a;
+ border-radius:50%;
+}
+body.js-profile-tab:not(.js-auth-required):not(.js-auth-checking) .js-web-profile-details{
+ padding:6px 20px 19px;
+}
+body.js-profile-tab:not(.js-auth-required):not(.js-auth-checking) #js-web-display-name{
+ font-size:26px;
+ line-height:1.2;
+ color:#fff;
+ letter-spacing:-.5px;
+ font-weight:950;
+ margin:0 0 3px;
+}
+body.js-profile-tab:not(.js-auth-required):not(.js-auth-checking) #js-web-user-handle{
+ font-size:13px;
+ color:#a9b0bf;
+ font-weight:650;
+}
+body.js-profile-tab:not(.js-auth-required):not(.js-auth-checking) #js-web-admin-badge{margin-top:7px}
+body.js-profile-tab:not(.js-auth-required):not(.js-auth-checking) .js-web-profile-admin{
+ margin:0;
+ border-radius:6px;
+ font-size:11px;
+ padding:5px 8px;
+ background:#4d3820;
+}
+body.js-profile-tab:not(.js-auth-required):not(.js-auth-checking) #js-web-profile-stats{
+ display:grid;
+ grid-template-columns:repeat(3,minmax(0,1fr));
+ gap:0;
+ border-top:1px solid #222938;
+ border-bottom:1px solid #222938;
+ margin:17px 0;
+ padding:12px 0;
+}
+body.js-profile-tab:not(.js-auth-required):not(.js-auth-checking) .js-web-profile-stat{
+ background:transparent;
+ border:0;
+ border-radius:0;
+ padding:3px 5px;
+}
+body.js-profile-tab:not(.js-auth-required):not(.js-auth-checking) .js-web-profile-stat:not(:last-child){
+ border-right:1px solid #283042;
+}
+body.js-profile-tab:not(.js-auth-required):not(.js-auth-checking) .js-web-profile-stat strong{
+ color:#fff;
+ font-size:22px;
+ font-weight:900;
+ line-height:1.4;
+}
+body.js-profile-tab:not(.js-auth-required):not(.js-auth-checking) .js-web-profile-stat small{
+ color:#a8b1c0;
+ font-size:11px;
+}
+body.js-profile-tab:not(.js-auth-required):not(.js-auth-checking) #js-web-user-bio{
+ color:#e8e8f0;
+ font-size:13px;
+ margin:14px 0 8px;
+ line-height:1.55;
+}
+body.js-profile-tab:not(.js-auth-required):not(.js-auth-checking) #js-web-freefire{
+ font-size:11px;
+ color:#acdccb;
+ line-height:1.65;
+ margin:7px 0 12px;
+}
+body.js-profile-tab:not(.js-auth-required):not(.js-auth-checking) #js-web-profile .account-row{
+ display:grid;
+ grid-template-columns:1fr 1fr;
+ gap:9px;
+ margin-top:18px!important;
+}
+body.js-profile-tab:not(.js-auth-required):not(.js-auth-checking) #js-web-profile .account-row>.btn-alt{
+ background:#202634;
+ color:#f2f4f9;
+ border:1px solid #40485b;
+ border-radius:9px;
+ font-weight:800;
+ padding:10px 7px;
+ min-height:42px;
+ font-size:12px;
+}
+body.js-profile-tab:not(.js-auth-required):not(.js-auth-checking) #js-account-signed>.account-card{
+ margin:16px 16px 0;
+ background:#111724;
+ border:1px solid #2b3444;
+ border-radius:13px;
+ padding:16px;
+}
+body.js-profile-tab:not(.js-auth-required):not(.js-auth-checking) #js-google-name{font-size:13px}
+body.js-profile-tab:not(.js-auth-required):not(.js-auth-checking) #js-google-logout{font-size:12px}
+body.js-profile-tab:not(.js-auth-required):not(.js-auth-checking) nav{
+ background:#090b11;
+ border-top:1px solid #252a38;
+ box-shadow:0 -9px 21px #0005;
+}
+body.js-profile-tab:not(.js-auth-required):not(.js-auth-checking) nav .player-nav-button{
+ min-width:0;
+ flex:1;
+}
+body.js-profile-tab:not(.js-auth-required):not(.js-auth-checking) nav .player-nav-button.is-current{
+ color:#ff7898;
+}
+body.js-profile-tab:not(.js-auth-required):not(.js-auth-checking) #js-web-editor{
+ background:#111824;
+ border:1px solid #354357;
+}
+@media(min-width:640px){
+ body.js-profile-tab:not(.js-auth-required):not(.js-auth-checking) #js-web-cover{border-radius:0 0 14px 14px}
+}
+@media(max-width:370px){
+ body.js-profile-tab:not(.js-auth-required):not(.js-auth-checking) .js-web-profile-details{padding-left:15px;padding-right:15px}
+ body.js-profile-tab:not(.js-auth-required):not(.js-auth-checking) #js-web-profile .account-row>.btn-alt{font-size:11px}
+}
