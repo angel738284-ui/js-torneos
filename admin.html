@@ -74,6 +74,46 @@
 <details class="ban-history"><summary>📜 Ver bloqueos vencidos y levantados</summary><div id="banHistoryList" class="rowlist"></div></details>
 </details>
 </div>
+<div class="panel" id="regionAdminPanel">
+  <details id="regionAdminDetails">
+    <summary style="font-size:18px;font-weight:900;cursor:pointer">🌎 Confirmar región de Free Fire</summary>
+    <p class="small">Para los ID cuyo apodo se verifica, pero Epinby no informa la región. Pedile al jugador una captura de <strong>Free Fire → Ajustes</strong> donde se vea la región y comprobá que su ID sea el correcto. Esta autorización es privada y dura 90 días.</p>
+    <label for="regionLookupId">ID de Free Fire</label>
+    <input id="regionLookupId" inputmode="numeric" autocomplete="off" maxlength="16" placeholder="Ej. 10314258356">
+    <button type="button" id="regionLookupBtn" class="secondary" style="margin:12px 0">🔍 Consultar apodo</button>
+    <div id="regionLookupResult" role="status" aria-live="polite" class="small" style="margin:10px 0;white-space:pre-wrap"></div>
+    <div id="regionApprovalInputs" class="hidden" style="margin-top:15px">
+      <label for="regionAdminChoice">Región que muestra la captura de Free Fire</label>
+      <select id="regionAdminChoice">
+        <option value="">Seleccioná una región…</option>
+        <option value="SAC">SAC · Sudamérica / Sur</option>
+        <option value="NA">NA / NAC · Norte</option>
+        <option value="US">US · Estados Unidos</option>
+        <option value="BR">BR · Brasil</option>
+        <option value="EU">EU · Europa</option>
+        <option value="IND">IND · India</option>
+        <option value="ME">ME · Oriente Medio</option>
+        <option value="SG">SG · Singapur / Asia</option>
+        <option value="TW">TW · Taiwán</option>
+        <option value="VN">VN · Vietnam</option>
+        <option value="CIS">CIS</option>
+        <option value="PK">PK · Pakistán</option>
+        <option value="BD">BD · Bangladés</option>
+        <option value="TH">TH · Tailandia</option>
+        <option value="ID">ID · Indonesia</option>
+      </select>
+      <label style="display:flex;gap:9px;align-items:flex-start;margin-top:14px">
+        <input id="regionProofSeen" type="checkbox" style="width:22px;height:22px;flex:none;margin-top:2px">
+        <span>Confirmo que revisé la captura del juego, comprobé el ID y la región; no estoy suponiendo la región por el apodo.</span>
+      </label>
+      <div class="two-actions" style="margin-top:16px">
+        <button type="button" id="regionApproveBtn">✓ Confirmar región</button>
+        <button type="button" id="regionRevokeBtn" class="secondary">Revocar</button>
+      </div>
+    </div>
+    <p id="regionAdminFeedback" class="small" role="status" aria-live="polite"></p>
+  </details>
+</div>
 </div>
 <div id="createScreen" class="hidden">
 <div class="row" style="margin-top:14px"><h2>Nuevo torneo</h2><button id="cancelCreate" type="button" class="ghost">← Volver</button></div>
@@ -191,4 +231,4 @@
 </div></div>
 <div class="divider"></div><h3>🎁 Premio del torneo</h3><div class="grid"><div><label>Tipo</label><select id="detailPrizeKind"><option value="ninguno">Sin premio</option><option value="diamantes">Diamantes 💎</option><option value="pases">Pases 🎟️</option><option value="otro">Otro</option></select></div><div><label>Cantidad</label><input id="detailPrizeQty" type="number" min="1" max="10000000" value="1"></div></div><label>Descripción</label><input id="detailPrizeDetails" maxlength="160" placeholder="Ej. 2 Booyah Pass"><button id="savePrize" class="secondary" style="margin:12px 0">Guardar premio</button><div class="divider"></div><div class="controls"><button id="archiveTour" class="secondary">Archivar torneo</button><button id="restoreTour" class="secondary hidden">Restaurar torneo</button><button id="deleteTour" class="ghost">🗑️ Eliminar definitivamente</button></div></div>
 </div>
-</section></div><script src="config.js"></script><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script><script src="rules-format.js?v=0.3.4"></script><script src="rules-presets.js?v=0.3.4"></script><script src="bracket-view.js?v=0.6.4"></script><script src="attendance-admin.js?v=0.5.1"></script><script src="resultados-admin.js?v=0.4.4"></script><script src="admin-roster.js?v=0.4.6"></script><script src="admin-waitlist.js?v=0.5.0"></script><script src="admin-br.js?v=0.7.0"></script><script src="admin-bans.js?v=0.6.1"></script><script src="admin.js?v=0.6.8"></script><script src="admin-extra.js?v=0.5.1"></script><script>(function(){var button=document.getElementById("checkAppUpdate");if(window.JSUpdates&&typeof window.JSUpdates.checkForUpdates==="function"){button.style.display="inline-block";button.onclick=function(){window.JSUpdates.checkForUpdates()};}})();</script></body></html>
+</section></div><script src="config.js"></script><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script><script src="rules-format.js?v=0.3.4"></script><script src="rules-presets.js?v=0.3.4"></script><script src="bracket-view.js?v=0.6.4"></script><script src="attendance-admin.js?v=0.5.1"></script><script src="resultados-admin.js?v=0.4.4"></script><script src="admin-roster.js?v=0.4.6"></script><script src="admin-waitlist.js?v=0.5.0"></script><script src="admin-br.js?v=0.7.0"></script><script src="admin-bans.js?v=0.6.1"></script><script src="admin.js?v=0.6.8"></script><script src="admin-extra.js?v=0.5.1"></script><script src="admin-region.js?v=1.0.0"></script><script>(function(){var button=document.getElementById("checkAppUpdate");if(window.JSUpdates&&typeof window.JSUpdates.checkForUpdates==="function"){button.style.display="inline-block";button.onclick=function(){window.JSUpdates.checkForUpdates()};}})();</script></body></html>

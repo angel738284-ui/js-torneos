@@ -109,7 +109,11 @@ function makePlayerRow(number,isSubstitute){
         body:JSON.stringify({action:"verify",code:tournament.code,player_id:id,turnstile_token:token})
       });
       const data=await res.json();
-      if(!res.ok)throw new Error(data.error||"No se pudo verificar el ID");
+      if(!res.ok){
+        if(data.region_pending===true&&typeof data.nickname==="string")
+          throw new Error("Apodo verificado: "+data.nickname+". "+(data.error||"Región pendiente de confirmación."));
+        throw new Error(data.error||"No se pudo verificar el ID");
+      }
       if(String(data.id)!==id||!data.nickname||data.verified!==true)
         throw new Error("La respuesta del verificador no coincide con el ID.");
       const detected=String(data.region||"").trim().toUpperCase();
