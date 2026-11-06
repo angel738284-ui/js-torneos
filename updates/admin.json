@@ -1,7 +1,7 @@
 {
-  "version_code": 37,
-  "version_name": "0.6.5",
-  "apk_url": "https://angel738284-ui.github.io/js-torneos/updates/JS-TORNEOS-v0.6.5.apk",
-  "sha256": "a0ea1b77df47461e68fb22beaacd469dc97372155518a473632bee80b7714e46",
-  "notes": "BR de tres mapas: Bermuda, Purgatorio y Kalahari en el mismo torneo. Sala con ID y contraseña independientes para cada mapa. Inscripciones y participantes compartidos; publicación secuencial sin filtrar salas pendientes."
+  "version_code": 38,
+  "version_name": "0.6.6",
+  "apk_url": "https://angel738284-ui.github.io/js-torneos/updates/JS-TORNEOS-v0.6.6.apk",
+  "sha256": "bc76531611cd5c10eda5eca20bf3311f769a9c875cc6857dea70d4b4c14e5564",
+  "notes": "Corrección del detector de actualizaciones: ahora compara la versión realmente instalada en Android y no vuelve a pedir la misma actualización. Mantiene los tres mapas BR: Bermuda, Purgatorio y Kalahari."
 }
