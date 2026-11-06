@@ -74,7 +74,7 @@
 <details class="ban-history"><summary>📜 Ver bloqueos vencidos y levantados</summary><div id="banHistoryList" class="rowlist"></div></details>
 </details>
 </div>
-<div class="panel" id="regionAdminPanel">
+<div class="panel hidden" id="regionAdminPanel">
   <details id="regionAdminDetails">
     <summary style="font-size:18px;font-weight:900;cursor:pointer">🌎 Confirmar región de Free Fire</summary>
     <p class="small">Para los ID cuyo apodo se verifica, pero Epinby no informa la región. Pedile al jugador una captura de <strong>Free Fire → Ajustes</strong> donde se vea la región y comprobá que su ID sea el correcto. Esta autorización es privada y dura 90 días.</p>
@@ -121,8 +121,8 @@
 <label for="brFormat">🎮 Modalidad Battle Royale</label>
 <select id="brFormat"><option value="solo">Solo · 1 jugador · 50 cupos</option><option value="duo">Dúo · 2 jugadores · 25 dúos</option><option value="escuadra">Escuadra · 4 jugadores · 12 escuadras</option></select>
 <p class="small">BR utiliza una sala de hasta 50 titulares y no usa cruces 1vs1.</p></div>
-<label for="allowedRegion">🌎 Región permitida de Free Fire</label>
-<select id="allowedRegion">
+<p class="small" style="color:#95edc8;font-weight:800">✅ Participan IDs de todas las regiones. Solo se verifica el apodo.</p><label for="allowedRegion" class="hidden">Región (compatibilidad interna)</label>
+<select id="allowedRegion" class="hidden">
 <option value="SAC" selected>🌎 SAC · Sudamérica / Sur (predeterminada)</option>
 <option value="NAC">🌎 NAC · Norte</option>
 <option value="US">🇺🇸 US · Estados Unidos</option>
@@ -139,7 +139,7 @@
 <option value="TH">🇹🇭 TH · Tailandia</option>
 <option value="ID">🇮🇩 ID · Indonesia</option>
 </select>
-<p class="small">Solo podrán anotarse IDs cuya región detectada por el verificador coincida exactamente con la elegida, incluidos suplentes. No cambia la región de los torneos anteriores.</p>
+<p class="small">La región ya no es requisito para inscribir jugadores, titulares ni suplentes.</p>
 <div id="finalBestOfCreateWrap" style="margin-top:16px;padding:13px;border:1px solid #4a6a7d;border-radius:13px;background:#101c30">
 <label for="finalBestOfCreate">🏆 ¿Cómo se decide la FINAL del torneo?</label>
 <select id="finalBestOfCreate">
@@ -164,7 +164,7 @@
 <div class="row wraprow" style="margin:12px 0"><button id="restoreRules" class="ghost" type="button">↺ Restaurar reglas del modo</button><button id="finishRules" class="secondary" type="button">✓ Listo</button></div></div>
 <button id="create" class="full" style="margin-top:16px">＋ Crear torneo y generar código</button></div>
 </div>
-<div id="detail" class="panel hidden"><div class="row"><h2 id="detailName">Torneo</h2><button id="closeDetail" class="ghost">← Volver</button></div><div class="row wraprow"><span id="detailCode" class="code"></span><span id="detailStatus" class="tag"></span></div><p class="small" id="detailMeta"></p><p id="detailRegion" class="tag" style="margin-bottom:12px">🌎 Región SAC</p><div id="championBox" class="hidden" style="padding:20px;border-radius:17px;border:1px solid #4c9a7d;background:linear-gradient(135deg,#122c27,#172039);margin:17px 0"></div><div id="prizeBanner" class="small" style="margin:12px 0;font-weight:700"></div><div class="tour-tabs" role="group" aria-label="Secciones del torneo">
+<div id="detail" class="panel hidden"><div class="row"><h2 id="detailName">Torneo</h2><button id="closeDetail" class="ghost">← Volver</button></div><div class="row wraprow"><span id="detailCode" class="code"></span><span id="detailStatus" class="tag"></span></div><p class="small" id="detailMeta"></p><p id="detailRegion" class="tag" style="margin-bottom:12px">✅ Todas las regiones</p><div id="championBox" class="hidden" style="padding:20px;border-radius:17px;border:1px solid #4c9a7d;background:linear-gradient(135deg,#122c27,#172039);margin:17px 0"></div><div id="prizeBanner" class="small" style="margin:12px 0;font-weight:700"></div><div class="tour-tabs" role="group" aria-label="Secciones del torneo">
 <button id="tabTeams" class="tour-tab active" type="button">👥 Equipos</button>
 <button id="tabBrackets" class="tour-tab" type="button">🏆 Cruces</button>
 <button id="tabSettings" class="tour-tab" type="button">⚙️ Ajustes</button>
@@ -231,4 +231,4 @@
 </div></div>
 <div class="divider"></div><h3>🎁 Premio del torneo</h3><div class="grid"><div><label>Tipo</label><select id="detailPrizeKind"><option value="ninguno">Sin premio</option><option value="diamantes">Diamantes 💎</option><option value="pases">Pases 🎟️</option><option value="otro">Otro</option></select></div><div><label>Cantidad</label><input id="detailPrizeQty" type="number" min="1" max="10000000" value="1"></div></div><label>Descripción</label><input id="detailPrizeDetails" maxlength="160" placeholder="Ej. 2 Booyah Pass"><button id="savePrize" class="secondary" style="margin:12px 0">Guardar premio</button><div class="divider"></div><div class="controls"><button id="archiveTour" class="secondary">Archivar torneo</button><button id="restoreTour" class="secondary hidden">Restaurar torneo</button><button id="deleteTour" class="ghost">🗑️ Eliminar definitivamente</button></div></div>
 </div>
-</section></div><script src="config.js"></script><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script><script src="rules-format.js?v=0.3.4"></script><script src="rules-presets.js?v=0.3.4"></script><script src="bracket-view.js?v=0.6.4"></script><script src="attendance-admin.js?v=0.5.1"></script><script src="resultados-admin.js?v=0.4.4"></script><script src="admin-roster.js?v=0.4.6"></script><script src="admin-waitlist.js?v=0.5.0"></script><script src="admin-br.js?v=0.7.0"></script><script src="admin-bans.js?v=0.6.1"></script><script src="admin.js?v=0.6.8"></script><script src="admin-extra.js?v=0.5.1"></script><script src="admin-region.js?v=1.0.0"></script><script>(function(){var button=document.getElementById("checkAppUpdate");if(window.JSUpdates&&typeof window.JSUpdates.checkForUpdates==="function"){button.style.display="inline-block";button.onclick=function(){window.JSUpdates.checkForUpdates()};}})();</script></body></html>
+</section></div><script src="config.js"></script><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script><script src="rules-format.js?v=0.3.4"></script><script src="rules-presets.js?v=0.3.4"></script><script src="bracket-view.js?v=0.6.4"></script><script src="attendance-admin.js?v=0.5.1"></script><script src="resultados-admin.js?v=0.4.4"></script><script src="admin-roster.js?v=0.4.6"></script><script src="admin-waitlist.js?v=0.5.0"></script><script src="admin-br.js?v=0.7.0"></script><script src="admin-bans.js?v=0.6.1"></script><script src="admin.js?v=0.6.9"></script><script src="admin-extra.js?v=0.5.1"></script><script src="admin-region.js?v=1.0.0"></script><script>(function(){var button=document.getElementById("checkAppUpdate");if(window.JSUpdates&&typeof window.JSUpdates.checkForUpdates==="function"){button.style.display="inline-block";button.onclick=function(){window.JSUpdates.checkForUpdates()};}})();</script></body></html>

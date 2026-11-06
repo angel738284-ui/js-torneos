@@ -53,7 +53,7 @@
     if(profile?.game_id){
      $("js-web-game-id").value=profile.game_id;
      $("js-web-profile-id").style.display="none";
-     info("✅ ID "+profile.game_id+" · "+profile.nickname+" · Región "+profile.region+". Tus inscripciones se vinculan automáticamente.");
+     info("✅ ID "+profile.game_id+" · "+profile.nickname+". Tus inscripciones se vinculan automáticamente.");
     }else{
      $("js-web-profile-id").style.display="block";
      info("Verificá tu ID de Free Fire antes de inscribirte, para guardar el código en la cuenta.");
@@ -105,7 +105,7 @@
   try{
    const result=await call("verify_id",{game_id:id});
    profile=result.profile;
-   info("✅ "+profile.nickname+" · "+profile.region+" · ID verificado y guardado");
+   info("✅ "+profile.nickname+" · ID verificado y guardado");
    await current();
   }catch(e){info("⚠️ "+e.message,true)}
   finally{$("js-web-verify").disabled=false;}

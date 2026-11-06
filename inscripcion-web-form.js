@@ -116,16 +116,14 @@ function makePlayerRow(number,isSubstitute){
       }
       if(String(data.id)!==id||!data.nickname||data.verified!==true)
         throw new Error("La respuesta del verificador no coincide con el ID.");
-      const detected=String(data.region||"").trim().toUpperCase();
-      const allowed=String(tournament?.allowed_region||"SAC").trim().toUpperCase();
-      if(!detected||detected!==allowed||data.eligible===false){
-        throw new Error("❌ No podés participar: este torneo solo acepta región "+allowed+". Tu ID es "+(detected||"desconocida")+".");
-      }
-      state.verified={id,nickname:data.nickname,region:detected};
+      // La inscripción solo requiere un apodo de Free Fire realmente verificado.
+      // La región puede ser desconocida y no es requisito ni se muestra al jugador.
+      if(data.eligible===false)throw new Error("Este ID no está habilitado para inscribirse.");
+      state.verified={id,nickname:data.nickname,region:String(data.region||"PENDIENTE").trim().toUpperCase()||"PENDIENTE"};
       if(tournament?.mode==="BR"&&tournament?.br_format==="solo"&&state.role==="titular")
         $("team").value=data.nickname.slice(0,45);
       status.style.color="#7ee9c0";
-      status.textContent="✓ "+data.nickname+" · "+id+" · "+state.verified.region;
+      status.textContent="✓ Apodo verificado: "+data.nickname+" · ID "+id;
       verify.classList.add("hidden");correct.classList.remove("hidden");
    }catch(e){
       state.verified=null;input.readOnly=false;status.style.color="#ffa9ae";
@@ -171,8 +169,8 @@ async function loadTournament(){
   $("mode").textContent=data.mode==="BR"?("BR "+({solo:"Solo",duo:"Dúo",escuadra:"Escuadra"}[data.br_format]||"")+" · "+data.team_size+" titular(es)"):(data.mode||"PVP")+" · "+data.team_size+" vs "+data.team_size;
   $("slots").textContent=data.registered+" / "+data.max_teams+(data.mode==="BR"&&data.br_format==="solo"?" jugadores":" equipos");
   $("date").textContent=data.starts_at?"Fecha: "+new Date(data.starts_at).toLocaleString("es-AR"):"Fecha por confirmar";
-  $("regionRuleTitle").textContent="🌎 Región permitida: "+(data.allowed_region||"SAC");
-  $("regionRuleNote").textContent="Solo pueden anotarse jugadores y suplentes verificados de "+(data.allowed_region||"SAC")+". Los ID de otras regiones se rechazan al verificar.";
+  $("regionRuleTitle").textContent="✅ Inscripciones abiertas a todas las regiones";
+  $("regionRuleNote").textContent="Solo necesitás un ID válido con apodo verificado en Free Fire. No se solicita comprobar la región.";
   $("publicBracketLink").href="./llaves.html?codigo="+encodeURIComponent(data.code);
   $("rulesSection").dataset.mode=data.mode||"";
   const hasRules=Boolean(data.rules && data.rules.trim());
@@ -224,8 +222,6 @@ $("form").addEventListener("submit",async event=>{
  if(team.length<2||team.length>45)return tell(solo?"Verificá tu ID para utilizar tu apodo automáticamente.":"Ingresá el nombre del equipo.",true);
  if(starterRows.length!==tournament.team_size || substituteRows.length<minSub() || substituteRows.length>2)
     return tell("Revisá los "+tournament.team_size+" titulares y "+(minSub()?"al menos un suplente.":"los suplentes opcionales."),true);
- const invalidRegion=rows.find(row=>row.verified&&String(row.verified.region||"").trim().toUpperCase()!==String(tournament.allowed_region||"SAC").trim().toUpperCase());
- if(invalidRegion)return tell("❌ Hay un jugador de otra región. Este torneo admite únicamente "+(tournament.allowed_region||"SAC")+".",true);
  const missing=rows.filter(row=>!row.verified||row.verified.id!==row.input.value.trim());
  if(missing.length){
    missing[0].element.scrollIntoView({behavior:"smooth",block:"center"});
@@ -269,7 +265,7 @@ $("form").addEventListener("submit",async event=>{
   const list=$("playersSuccess");list.replaceChildren();
   for(const p of data.players||[]){
     const li=document.createElement("li");
-    li.textContent=(p.role==="suplente"?"🔁 Suplente · ":"Titular · ")+p.nickname+" · ID "+p.id+" · "+p.region;
+    li.textContent=(p.role==="suplente"?"🔁 Suplente · ":"Titular · ")+p.nickname+" · ID "+p.id;
     list.append(li);
   }
   $("waitlistPrivate").value=data.team_access_code;

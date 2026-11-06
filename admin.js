@@ -455,7 +455,7 @@ async function openTour(id,resetTab=false){
  if(opened?.id!==id)$("teamSearch").value="";
  const {data:t,error}=await db.from("js_tournaments").select("*").eq("id",id).single();if(error)return message(error.message,true);
  opened=t;$("absenceMinutes").value=String(t.absence_minutes||10);
- $("detailRegion").textContent="🌎 Región permitida: "+(t.allowed_region||"SAC");navigate("detail");chooseTourTab(resetTab?"teams":currentTourTab);$("detailName").textContent=t.name;$("detailCode").textContent=t.code;
+ $("detailRegion").textContent="✅ Torneo abierto a todas las regiones";navigate("detail");chooseTourTab(resetTab?"teams":currentTourTab);$("detailName").textContent=t.name;$("detailCode").textContent=t.code;
  $("detailStatus").textContent={open:"Inscripción abierta",closed:"Inscripción cerrada",finished:"Torneo finalizado"}[t.status];
  $("detailStatus").className="tag"+(t.status!=="open"?" closed":"");
  $("detailMeta").textContent=`${t.team_size}vs${t.team_size} · máximo ${t.max_teams} equipos`+(t.starts_at?" · "+new Date(t.starts_at).toLocaleString("es-AR"):"");
