@@ -1,7 +1,7 @@
 {
-  "version_code": 17,
-  "version_name": "1.6.3",
-  "apk_url": "https://angel738284-ui.github.io/js-torneos/updates/JS-TORNEOS-JUGADORES-v1.6.3.apk",
-  "sha256": "95974a844dd0c4d72f4ad7e77c355cf67d539eb6f0609aa9abdf100a3b3378a6",
-  "notes": "Mis torneos detecta todas las inscripciones vinculadas al ID de Free Fire verificado en Google, incluso si te anotaste desde un enlace. Abre Mis torneos al iniciar con inscripciones activas; muestra rival y datos de sala BY/PVP sin código privado (solo durante la ventana habilitada), o sala general BR. Incluye Actualizar y oculta credenciales vencidas."
+  "version_code": 18,
+  "version_name": "1.6.4",
+  "apk_url": "https://angel738284-ui.github.io/js-torneos/updates/JS-TORNEOS-JUGADORES-v1.6.4.apk",
+  "sha256": "5b84f3ec9f761c2050e7e31bc9d49b888fa601f9833677e8c5988858756a7b59",
+  "notes": "BR de tres mapas: Bermuda, Purgatorio y Kalahari en el mismo torneo. Sala con ID y contraseña independientes para cada mapa. Inscripciones y participantes compartidos; publicación secuencial sin filtrar salas pendientes."
 }
