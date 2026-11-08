@@ -30,9 +30,12 @@ window.JSAdminWaitlist={
   if(tour.rounds>0||matches.length){
     box.append(make("p","Las llaves ya fueron generadas: la lista queda registrada, pero no se admiten nuevos equipos.","small"));
   }else if(slots===0){
-    box.append(make("p","Cuando se libere un cupo, podrás admitir al primer equipo de la lista.","small"));
+    box.append(make("p","Cuando se libere un cupo, podrás elegir qué equipo de la lista admitir.","small"));
   }else if(tour.status!=="open"){
-    box.append(make("p","Abrí nuevamente las inscripciones para admitir al siguiente equipo.","small"));
+    box.append(make("p","Abrí nuevamente las inscripciones para admitir al equipo que elijas.","small"));
+  }
+  if(canAdmit){
+    box.append(make("p","✅ Podés admitir a cualquier equipo de la lista de espera. Quedan "+slots+" cupo(s); elegí a quiénes darles lugar.","small"));
   }
   function ask(text){
    return new Promise(resolve=>{
@@ -69,7 +72,7 @@ window.JSAdminWaitlist={
    card.append(title,at,preview);
    const actions=make("div",undefined,"controls");
    const admit=make("button","✅ Admitir al torneo","secondary");
-   admit.disabled=!canAdmit||i!==0;admit.type="button";
+   admit.disabled=!canAdmit;admit.type="button";
    admit.onclick=()=>perform(entry,"admit");
    const remove=make("button","Retirar de espera","ghost");remove.type="button";
    remove.onclick=()=>perform(entry,"cancel");

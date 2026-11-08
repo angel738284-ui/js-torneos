@@ -163,7 +163,7 @@ async function loadTournament(){
   show("waitlistLookup",canRegister&&(isFull||data.waitlist_count>0));
   $("waitlistInfoText").textContent=isFull?
     "Los cupos están completos, pero podés anotar a todo tu equipo en espera. Posiciones pendientes: "+(data.waitlist_count||0)+".":
-    "Hay "+data.waitlist_count+" equipo(s) en espera. Se respeta el orden de llegada.";
+    "Hay "+data.waitlist_count+" equipo(s) en espera. Se muestran por orden de inscripción; el administrador elige a cuáles admitir.";
   $("register").textContent=isFull||data.waitlist_count>0?"⏳ Anotarme en lista de espera":"Inscribir equipo";
   $("name").textContent=data.name;
   $("mode").textContent=data.mode==="BR"?("BR "+({solo:"Solo",duo:"Dúo",escuadra:"Escuadra"}[data.br_format]||"")+" · "+data.team_size+" titular(es)"):(data.mode||"PVP")+" · "+data.team_size+" vs "+data.team_size;
