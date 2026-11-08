@@ -459,15 +459,15 @@ async function openTour(id,resetTab=false){
  $("detailStatus").textContent={open:"Inscripción abierta",closed:"Inscripción cerrada",finished:"Torneo finalizado"}[t.status];
  $("detailStatus").className="tag"+(t.status!=="open"?" closed":"");
  $("detailMeta").textContent=`${t.team_size}vs${t.team_size} · máximo ${t.max_teams} equipos`+(t.starts_at?" · "+new Date(t.starts_at).toLocaleString("es-AR"):"");
- $("toggleOpen").textContent=t.status==="open"?"Cerrar inscripciones":"Abrir inscripciones";
- $("toggleOpen").disabled=t.rounds>0||t.status==="finished";
+ $("toggleOpen").textContent=t.status==="open"?"Cerrar inscripciones":"🔓 Reabrir inscripciones";
  $("startBracket").disabled=t.rounds>0||t.status==="finished"||t.mode==="BR";
  $("tabBrackets").textContent=t.mode==="BR"?"📨 Sala BR":"🏆 Cruces";
  $("detailMeta").textContent=t.mode==="BR"?"🎮 BR · todos contra todos · "+t.max_teams+" cupos":$("detailMeta").textContent;
  $("brRoomPanel").classList.toggle("hidden",t.mode!=="BR");
  $("eliminationUi").classList.toggle("hidden",t.mode==="BR");
  $("absenceRulesPanel").classList.toggle("hidden",t.mode==="BR");
- $("toggleOpen").disabled=t.rounds>0||t.status==="finished"||t.mode==="BR"&&t.status==="closed";
+ $("toggleOpen").disabled=t.rounds>0||t.status==="finished"||!!t.archived_at;
+ $("toggleOpen").title=t.mode==="BR"&&t.status==="closed"?"Solo podés reabrir antes de publicar la primera sala BR.":"";
  $("startBracket").title=t.mode==="BR"?"BR no utiliza llaves eliminatorias 1vs1":"";
  $("archiveTour").classList.toggle("hidden",t.status==="finished"||!!t.archived_at);
  $("restoreTour").classList.toggle("hidden",!t.archived_at||t.status==="finished");
@@ -622,10 +622,29 @@ $("saveAbsenceMinutes").onclick=async()=>{
  finally{$("saveAbsenceMinutes").disabled=false;}
 };
 $("toggleOpen").onclick=async()=>{
- if(opened.rounds>0||opened.status==="finished")return;
- const next=opened.status==="open"?"closed":"open";
- const {error}=await db.from("js_tournaments").update({status:next}).eq("id",opened.id);
- if(error)return message(error.message,true);await openTour(opened.id);
+ if(!opened||opened.rounds>0||opened.status==="finished"||opened.archived_at)return;
+ const id=opened.id,previous=opened.status,next=previous==="open"?"closed":"open";
+ if(next==="open"){
+  const explanation=opened.mode==="BR"
+   ?" Se conservarán los equipos inscritos. Solo se permite antes de publicar la primera sala BR."
+   :" Se conservarán los equipos inscritos.";
+  if(!await askConfirm("¿Reabrir las inscripciones de "+opened.name+"?"+explanation))return;
+ }
+ const button=$("toggleOpen");button.disabled=true;
+ try{
+  const {data,error}=await db.from("js_tournaments")
+   .update({status:next}).eq("id",id).eq("status",previous).select("id").maybeSingle();
+  if(error)throw error;
+  if(!data)throw Error("El torneo cambió en otra sesión. Actualizá la pantalla.");
+  await openTour(id);
+  await loadTours();
+  message(next==="open"
+   ?"✅ Inscripciones reabiertas. Todos los equipos anotados se conservaron."
+   :"🔒 Inscripciones cerradas. Los equipos anotados se conservaron.");
+ }catch(e){
+  button.disabled=false;
+  message("No se pudieron "+(next==="open"?"reabrir":"cerrar")+" las inscripciones: "+(e.message||String(e)),true);
+ }
 };
 
 $("editExistingRules").onclick=()=>{
