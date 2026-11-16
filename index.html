@@ -427,7 +427,7 @@ import {normalizeSocialLink,renderSocialLinks} from "./profile-social.js?v=1.0.0
  const select=(el,show)=>el.classList.toggle("account-hide",!show);
  const make=(tag,txt,cls)=>{const x=document.createElement(tag);if(typeof txt==="string")x.textContent=txt;if(cls)x.className=cls;return x};
  const scenes=["perfil","torneos","mis","amigos"];
- const original=[...document.querySelectorAll(".hero,.title,#search,.filters,#cards,.help")];
+ const original=[...document.querySelectorAll(".hero,.title,#search,.filters,#cards,.help,.js-league-promo")];
  const views={perfil:q("js-account-view"),mis:q("js-my-view"),amigos:q("js-friends-view")};
  let session=null,profile=null,tournaments=[],fresh=false,activeTab="perfil";
  let friendsController=null;

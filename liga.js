@@ -30,8 +30,8 @@ const errorHtml=msg=>'<div class="error">'+esc(msg)+'</div>';
 const card=(title,content)=>'<section class="panel"><h2>'+title+'</h2>'+content+'</section>';
 const playerIdField=(selector,label)=>{
  return '<label for="'+selector+'">'+esc(label)+'</label>'+
-  '<input id="'+selector+'" type="text" inputmode="numeric" autocomplete="off" maxlength="15" '+
-  'pattern="[0-9]{6,15}" placeholder="Ej. 123456789" aria-label="'+esc(label)+'">'+
+  '<input id="'+selector+'" type="text" inputmode="numeric" autocomplete="off" maxlength="16" '+
+  'pattern="[0-9]{5,16}" placeholder="Ej. 123456789" aria-label="'+esc(label)+'">'+
   '<p class="muted">Escribí el ID de Free Fire de tu compañero. El servidor buscará su cuenta verificada. '+
   'Si todavía no se registró, tiene que entrar a <a href="./index.html" style="color:var(--mint);text-decoration:underline">JS Torneos</a> '+
   'con Google y verificar su ID desde Perfil. Después podrás invitarlo.</p>';
@@ -40,7 +40,7 @@ const pageHint='<p class="muted">Las partidas de esta liga no modifican el histo
 
 function flash(message,fail=false){
  const node=$("league-toast");node.textContent=String(message);node.classList.toggle("fail",fail);node.hidden=false;
- clearTimeout(flash.timeout);flash.timeout=setTimeout(()=>node.hidden=true,14000);
+ clearTimeout(flash.timeout);flash.timeout=setTimeout(()=>node.hidden=true,18000);
 }
 function statusBanner(){
  const active=Boolean(live?.season),pill=$("state-pill");
@@ -107,9 +107,16 @@ function myTeamScreen(){
  const self=playerOf(me);
  let out=incomingInvites();
  if(!self||!["SAC","NA","US"].includes(self.region)){
-   return out+card("🔒 Verificá tu ID de Free Fire",
-     '<p class="muted">Tenés que registrar y verificar tu ID con región SAC o NA en el perfil de JS Torneos antes de participar.</p>'+
-     '<a class="btn hot" href="./index.html">👤 Ir a mi perfil</a>');
+   const known=self&&self.region==="PENDIENTE"
+    ?'<div class="error">Tu apodo '+personal(me)+' ya está guardado, pero el verificador anterior no pudo determinar la región. Volvé a ingresar tu ID para comprobarlo con JS Guardian.</div>'
+    :'';
+   return out+card("🆔 Registrá tu ID de Free Fire",
+     '<p class="muted">Ya no necesitás salir de la liga para registrarte. Ingresá TU ID, tocá Verificar y el bot del Samsung buscará el nombre y la región real. Quedará guardado en tu cuenta JS Torneos.</p>'+
+     known+
+     '<label for="league-my-game-id">Tu ID de Free Fire</label>'+
+     '<input id="league-my-game-id" type="text" inputmode="numeric" pattern="[0-9]{5,16}" maxlength="16" autocomplete="off" placeholder="Ej. 123456789" aria-label="Tu ID de Free Fire">'+
+     '<div style="margin-top:12px">'+btn("🔎 Verificar ID y nombre","verify_own_id",'',"hot block")+'</div>'+
+     '<p class="muted">Se aceptan IDs de 5 a 16 números. El nombre se consulta en Free Fire; verificar el ID no prueba que seas propietario de la cuenta. Para registrarte necesitás haber iniciado sesión con Google o correo confirmado.</p>');
  }
  const t=teamOf(me);
  if(!t){
@@ -234,6 +241,38 @@ async function load(silent=false){
   seenError=message;
  }
 }
+async function verifyOwnId(){
+ if(busy)return;
+ const myId=$("league-my-game-id")?.value.trim()||"";
+ if(!/^[0-9]{5,16}$/.test(myId)){
+  flash("Escribí un ID numérico de Free Fire de 5 a 16 cifras.",true);return;
+ }
+ busy=true;
+ const button=document.querySelector('button[data-action="verify_own_id"]');
+ if(button){button.disabled=true;button.textContent="🔎 Comprobando apodo y región…";}
+ try{
+  const {data:{session},error}=await sb.auth.getSession();
+  if(error||!session?.access_token)throw Error("Ingresá con Google o correo primero.");
+  const response=await fetch(conf.supabaseUrl+"/functions/v1/js-jugadores-cuenta",{
+   method:"POST",cache:"no-store",
+   headers:{"content-type":"application/json","authorization":"Bearer "+session.access_token,
+    "apikey":conf.publishableKey},
+   body:JSON.stringify({action:"verify_id",game_id:myId})
+  });
+  let result;
+  try{result=await response.json();}catch{throw Error("El servidor no devolvió una respuesta válida.");}
+  if(!response.ok||result?.ok!==true)throw Error(result?.error||"No pudimos verificar ese ID.");
+  const nick=result?.profile?.nickname||"Jugador";
+  const region=result?.profile?.region||"PENDIENTE";
+  if(!["SAC","NA","US"].includes(region)){
+   flash("✅ Nombre verificado: "+nick+". ⚠️ Región "+region+
+     ": todavía no se permite jugar hasta confirmar un servidor compatible. Probá de nuevo cuando el verificador esté disponible.",true);
+  }else{
+   flash("✅ ¡ID guardado! "+nick+" · Región "+region+". Ya podés formar tu dúo.");
+  }
+ }catch(e){flash(e?.message||"Error de verificación",true);}
+ finally{busy=false;await load(true);}
+}
 async function operation(action,payload={}){
  if(busy)return;
  const dangerous=["end","admin_cancel","admin_resolve","remove_sub"];
@@ -265,12 +304,13 @@ document.addEventListener("click",async e=>{
  if(!b)return;
  const action=b.dataset.action;
  if(action==="refresh"){await load();return;}
+ if(action==="verify_own_id"){await verifyOwnId();return;}
  const p={};
  const fromSelect=id=>$(id)?.value||"";
  if(action==="invite_partner"||action==="invite_sub"){
   p.game_id=fromSelect(action==="invite_partner"?"choose-partner":"choose-sub").trim();
-  if(!/^[0-9]{6,15}$/.test(p.game_id)){
-   flash("Escribí un ID de Free Fire válido de 6 a 15 números.",true);return;
+  if(!/^[0-9]{5,16}$/.test(p.game_id)){
+   flash("Escribí un ID de Free Fire válido de 5 a 16 números.",true);return;
   }
  }else if(["accept_invite","decline_invite"].includes(action)){
   p.invite_id=b.dataset.invite;
