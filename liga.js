@@ -13,6 +13,11 @@ let live=null,me=null,view="mi-equipo",busy=false,seenError="";
 let presenceBusy=false;
 const teams=()=>live?.teams||[];
 const games=()=>live?.matches||[];
+const search=()=>live?.search||{};
+const myActiveGame=()=>{
+ const t=teamOf(me);
+ return games().find(g=>t&&[g.a,g.b].includes(t.id)&&running(g));
+};
 const players=()=>live?.players||[];
 const teamOf=uid=>teams().find(t=>[t.captain,t.partner,t.substitute].includes(uid));
 const playerOf=uid=>players().find(p=>p.id===uid);
@@ -183,12 +188,48 @@ function myTeamScreen(){
   games().filter(g=>t&&[g.a,g.b].includes(t.id)&&running(g)).slice(0,8).map(matchCard).join("")||
   '<div class="empty">No hay enfrentamientos pendientes para tu equipo.</div>');
 }
+function searchScreen(){
+ if(!live?.season)return "";
+ const mine=teamOf(me);
+ if(!mine)return card("🎲 Búsqueda aleatoria",
+   '<p class="muted">Primero formá tu dúo desde «Mi dúo». Después los dos podrán confirmar la búsqueda.</p>'+
+   btn("🛡️ Ir a mi dúo","go_team",'',"hot"));
+ const active=myActiveGame();
+ if(active)return card("🎮 ¡Tu dúo tiene un PvP!",'<p class="muted">Ya hay una partida en curso o pendiente para tu equipo. No se puede buscar otra hasta terminarla.</p>'+
+  '<strong>⚔️ PVP #'+active.id+' · '+esc(status(active))+'</strong>'+
+  '<div style="margin-top:14px">'+btn("📋 Ver mi partida","go_matches",'',"hot block")+'</div>');
+ const eligible=line(mine).includes(me);
+ if(!eligible)return card("🎲 Búsqueda aleatoria",
+   '<p class="muted">En este momento te reemplaza un suplente. Solo los dos integrantes de la alineación activa pueden buscar rivales.</p>');
+ const state=search();
+ const ownReady=state.my_ready===true;
+ const partnerReady=state.partner_ready===true;
+ const waiting=Number.isInteger(state.waiting_teams)?Math.max(0,state.waiting_teams):0;
+ const count=(ownReady?1:0)+(partnerReady?1:0);
+ const label=ownReady&&partnerReady?
+  '🔄 Los dos confirmaron. Buscando otro dúo listo…':
+  ownReady?'✅ Confirmaste. Esperando a tu compañero…':
+  partnerReady?'🟢 Tu compañero ya confirmó. Falta tu aceptación.':
+   '⚪ Tu dúo todavía no está buscando.';
+ const commands=ownReady?
+   btn("✕ Cancelar búsqueda","search_leave",'',"danger block"):
+   btn("🎲 Confirmar y buscar rival","search_join",'',"hot block");
+ return card("🎲 Buscar rival aleatorio",
+  '<p class="muted">Los dos jugadores activos del dúo tienen que confirmar por separado. Cuando otro dúo de la misma región haga lo mismo, el sistema los empareja automáticamente y crea el PvP.</p>'+
+  '<div class="grid"><div class="metric"><b>'+count+'/2</b><small>TU DÚO CONFIRMADO</small></div>'+
+  '<div class="metric"><b>'+waiting+'</b><small>DÚOS BUSCANDO</small></div></div>'+
+  '<div class="match"><strong>'+label+'</strong><p class="muted">'+
+  (ownReady&&partnerReady?'Mantené esta página abierta. La búsqueda se actualiza automáticamente.':
+   'Cada jugador confirma desde su propia cuenta JS Torneos.')+'</p></div>'+
+  commands+
+  '<p class="muted">⏳ La confirmación vence si un jugador deja de estar activo durante unos 90 segundos. Si cualquiera cancela, sale el dúo completo. Nunca emparejamos contra una región diferente.</p>');
+}
 function rivalsScreen(){
  if(!live?.season)return card("⚔️ Desafíos",'<p>JS todavía no abrió una nueva temporada.</p>');
  const mine=teamOf(me);
- if(!mine)return card("⚔️ Desafíos",'<p>Primero tenés que formar tu dúo desde «Mi dúo».</p>');
+ if(!mine)return searchScreen();
  const eligible=(line(mine)||[]).includes(me);
- return card("⚔️ Encontrá un rival",
+ return searchScreen()+card("⚔️ Desafío manual (opcional)",
    '<p class="muted">Desafiá a cualquier equipo disponible de la misma región. El servidor bloquea los encuentros repetidos hasta que ambos dúos enfrenten otros dos equipos distintos.</p>'+
    (teams().filter(t=>t.id!==mine.id).length?
      teams().filter(t=>t.id!==mine.id).map(t=>'<div class="match"><div class="flex">'+
@@ -200,8 +241,8 @@ function matchesScreen(){
  if(!live?.season)return card("📋 Partidas","La temporada todavía no fue abierta.");
  const mine=teamOf(me);
  const list=games().filter(g=>[g.a,g.b].includes(mine?.id)||live.admin);
- return card("📋 Partidas y confirmaciones",
-  '<p class="muted">Los cuatro jugadores aceptan el reto y después informan si ganaron o perdieron. Si no coinciden, JS decide. Las partidas sin confirmar no dan puntos.</p>'+
+ return (mine?searchScreen():"")+card("📋 Partidas y confirmaciones",
+  '<p class="muted">En desafíos manuales, los cuatro deben aceptar. En búsqueda aleatoria ya aceptaron al confirmar la búsqueda. Después todos informan Gané o Perdí. Si no coinciden, JS decide. Las partidas sin confirmar no dan puntos.</p>'+
   (list.length?list.map(matchCard).join(""):'<div class="empty">Todavía no tenés partidas registradas.</div>'));
 }
 function rankingScreen(){
@@ -258,10 +299,24 @@ async function load(silent=false){
    $("league-auth").innerHTML='<h2>🔐 Entrá con tu cuenta</h2><p class="muted">Usá la misma cuenta Google o correo que utilizás en JS Torneos. No necesitás una cuenta nueva.</p>'+
     '<a class="btn hot" href="./index.html">👤 Iniciar sesión en JS Torneos</a>';return;
   }
-  const {data,error:rpcError}=await sb.rpc("js_liga_estado");
+  const [stateResult,searchResult]=await Promise.all([
+   sb.rpc("js_liga_estado"),
+   sb.rpc("js_liga_busqueda",{p_action:"status"})
+  ]);
+  const {data,error:rpcError}=stateResult;
   if(rpcError)throw rpcError;
   if(!data?.ok)throw Error("El servidor no devolvió el estado de la liga");
+  const previousSearch=live?.search?.my_ready===true;
+  const previousGameId=myActiveGame()?.id;
+  data.search=searchResult.error?null:searchResult.data;
   live=data;me=data.user;
+  if(previousSearch&&!data.search?.my_ready){
+   const newActive=myActiveGame();
+   if(newActive?.state==="playing"&&newActive.id!==previousGameId){
+    view="partidas";
+    flash("🎮 ¡Encontramos rival! El PvP #"+newActive.id+" está listo para jugar.");
+   }
+  }
   render();
   void refreshPresence();
  }catch(e){
@@ -314,14 +369,22 @@ async function operation(action,payload={}){
  disabled.forEach(b=>b.disabled=true);
  try{
   const isIdInvite=action==="invite_partner"||action==="invite_sub";
-  const {data,error}=isIdInvite?
-   await sb.rpc("js_liga_invitar_por_id",{
+  const isSearch=action==="search_join"||action==="search_leave";
+  let result;
+  if(isIdInvite)result=await sb.rpc("js_liga_invitar_por_id",{
     p_kind:action==="invite_partner"?"partner":"substitute",p_game_id:payload.game_id
-   }):
-   await sb.rpc("js_liga_accion",{p_accion:action,p_datos:payload});
+   });
+  else if(isSearch)result=await sb.rpc("js_liga_busqueda",{
+    p_action:action==="search_join"?"join":"leave"
+   });
+  else result=await sb.rpc("js_liga_accion",{p_accion:action,p_datos:payload});
+  const {data,error}=result;
   if(error)throw error;
-  if(!data?.ok)throw Error(data?.message||"La acción no se pudo realizar");
-  flash(data.message||"Operación realizada");
+  if(!isSearch&&!data?.ok)throw Error(data?.message||"La acción no se pudo realizar");
+  if(isSearch&&data?.matched===true){
+   view="partidas";
+   flash("🎮 ¡Rival encontrado! PvP #"+data.match_id+". Los cuatro confirmaron: creá la sala y jugá.");
+  }else flash(data?.message||"Operación realizada");
  }catch(e){flash(e?.message||"Error desconocido",true);}
  finally{busy=false;await load(true);}
 }
@@ -334,6 +397,8 @@ document.addEventListener("click",async e=>{
  if(!b)return;
  const action=b.dataset.action;
  if(action==="refresh"){await load();return;}
+ if(action==="go_matches"){view="partidas";render();return;}
+ if(action==="go_team"){view="mi-equipo";render();return;}
  if(action==="verify_own_id"){await verifyOwnId();return;}
  const p={};
  const fromSelect=id=>$(id)?.value||"";
@@ -361,7 +426,14 @@ load();
 sb.auth.onAuthStateChange((event)=>{
  if(event==="SIGNED_IN"||event==="SIGNED_OUT")setTimeout(()=>load(true),50);
 });
-setInterval(()=>{if(!document.hidden&&!busy&&!(document.activeElement?.matches("input,select")))load(true);},30000);
+setInterval(()=>{if(!document.hidden&&!busy&&!(document.activeElement?.matches("input,select")))load(true);},15000);
+// A heartbeat requires each participant to remain present. It does NOT
+// auto-enroll teammates or silently consent on their behalf.
+setInterval(async()=>{
+ if(document.hidden||busy||!live?.search?.my_ready||!me)return;
+ const {error}=await sb.rpc("js_liga_busqueda",{p_action:"pulse"});
+ if(error)void load(true);
+},25000);
 setInterval(()=>{if(!document.hidden)void refreshPresence();},20000);
 document.addEventListener("visibilitychange",()=>{
  if(!document.hidden){void load(true);void refreshPresence();}
