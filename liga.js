@@ -28,18 +28,19 @@ const theme=b=>b.state==="complete"?"good":b.state==="review"?"danger":"";
 const isRealParticipant=b=>[...(b.lineup_a||[]),...(b.lineup_b||[])].includes(me);
 const errorHtml=msg=>'<div class="error">'+esc(msg)+'</div>';
 const card=(title,content)=>'<section class="panel"><h2>'+title+'</h2>'+content+'</section>';
-const selectPlayers=(selector,label)=>{
- const candidates=players().filter(p=>p.id!==me&&["SAC","NA","US"].includes(p.region)&&p.region===playerOf(me)?.region&&
-  !teams().some(t=>[t.captain,t.partner,t.substitute].includes(p.id)));
- return '<label for="'+selector+'">'+esc(label)+'</label><select id="'+selector+'">'+
-  '<option value="">Elegí una persona verificada</option>'+
-  candidates.map(p=>'<option value="'+id(p.id)+'">'+personal(p.id)+' · '+esc(p.region)+'</option>').join("")+'</select>';
+const playerIdField=(selector,label)=>{
+ return '<label for="'+selector+'">'+esc(label)+'</label>'+
+  '<input id="'+selector+'" type="text" inputmode="numeric" autocomplete="off" maxlength="15" '+
+  'pattern="[0-9]{6,15}" placeholder="Ej. 123456789" aria-label="'+esc(label)+'">'+
+  '<p class="muted">Escribí el ID de Free Fire de tu compañero. El servidor buscará su cuenta verificada. '+
+  'Si todavía no se registró, tiene que entrar a <a href="./index.html" style="color:var(--mint);text-decoration:underline">JS Torneos</a> '+
+  'con Google y verificar su ID desde Perfil. Después podrás invitarlo.</p>';
 };
 const pageHint='<p class="muted">Las partidas de esta liga no modifican el historial de torneos existente ni el ranking anterior de JS Guardian.</p>';
 
 function flash(message,fail=false){
  const node=$("league-toast");node.textContent=String(message);node.classList.toggle("fail",fail);node.hidden=false;
- clearTimeout(flash.timeout);flash.timeout=setTimeout(()=>node.hidden=true,7000);
+ clearTimeout(flash.timeout);flash.timeout=setTimeout(()=>node.hidden=true,14000);
 }
 function statusBanner(){
  const active=Boolean(live?.season),pill=$("state-pill");
@@ -113,8 +114,8 @@ function myTeamScreen(){
  const t=teamOf(me);
  if(!t){
    out+=card("👥 Formá tu dúo fijo",
-    '<p class="muted">Elegí una sola persona verificada. La invitación vence en 10 minutos y tu compañero debe aceptarla. La pareja no se puede cambiar libremente durante la temporada.</p>'+
-    selectPlayers("choose-partner","Elegí tu compañero")+
+    '<p class="muted">Ingresá el ID de Free Fire de tu compañero. Si ya verificó ese ID en JS Torneos, recibirá la invitación para aceptarla desde su cuenta. Vence en 10 minutos y la pareja queda fija durante la temporada.</p>'+
+    playerIdField("choose-partner","ID de Free Fire de tu compañero")+
     '<div style="margin-top:12px">'+btn("Enviar invitación de dúo","invite_partner",'',"hot block")+'</div>');
  }else{
    const isStarter=[t.captain,t.partner].includes(me);
@@ -127,7 +128,7 @@ function myTeamScreen(){
      const active=games().some(g=>running(g)&&[g.a,g.b].includes(t.id));
      let subOptions="";
      if(!t.substitute){
-       subOptions=selectPlayers("choose-sub","Suplente opcional")+
+       subOptions=playerIdField("choose-sub","ID de Free Fire del suplente")+
          '<div style="margin-top:12px">'+btn("🛡️ Invitar suplente","invite_sub",'',"hot block")+'</div>';
      }else{
        subOptions='<div class="match"><p class="muted">🛡️ Suplente fijo: '+personal(t.substitute)+'</p>'+
@@ -243,7 +244,12 @@ async function operation(action,payload={}){
  const disabled=[...document.querySelectorAll("button[data-action]")];
  disabled.forEach(b=>b.disabled=true);
  try{
-  const {data,error}=await sb.rpc("js_liga_accion",{p_accion:action,p_datos:payload});
+  const isIdInvite=action==="invite_partner"||action==="invite_sub";
+  const {data,error}=isIdInvite?
+   await sb.rpc("js_liga_invitar_por_id",{
+    p_kind:action==="invite_partner"?"partner":"substitute",p_game_id:payload.game_id
+   }):
+   await sb.rpc("js_liga_accion",{p_accion:action,p_datos:payload});
   if(error)throw error;
   if(!data?.ok)throw Error(data?.message||"La acción no se pudo realizar");
   flash(data.message||"Operación realizada");
@@ -262,8 +268,10 @@ document.addEventListener("click",async e=>{
  const p={};
  const fromSelect=id=>$(id)?.value||"";
  if(action==="invite_partner"||action==="invite_sub"){
-  p.user_id=fromSelect(action==="invite_partner"?"choose-partner":"choose-sub");
-  if(!p.user_id){flash("Primero seleccioná una persona",true);return;}
+  p.game_id=fromSelect(action==="invite_partner"?"choose-partner":"choose-sub").trim();
+  if(!/^[0-9]{6,15}$/.test(p.game_id)){
+   flash("Escribí un ID de Free Fire válido de 6 a 15 números.",true);return;
+  }
  }else if(["accept_invite","decline_invite"].includes(action)){
   p.invite_id=b.dataset.invite;
  }else if(action==="activate_sub"){
