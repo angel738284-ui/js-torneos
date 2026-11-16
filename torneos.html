@@ -67,6 +67,8 @@ nav a.sel{color:white}.error{border:1px solid #df8791;border-radius:10px;backgro
 .auth-status{font-size:12px;padding:10px;background:#121b30;border-radius:10px;color:#bbd0e8}
 .auth-status.good{border:1px solid #3e8f78;color:#83efbf}
 .auth-status.warn{border:1px solid #b36a72;color:#ffd1d8}
+#js-id-status[hidden]{display:none!important}
+#js-id-status{line-height:1.55;overflow-wrap:anywhere}
 .account-card{padding:15px;border:1px solid #3d506b;border-radius:14px;background:#141e32;margin:12px 0}
 .account-card strong{color:white}
 .account-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin:13px 0}
@@ -328,6 +330,7 @@ setInterval(()=>{if(document.visibilityState==="visible")load()},90000);load();
       <label for="js-game-id">ID de jugador de Free Fire</label>
       <input id="js-game-id" type="text" inputmode="numeric" maxlength="16" placeholder="Ejemplo: 123456789" autocomplete="off">
       <button id="js-id-verify" class="btn-alt" type="button" style="margin-top:12px;width:100%">🔎 Verificar o cambiar ID de Free Fire</button>
+      <p id="js-id-status" class="auth-status js-auth-status" role="status" aria-live="polite" aria-atomic="true" style="margin:12px 0 0" hidden></p>
       <div id="js-game-nickname" class="verified-name" style="margin-top:14px"></div>
       <div id="js-game-region" class="tiny"></div>
       <p class="tiny">La verificación identifica el apodo del ID, pero no demuestra que seas el propietario de esa cuenta de Free Fire.</p>
@@ -439,6 +442,12 @@ import {normalizeSocialLink,renderSocialLinks} from "./profile-social.js?v=1.0.0
    const node=q("js-account-status");
    node.textContent=msg;
    node.className="auth-status js-auth-status"+(ok===true?" good":ok===false?" warn":"");
+ };
+ const idStatus=(message,ok)=>{
+   const node=q("js-id-status");
+   node.textContent=message;
+   node.className="auth-status js-auth-status"+(ok===true?" good":ok===false?" warn":"");
+   node.hidden=!message;
  };
  async function apiCall(action,fields){
    const {data}=await sb.auth.getSession();
@@ -813,7 +822,7 @@ import {normalizeSocialLink,renderSocialLinks} from "./profile-social.js?v=1.0.0
      if(profile){
        q("js-game-id").value=profile.game_id;
        q("js-game-nickname").textContent="✅ "+profile.nickname;
-       q("js-game-region").textContent="✅ Apodo verificado · Perfil guardado en tu cuenta";
+       q("js-game-region").textContent=["SAC","NA","US"].includes(profile.region)?"✅ Región "+profile.region+" · ID guardado en tu cuenta":"⚠️ Región pendiente: "+(profile.region||"PENDIENTE");
        loadMy();
      }else{
        q("js-game-nickname").textContent="";
@@ -865,21 +874,42 @@ import {normalizeSocialLink,renderSocialLinks} from "./profile-social.js?v=1.0.0
    }catch(e){status("No se pudo cerrar la sesión: "+e.message,false)}
    finally{button.disabled=false}
  };
- q("js-id-verify").onclick=async()=>{
-   const id=q("js-game-id").value.trim().replace(/\s+/g,"");
-   if(!/^[0-9]{5,16}$/.test(id)){status("Ingresá un ID numérico de 5 a 16 cifras.",false);return}
-   q("js-id-verify").disabled=true;
-   status("Consultando el apodo de Free Fire…");
+ const verifyButton=q("js-id-verify");
+ const verifyLabel=verifyButton.textContent;
+ q("js-game-id").addEventListener("input",()=>{
+   if(!verifyButton.disabled)idStatus("");
+ });
+ verifyButton.onclick=async()=>{
+   const gameId=q("js-game-id").value.trim().replace(/\s+/g,"");
+   if(!/^[0-9]{5,16}$/.test(gameId)){
+     idStatus("⚠️ Ingresá un ID de Free Fire de 5 a 16 números.",false);return;
+   }
+   if(!session){idStatus("⚠️ Iniciá sesión para guardar tu ID.",false);return;}
+   verifyButton.disabled=true;
+   verifyButton.textContent="⏳ Verificando ID…";
+   idStatus("🔎 Buscando el nombre y la región en Free Fire…");
    try{
-     const result=await apiCall("verify_id",{game_id:id});
+     const result=await apiCall("verify_id",{game_id:gameId});
      profile=result.profile;
      renderProfile();
      q("js-game-nickname").textContent="✅ "+profile.nickname;
-     q("js-game-region").textContent="✅ Apodo verificado · Perfil guardado en tu cuenta";
-     status("✅ Nombre verificado y guardado correctamente.",true);
+     const region=String(profile.region||"PENDIENTE").toUpperCase();
+     if(["SAC","NA","US"].includes(region)){
+       q("js-game-region").textContent="✅ Región "+region+" · ID guardado";
+       idStatus(result.already_saved?
+         "✅ Este ID ya estaba registrado en tu cuenta. Podés entrar a la Liga 2VS2.":
+         "✅ ¡ID validado! "+profile.nickname+" · "+region+". Ya podés participar en la Liga 2VS2.",true);
+     }else{
+       q("js-game-region").textContent="⚠️ Región pendiente de verificación";
+       idStatus("⚠️ Encontramos el apodo "+profile.nickname+", pero no se pudo confirmar la región. Volvé a probar más tarde.",false);
+     }
      await loadMy();
-   }catch(e){status("⚠️ "+e.message,false)}
-   finally{q("js-id-verify").disabled=false}
+   }catch(e){
+     idStatus("⚠️ "+String(e?.message||"No se pudo verificar el ID."),false);
+   }finally{
+     verifyButton.disabled=false;
+     verifyButton.textContent=verifyLabel;
+   }
  };
  let jsSignupMode=false;
  function setAuthTab(register){
