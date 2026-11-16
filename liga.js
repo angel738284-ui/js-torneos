@@ -10,6 +10,7 @@ const date=value=>value?new Intl.DateTimeFormat("es-AR",{timeZone:"America/Argen
 const id=value=>esc(value??"");
 const btn=(text,action,extra="",color="")=>'<button type="button" class="btn '+color+'" data-action="'+esc(action)+'" '+extra+'>'+esc(text)+'</button>';
 let live=null,me=null,view="mi-equipo",busy=false,seenError="";
+let presenceBusy=false;
 const teams=()=>live?.teams||[];
 const games=()=>live?.matches||[];
 const players=()=>live?.players||[];
@@ -37,6 +38,33 @@ const playerIdField=(selector,label)=>{
   'con Google y verificar su ID desde Perfil. Después podrás invitarlo.</p>';
 };
 const pageHint='<p class="muted">Las partidas de esta liga no modifican el historial de torneos existente ni el ranking anterior de JS Guardian.</p>';
+
+/**
+ * Each signed-in account counts once while this page is visible. The server
+ * expires missing heartbeats after 70 seconds. Game state is separate:
+ * "En curso" is a web PvP accepted by the four players, not FF telemetry.
+ */
+function showPresence(data){
+ const online=$("league-online-pill"),playing=$("league-playing-pill");
+ if(!online||!playing)return;
+ const valid=Number.isSafeInteger(data?.online_count)&&data.online_count>=0&&
+  Number.isSafeInteger(data?.active_matches)&&data.active_matches>=0;
+ online.textContent=valid?"🟢 "+data.online_count+" conectado"+(data.online_count===1?"":"s"):"🟢 — conectados";
+ online.classList.toggle("off",!valid);
+ playing.textContent=valid?"🎮 "+data.active_matches+" PvP en curso":"🎮 — PvP en curso";
+}
+async function refreshPresence(){
+ if(presenceBusy||document.hidden||!me)return;
+ presenceBusy=true;
+ try{
+  const {data,error}=await sb.rpc("js_liga_presencia",{p_active:true});
+  if(error)throw error;
+  showPresence(data);
+ }catch(e){
+  showPresence(null);
+  console.warn("No se pudo actualizar el contador de conectados",e?.code||"");
+ }finally{presenceBusy=false;}
+}
 
 function flash(message,fail=false){
  const node=$("league-toast");node.textContent=String(message);node.classList.toggle("fail",fail);node.hidden=false;
@@ -226,6 +254,7 @@ async function load(silent=false){
   if(error)throw error;
   if(!session?.access_token){
    live=null;me=null;$("league-app").hidden=true;
+   showPresence(null);
    $("league-auth").innerHTML='<h2>🔐 Entrá con tu cuenta</h2><p class="muted">Usá la misma cuenta Google o correo que utilizás en JS Torneos. No necesitás una cuenta nueva.</p>'+
     '<a class="btn hot" href="./index.html">👤 Iniciar sesión en JS Torneos</a>';return;
   }
@@ -234,6 +263,7 @@ async function load(silent=false){
   if(!data?.ok)throw Error("El servidor no devolvió el estado de la liga");
   live=data;me=data.user;
   render();
+  void refreshPresence();
  }catch(e){
   const message=e?.message||"No pudimos consultar la liga";
   if(!silent)$("league-auth").innerHTML=errorHtml(message)+'<button class="btn" id="retry-league">Reintentar</button>';
@@ -332,3 +362,7 @@ sb.auth.onAuthStateChange((event)=>{
  if(event==="SIGNED_IN"||event==="SIGNED_OUT")setTimeout(()=>load(true),50);
 });
 setInterval(()=>{if(!document.hidden&&!busy&&!(document.activeElement?.matches("input,select")))load(true);},30000);
+setInterval(()=>{if(!document.hidden)void refreshPresence();},20000);
+document.addEventListener("visibilitychange",()=>{
+ if(!document.hidden){void load(true);void refreshPresence();}
+});

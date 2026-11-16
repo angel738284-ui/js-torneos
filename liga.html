@@ -37,13 +37,18 @@ footer{text-align:center;font-size:11px;color:#829ab5;margin:30px auto 0}
   <div class="eyebrow">● TEMPORADA COMPETITIVA · FREE FIRE</div>
   <h1>Una pareja.<br><em>Un campeón.</em></h1>
   <p>Formá tu dúo fijo, registrá un suplente, enfrentá otros equipos y confirmá los resultados desde tu cuenta. Sin comandos ni mensajes perdidos.</p>
-  <div class="meta"><span id="state-pill" class="pill off">● Consultando liga…</span><span class="badge">🏆 LIGA PVP 2VS2</span></div>
+  <div class="meta">
+   <span id="state-pill" class="pill off">● Consultando liga…</span>
+   <span id="league-online-pill" class="pill off" aria-live="polite">🟢 — conectados</span>
+   <span id="league-playing-pill" class="badge" aria-live="polite">🎮 — PvP en curso</span>
+  </div>
  </section>
  <div class="metrics">
    <div class="metric"><b id="metric-teams">—</b><small>DÚOS INSCRITOS</small></div>
    <div class="metric"><b id="metric-games">—</b><small>PARTIDAS VÁLIDAS</small></div>
    <div class="metric"><b id="metric-reward">TOP 1</b><small>PREMIO AL CAMPEÓN</small></div>
  </div>
+ <p class="muted" style="margin:-8px 2px 16px">🟢 Conectados: tienen abierta esta liga. 🎮 En curso: PvP aceptados por los cuatro, no confirma que estén dentro de Free Fire. Actualización aproximada cada 20 segundos.</p>
  <div id="league-auth" class="panel" role="status">Verificando tu cuenta de JS Torneos…</div>
  <div id="league-app" hidden>
   <nav class="tabs" id="league-tabs" aria-label="Apartados de liga">
@@ -61,6 +66,6 @@ footer{text-align:center;font-size:11px;color:#829ab5;margin:30px auto 0}
 </div>
 <div class="toast" id="league-toast" hidden role="status" aria-live="polite"></div>
 <script src="./config.js?v=1.0.0"></script>
-<script type="module" src="./liga.js?v=1.2.0"></script>
+<script type="module" src="./liga.js?v=1.3.0"></script>
 </body>
 </html>
