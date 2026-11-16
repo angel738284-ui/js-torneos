@@ -190,9 +190,15 @@ body.js-auth-required #js-notice-overlay,body.js-auth-checking #js-notice-overla
 <input type="search" id="search" placeholder="Buscar torneo por nombre o código" aria-label="Buscar torneos">
 <div class="filters"><button type="button" data-state="open" class="sel">🔥 Abiertos</button><button type="button" data-state="all">Todos</button><button type="button" data-state="closed">⚔️ En curso</button><button type="button" data-state="finished">🏆 Terminados</button></div>
 <div id="error" hidden class="error"></div><div id="cards"><div class="empty">Buscando torneos de TORNEOS JS…</div></div>
-<div class="help"><h3>🔐 ¿Ya te inscribiste?</h3><p>Entrá con tu código privado para ver tu rival, sala y resultados.</p><a href="./equipo.html">Consultar mi equipo →</a></div>
+<section class="js-league-promo" style="background:linear-gradient(125deg,#34243f,#18273d 65%,#153b39);border:1px solid #73566d;border-radius:18px;padding:20px;margin:23px 0 14px">
+  <div style="font-size:11px;color:#9af6d9;font-weight:900;letter-spacing:1.7px">⚔️ NUEVA COMPETICIÓN</div>
+  <h2 style="margin:7px 0;font-size:24px">Liga PvP 2VS2 · JS Family</h2>
+  <p style="font-size:12px;color:#c8d5e7;margin:6px 0 16px">Formá tu dúo fijo, registrá un suplente, desafiá desde tu cuenta y confirmá victorias sin comandos de WhatsApp.</p>
+  <a href="./liga.html" style="display:inline-flex;background:linear-gradient(100deg,#f15a7a,#ad2e56);border:1px solid #ff96a8;border-radius:12px;padding:12px 18px;font-weight:900;color:white;text-decoration:none">🏆 Entrar a la Liga 2VS2</a>
+ </section>
+ <div class="help"><h3>🔐 ¿Ya te inscribiste?</h3><p>Entrá con tu código privado para ver tu rival, sala y resultados.</p><a href="./equipo.html">Consultar mi equipo →</a></div>
 </div>
-<nav><a class="sel" href="?"><span>🏆</span>Torneos</a><a href="./equipo.html"><span>🛡️</span>Mi equipo</a><a href="./llaves.html"><span>⚔️</span>Llaves</a></nav>
+<nav><a class="sel" href="?"><span>🏆</span>Torneos</a><a href="./equipo.html"><span>🛡️</span>Mi equipo</a><a href="./llaves.html"><span>⚔️</span>Llaves</a><a href="./liga.html"><span>👑</span>Liga 2VS2</a></nav>
 <script>
 (function(){
 "use strict";
@@ -465,6 +471,10 @@ import {normalizeSocialLink,renderSocialLinks} from "./profile-social.js?v=1.0.0
      b.append(make("span",icons[name]),make("small",names[name]));
      b.onclick=()=>switchTab(name);b.dataset.tab=name;nav.append(b);
    }
+   const league=make("a",undefined,"player-nav-button");
+   league.href="./liga.html";
+   league.append(make("span","👑"),make("small","Liga 2VS2"));
+   nav.append(league);
  }
  function switchTab(tab){
    activeTab=tab;

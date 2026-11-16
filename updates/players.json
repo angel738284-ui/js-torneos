@@ -1,7 +1,7 @@
 {
-  "version_code": 21,
-  "version_name": "1.6.7",
-  "apk_url": "https://jstorneos.com/updates/JS-TORNEOS-JUGADORES-v1.6.7.apk",
-  "sha256": "73263dcfece8f92781cd963896bcfacdc28524b87a87b2d2c4acfdaa9e6856b3",
-  "notes": "Verificación más simple: ahora solo se exige ID y apodo de Free Fire. No hay bloqueo por región en torneos, BR Solo ni suplentes. Sin pérdida de cuenta o datos."
+  "version_code": 22,
+  "version_name": "1.6.8",
+  "apk_url": "https://jstorneos.com/updates/JS-TORNEOS-JUGADORES-v1.6.8.apk",
+  "sha256": "74bdfe60504ac06694017036f9fed6f413a07ac22b0a2914acc9f860a2c871e6",
+  "notes": "Nueva sección Liga PvP 2VS2: dúos fijos, suplentes, desafíos, aceptación y resultados desde la web integrada. Mantiene torneos, amigos y perfil sin cambios."
 }
