@@ -20,7 +20,10 @@ const privateRooms=new Map(),shownPasswords=new Set(),editingRooms=new Set();
 const previousMatchStates=new Map();
 let notificationPrimed=false,roomSyncing=false;
 let presenceBusy=false;
-const teams=()=>live?.teams||[];
+// Los equipos que se disolvieron siguen en Supabase por el historial,
+// pero no participan en ranking, invitaciones ni emparejamiento.
+const allTeams=()=>live?.teams||[];
+const teams=()=>allTeams().filter(t=>t.archived!==true);
 const games=()=>live?.matches||[];
 const search=()=>live?.search||{};
 const myActiveGame=()=>{
@@ -228,7 +231,7 @@ function browserNotice(message,tag){
  }
 }
 function checkLeagueNotices(data){
- const uid=data.user,team=data.teams?.find(t=>[t.captain,t.partner,t.substitute].includes(uid));
+ const uid=data.user,team=data.teams?.find(t=>t.archived!==true&&[t.captain,t.partner,t.substitute].includes(uid));
  const matches=data.matches||[];
  if(notificationPrimed){
   for(const match of matches){
@@ -278,7 +281,7 @@ async function refreshPrivateRooms(){
 
 
 function matchCard(b){
- const a=teams().find(t=>t.id===b.a),z=teams().find(t=>t.id===b.b);
+ const a=allTeams().find(t=>t.id===b.a),z=allTeams().find(t=>t.id===b.b);
  const mine=teamOf(me);
  const participant=isRealParticipant(b);
  const accepted=b.my_vote?.accepted===true;
@@ -372,7 +375,8 @@ function homeScreen(){
 function myTeamScreen(){
  if(live?.paused)return card("⏸ Inscripciones pausadas",
   '<p class="muted">JS pausó temporalmente la Liga. No se pueden registrar nuevos dúos ni cambiar suplentes hasta reanudar. Tus equipos, victorias y partidas anteriores siguen guardados.</p>'+
-  (teamOf(me)?roster(teamOf(me)):""));
+  (teamOf(me)?roster(teamOf(me))+
+    '<div style="margin-top:13px">'+btn(teamOf(me).substitute===me?"🚪 Dejar de ser suplente":"🚪 Salir de mi dúo","leave_duo",'',"danger block")+'</div>':""));
  if(!live?.season){
    return card("🕹️ Próximamente","<p>La nueva temporada 2VS2 todavía no fue abierta por JS. Tus torneos anteriores siguen funcionando normalmente.</p>"+pageHint);
  }
@@ -422,6 +426,13 @@ function myTeamScreen(){
    }else if(t.substitute===me){
      out+=card("🛡️ Soy suplente",'<p class="muted">Estás vinculado al dúo '+teamName(t)+'. '+(t.replaced?"Fuiste activado y podrás confirmar sus próximos partidos.":"Estás en reserva. Los titulares deben activarte antes de empezar un PvP.")+'</p>');
    }
+   const asSub=t.substitute===me;
+   out+=card("⚙️ Gestionar mi dúo",
+     '<p class="muted">'+(asSub?
+       'Si salís como suplente, los titulares siguen juntos y vos quedás libre para unirte a otro dúo.':
+       'Si salís, el dúo actual se disuelve y sus integrantes podrán formar otro. Las partidas anteriores y el ranking individual se conservan; el equipo anterior pasa al historial.')+
+     '</p><p class="muted">⚠️ No podés salir mientras haya invitaciones PvP vigentes, partidas en juego o resultados en revisión.</p>'+
+     btn(asSub?"🚪 Dejar de ser suplente":"🚪 Salir de mi dúo","leave_duo",'',"danger block"));
  }
  return out+card("📋 Mis partidas",
   games().filter(g=>t&&[g.a,g.b].includes(t.id)&&running(g)).slice(0,8).map(matchCard).join("")||
@@ -582,7 +593,7 @@ function adminExtras(){
  const logs=Array.isArray(live.audit)?live.audit:[];
  const history=card("🧾 Últimas correcciones realizadas por JS",
   (logs.length?logs.map(x=>{
-   const t=teams().find(t=>t.id===x.team_id);
+   const t=allTeams().find(t=>t.id===x.team_id);
    const d=x.details||{};
    const label=x.action==="adjust"?
     (d.stat==="wins"?"Victorias ":"Derrotas ")+(d.delta===1?"+1":"−1")+" · "+(t?teamName(t):"Dúo"):
@@ -725,6 +736,13 @@ async function verifyOwnId(){
 }
 async function operation(action,payload={}){
  if(busy)return;
+ if(action==="leave_duo"){
+   const t=teamOf(me);
+   const asSub=t?.substitute===me;
+   if(!t||!confirm(asSub?
+      "¿Seguro que querés dejar de ser suplente? El dúo seguirá jugando sin vos.":
+      "¿Seguro que querés SALIR de este dúo? Se disolverá el equipo actual para TODOS sus integrantes. Sus partidas y puntos individuales se conservan, pero el dúo anterior saldrá del ranking activo. No se puede deshacer."))return;
+ }
  const dangerous=["end","admin_cancel","admin_resolve","admin_adjust","remove_sub","admin_pause","admin_resume"];
  if(dangerous.includes(action)&&!confirm(action==="end"?
    "¿Finalizar y archivar esta temporada? No podrás volver a abrirla.":
@@ -747,6 +765,7 @@ async function operation(action,payload={}){
   else if(isSearch)result=await sb.rpc("js_liga_busqueda",{
     p_action:action==="search_join"?"join":"leave"
    });
+  else if(action==="leave_duo")result=await sb.rpc("js_liga_salir_duo");
   else if(["admin_pause","admin_resume"].includes(action))
    result=await sb.rpc("js_liga_control_admin",{
     p_action:action==="admin_pause"?"pause":"resume"
