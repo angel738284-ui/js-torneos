@@ -9,7 +9,10 @@ const esc=value=>String(value??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;
 const date=value=>value?new Intl.DateTimeFormat("es-AR",{timeZone:"America/Argentina/Buenos_Aires",day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"}).format(new Date(value)):"—";
 const id=value=>esc(value??"");
 const btn=(text,action,extra="",color="")=>'<button type="button" class="btn '+color+'" data-action="'+esc(action)+'" '+extra+'>'+esc(text)+'</button>';
-let live=null,me=null,view="mi-equipo",busy=false,seenError="";
+let live=null,me=null,view="inicio",busy=false,seenError="";
+const privateRooms=new Map(),shownPasswords=new Set(),editingRooms=new Set();
+const previousMatchStates=new Map();
+let notificationPrimed=false,roomSyncing=false;
 let presenceBusy=false;
 const teams=()=>live?.teams||[];
 const games=()=>live?.matches||[];
@@ -77,8 +80,8 @@ function flash(message,fail=false){
 }
 function statusBanner(){
  const active=Boolean(live?.season),pill=$("state-pill");
- pill.textContent=active?"● TEMPORADA "+live.season.id+" · ABIERTA":"● LIGA AÚN NO ABIERTA";
- pill.classList.toggle("off",!active);
+ pill.textContent=active?(live.paused?"⏸ TEMPORADA "+live.season.id+" · PAUSADA":"● TEMPORADA "+live.season.id+" · ABIERTA"):"● LIGA AÚN NO ABIERTA";
+ pill.classList.toggle("off",!active||live?.paused===true);
  $("metric-teams").textContent=String(teams().length);
  $("metric-games").textContent=String(games().filter(x=>x.state==="complete").length);
  $("metric-reward").textContent=active?"TOP 1":"—";
@@ -142,6 +145,104 @@ function refreshAcceptCountdowns(){
   node.classList.toggle("expired",seconds===0);
  });
 }
+function roomCard(b){
+ if(Number(b.confirmed)!==4)return "";
+ if(!b.started_at||!["playing","review"].includes(b.state))return "";
+ if(!isRealParticipant(b)&&!live?.admin)return "";
+ const cached=privateRooms.get(b.id),editing=editingRooms.has(b.id);
+ const controls='<div class="row" style="margin-top:10px">'+
+  btn("🔄 Actualizar sala","room_get",'data-match="'+b.id+'"',"small")+'</div>';
+ if(editing){
+  return '<div class="room-card">'+
+   '<strong>🔐 '+(cached?.found?"Editar sala privada":"Crear sala privada")+'</strong>'+
+   '<p class="muted">Solo podrán ver estos datos los cuatro jugadores y JS. La sala la crean ustedes en Free Fire.</p>'+
+   '<label for="room-id-'+b.id+'">ID de sala de Free Fire</label>'+
+   '<input id="room-id-'+b.id+'" type="text" inputmode="numeric" maxlength="18" autocomplete="off" placeholder="Número de sala" value="'+esc(cached?.room_id||"")+'">'+
+   '<label for="room-pass-'+b.id+'">Contraseña</label>'+
+   '<input id="room-pass-'+b.id+'" type="text" maxlength="32" autocomplete="off" placeholder="Contraseña de la sala" value="'+esc(cached?.room_password||"")+'">'+
+   '<div class="row" style="margin-top:12px">'+
+    btn("🔐 Guardar sala","room_save",'data-match="'+b.id+'"',"good")+
+    btn("Cancelar edición","room_edit_cancel",'data-match="'+b.id+'"',"small")+'</div>'+
+   '</div>';
+ }
+ if(cached?.found){
+  return '<div class="room-card"><strong>🔐 Sala privada del PVP #'+b.id+'</strong>'+
+   '<p class="muted">Visible solamente para los cuatro jugadores de este PvP y JS.</p>'+
+   '<div class="room-code"><div><small>ID de sala</small><strong>'+esc(cached.room_id)+'</strong></div>'+
+    btn("Copiar ID","room_copy_id",'data-match="'+b.id+'"',"small")+'</div>'+
+   '<div class="room-code"><div><small>Contraseña</small><strong>'+
+    (shownPasswords.has(b.id)?esc(cached.room_password):"••••••••")+'</strong></div>'+
+    btn(shownPasswords.has(b.id)?"Ocultar":"Mostrar","room_toggle",'data-match="'+b.id+'"',"small")+
+    btn("Copiar clave","room_copy_pass",'data-match="'+b.id+'"',"small")+'</div>'+
+   (cached.can_edit?
+    '<div class="row">'+btn("✏️ Corregir sala","room_edit",'data-match="'+b.id+'"',"small")+
+    btn("Quitar sala","room_clear",'data-match="'+b.id+'"',"danger small")+'</div>':
+    '<p class="muted">Si los datos están equivocados, pedile a quien creó la sala que los corrija.</p>')+
+    controls+'</div>';
+ }
+ return '<div class="room-card"><strong>🔐 Sala privada</strong>'+
+  '<p class="muted">ID y contraseña solo para participantes del enfrentamiento. No se publican en el grupo de WhatsApp.</p>'+
+  (cached?.found===false?btn("➕ Crear sala","room_edit",'data-match="'+b.id+'"',"hot"):
+    btn("🔑 Ver ID y contraseña","room_get",'data-match="'+b.id+'"',"good"))+
+  '</div>';
+}
+function browserNotice(message,tag){
+ flash(message);
+ if(typeof Notification!=="undefined"&&Notification.permission==="granted"){
+  try{new Notification("JS FAMILY · LIGA 2VS2",{body:message,tag:"js-liga-"+tag});}
+  catch(_){ /* In-page alerts remain available when browser notifications aren't supported. */ }
+ }
+}
+function checkLeagueNotices(data){
+ const uid=data.user,team=data.teams?.find(t=>[t.captain,t.partner,t.substitute].includes(uid));
+ const matches=data.matches||[];
+ if(notificationPrimed){
+  for(const match of matches){
+   if(![match.a,match.b].includes(team?.id))continue;
+   const previous=previousMatchStates.get(match.id);
+   if(previous===undefined&&match.state==="pending"&&isPlayerInLineup(match,uid)){
+    browserNotice("⚔️ Nuevo desafío 2VS2 #"+match.id+". Entrá a Partidas para aceptar.",match.id+"-invite");
+   }else if(previous&&previous!==match.state){
+    if(match.state==="playing")browserNotice("🎮 ¡PVP #"+match.id+" confirmado por los cuatro! Ya pueden jugar.",match.id+"-start");
+    if(match.state==="review")browserNotice("⚠️ PVP #"+match.id+" en revisión. JS decidirá.",match.id+"-review");
+    if(match.state==="complete")browserNotice("🏆 PVP #"+match.id+" finalizado. Revisá el ranking.",match.id+"-done");
+   }
+  }
+ }
+ previousMatchStates.clear();
+ for(const m of matches)previousMatchStates.set(m.id,m.state);
+ notificationPrimed=true;
+}
+const isPlayerInLineup=(b,uid)=>[...(b.lineup_a||[]),...(b.lineup_b||[])].includes(uid);
+/**
+ * Optional on-page notification that a match's private room is ready.
+ * Queries use the same authenticated 4-participant-only RPC as the buttons;
+ * never reveal passwords through general league state or notifications.
+ */
+async function refreshPrivateRooms(){
+ if(roomSyncing||!live?.season||!me)return;
+ const target=games().filter(g=>g.started_at&&Number(g.confirmed)===4&&
+  ["playing","review"].includes(g.state)&&
+  (isPlayerInLineup(g,me)||live.admin)).slice(0,2);
+ if(!target.length)return;
+ roomSyncing=true;
+ try{
+  let update=false;
+  for(const match of target){
+   const before=privateRooms.get(match.id);
+   const {data,error}=await sb.rpc("js_liga_sala",{p_action:"get",p_match_id:match.id});
+   if(error||!data?.ok)continue;
+   privateRooms.set(match.id,data);
+   if(before&&!before.found&&data.found){
+    browserNotice("🔐 La sala del PvP #"+match.id+" ya está lista. Entrá a Partidas para copiar el ID y contraseña.",match.id+"-room");
+   }
+   if(before?.found!==data.found||before?.changed_at!==data.changed_at)update=true;
+  }
+  if(update&&!busy&&live)render();
+ }finally{roomSyncing=false;}
+}
+
+
 function matchCard(b){
  const a=teams().find(t=>t.id===b.a),z=teams().find(t=>t.id===b.b);
  const mine=teamOf(me);
@@ -170,6 +271,7 @@ function matchCard(b){
  (b.state==="complete"?'<div class="line"></div><strong style="color:var(--gold)">🏆 Ganador: '+validWinner+'</strong>':"")+
  (b.state==="review"?'<p class="muted">No se otorgaron puntos. JS debe verificar y decidir.</p>':"")+
  (b.state==="expired"?'<p class="muted">Este PvP ya había comenzado con 4/4 aceptaciones y espera resolución de JS.</p>':"")+
+ roomCard(b)+
  (actions?'<div class="line"></div>'+actions:"")+
  '</article>';
 }
@@ -182,7 +284,39 @@ function incomingInvites(){
   '<div class="row">'+btn("✅ Aceptar","accept_invite",'data-invite="'+id(i.id)+'"',"good")+
   btn("❌ Rechazar","decline_invite",'data-invite="'+id(i.id)+'"',"danger")+'</div></div>').join(""));
 }
+function homeScreen(){
+ if(!live?.season)return card("🎮 Bienvenido a JS Family",
+  '<p class="muted">La temporada todavía no está abierta. Podés preparar tu perfil mientras tanto.</p>'+
+  btn("👤 Configurar mi perfil","go_team",'',"hot block"));
+ const t=teamOf(me),active=myActiveGame(),pendingInvites=(live.invites||[]).filter(i=>i.to_user===me);
+ const statusText=live.paused?
+  '<div class="league-paused"><strong>⏸ Liga pausada por JS</strong><p>Durante la pausa no se generan nuevas partidas ni registros. Los PvP que comenzaron siguen abiertos para confirmar resultados.</p></div>':"";
+ const teamBox=t?'<div class="home-team"><div class="flex"><strong>🛡️ Tu dúo</strong>'+
+  '<span class="pill">✓ Equipo registrado</span></div>'+
+  '<div style="margin-top:10px">'+roster(t)+'</div></div>':
+  '<p class="muted">Todavía no tenés un dúo. Verificá tu ID y formá tu equipo desde Mi dúo.</p>';
+ const action=active?
+  btn("📋 TENÉS UN PVP #"+active.id+" · VER PARTIDA","go_matches",'',"hot block"):
+  t&&!live.paused?
+  btn("⚔️ JUGAR AHORA · BUSCAR RIVAL","go_play",'',"hot block"):
+  btn(t?"⏸ Liga pausada":"👥 CREAR MI DÚO","go_team",'data-action-pause="'+Boolean(live.paused)+'"'+(live.paused?" disabled":""),"hot block");
+ const resume=live.admin?'<div style="margin-top:12px">'+btn("👑 Ir al panel de administración","go_admin",'',"small")+'</div>':"";
+ return statusText+card("🎮 Bienvenido a la Arena JS Family",
+  '<p class="muted">Jugá PvP 2VS2 sin comandos. Tu compañero confirma desde su cuenta y el sistema encuentra rival.</p>'+
+  teamBox+'<div style="margin-top:16px">'+action+'</div>'+
+  '<div class="quick-actions">'+btn("🎯 Desafiar dúo","go_play",'',"small")+
+  btn("🏆 Ver ranking","go_rank",'',"small")+
+  btn("🛡️ Mi dúo","go_team",'',"small")+
+  '</div>'+
+  (pendingInvites.length?'<p class="muted">📨 Tenés '+pendingInvites.length+' invitación(es) pendiente(s) para responder.</p>':"")+
+  '<p class="muted">💡 Podés activar avisos mientras esta página esté abierta. Las notificaciones fuera del navegador todavía requieren instalar avisos push.</p>'+
+  btn("🔔 Activar avisos del navegador","enable_notices",'',"good small")+
+  resume);
+}
 function myTeamScreen(){
+ if(live?.paused)return card("⏸ Inscripciones pausadas",
+  '<p class="muted">JS pausó temporalmente la Liga. No se pueden registrar nuevos dúos ni cambiar suplentes hasta reanudar. Tus equipos, victorias y partidas anteriores siguen guardados.</p>'+
+  (teamOf(me)?roster(teamOf(me)):""));
  if(!live?.season){
    return card("🕹️ Próximamente","<p>La nueva temporada 2VS2 todavía no fue abierta por JS. Tus torneos anteriores siguen funcionando normalmente.</p>"+pageHint);
  }
@@ -239,6 +373,9 @@ function myTeamScreen(){
 }
 function searchScreen(){
  if(!live?.season)return "";
+ if(live.paused)return card("⏸ Búsquedas pausadas",
+  '<p class="muted">JS pausó la Liga 2VS2. No se pueden buscar rivales hasta que la reanude. Las partidas ya iniciadas siguen disponibles en Partidas.</p>'+
+  btn("📋 Ver mis partidas","go_matches",'',"small"));
  const mine=teamOf(me);
  if(!mine)return card("🎲 Búsqueda aleatoria",
    '<p class="muted">Primero formá tu dúo desde «Mi dúo». Después los dos podrán confirmar la búsqueda.</p>'+
@@ -274,6 +411,7 @@ function searchScreen(){
   '<p class="muted">⏳ La confirmación vence si un jugador deja de estar activo durante unos 90 segundos. Si cualquiera cancela, sale el dúo completo. Nunca emparejamos contra una región diferente.</p>');
 }
 function rivalsScreen(){
+ if(live?.paused)return searchScreen();
  if(!live?.season)return card("⚔️ Desafíos",'<p>JS todavía no abrió una nueva temporada.</p>');
  const mine=teamOf(me);
  if(!mine)return searchScreen();
@@ -327,7 +465,12 @@ function adminScreen(){
     btn("🏁 Abrir Liga 2VS2","start",'',"hot block"));
  }
  return card("👑 Panel JS · Temporada #"+live.season.id,
-  '<label for="prize-input">Premio de la temporada</label><input id="prize-input" maxlength="100" value="'+esc(live.season.prize)+'">'+
+  (live.paused?
+    '<div class="league-paused"><strong>⏸ Liga pausada</strong><p>Las nuevas inscripciones, invitaciones y búsquedas están detenidas. Los PvP iniciados pueden finalizar.</p></div>'+
+    btn("▶️ REANUDAR LIGA","admin_resume",'',"good block"):
+    '<div class="league-active"><strong>✅ Liga abierta y activa</strong><p>Los dúos pueden anotarse, desafiar y buscar rivales.</p></div>'+
+    btn("⏸ PAUSAR LIGA","admin_pause",'',"danger block"))+
+  '<div class="line"></div><label for="prize-input">Premio de la temporada</label><input id="prize-input" maxlength="100" value="'+esc(live.season.prize)+'">'+
   '<div style="margin-top:12px">'+btn("Guardar premio","prize",'',"good")+'</div>'+
   '<div class="line"></div><p class="muted">Para finalizar la temporada, primero resolvé o anulá todos los PvP pendientes. No se borran los resultados históricos.</p>'+
   btn("🏁 Finalizar y archivar","end",'',"danger")+
@@ -372,8 +515,8 @@ function render(){
  $("league-auth").innerHTML='<div class="flex"><div><strong>✅ '+esc(meName)+'</strong><br><span class="muted">Cuenta conectada · '+(live.admin?"👑 Administrador":"Jugador")+'</span></div>'+btn("↻ Actualizar","refresh",'',"small")+'</div>';
  $("league-app").hidden=false;
  for(const tab of $("league-tabs").querySelectorAll("[data-tab]"))tab.classList.toggle("on",tab.dataset.tab===view);
- if(!live.admin&&view==="admin")view="mi-equipo";
- const fn=({"mi-equipo":myTeamScreen,rivales:rivalsScreen,partidas:matchesScreen,ranking:rankingScreen,historial:historyScreen,admin:adminScreen})[view]||myTeamScreen;
+ if(!live.admin&&view==="admin")view="inicio";
+ const fn=({inicio:homeScreen,"mi-equipo":myTeamScreen,rivales:rivalsScreen,partidas:matchesScreen,ranking:rankingScreen,historial:historyScreen,admin:adminScreen})[view]||homeScreen;
  $("league-content").innerHTML=fn()+(live.admin&&view==="admin"?adminExtras():"");
  refreshAcceptCountdowns();
 }
@@ -383,7 +526,8 @@ async function load(silent=false){
   const {data:{session},error}=await sb.auth.getSession();
   if(error)throw error;
   if(!session?.access_token){
-   live=null;me=null;$("league-app").hidden=true;
+   live=null;me=null;privateRooms.clear();shownPasswords.clear();editingRooms.clear();
+   previousMatchStates.clear();notificationPrimed=false;$("league-app").hidden=true;
    showPresence(null);
    $("league-auth").innerHTML='<h2>🔐 Entrá con tu cuenta</h2><p class="muted">Usá la misma cuenta Google o correo que utilizás en JS Torneos. No necesitás una cuenta nueva.</p>'+
     '<a class="btn hot" href="./index.html">👤 Iniciar sesión en JS Torneos</a>';return;
@@ -402,7 +546,12 @@ async function load(silent=false){
    const {data:audit,error:auditError}=await sb.rpc("js_liga_admin_historial");
    data.audit=!auditError&&Array.isArray(audit)?audit:[];
   }
+  if(me!==null&&me!==data.user){
+   privateRooms.clear();shownPasswords.clear();editingRooms.clear();
+   previousMatchStates.clear();notificationPrimed=false;
+  }
   live=data;me=data.user;
+  checkLeagueNotices(data);
   if(previousSearch&&!data.search?.my_ready){
    const newActive=myActiveGame();
    if(newActive?.state==="playing"&&newActive.id!==previousGameId){
@@ -412,6 +561,7 @@ async function load(silent=false){
   }
   render();
   void refreshPresence();
+  void refreshPrivateRooms();
  }catch(e){
   const message=e?.message||"No pudimos consultar la liga";
   if(!silent)$("league-auth").innerHTML=errorHtml(message)+'<button class="btn" id="retry-league">Reintentar</button>';
@@ -453,9 +603,11 @@ async function verifyOwnId(){
 }
 async function operation(action,payload={}){
  if(busy)return;
- const dangerous=["end","admin_cancel","admin_resolve","admin_adjust","remove_sub"];
+ const dangerous=["end","admin_cancel","admin_resolve","admin_adjust","remove_sub","admin_pause","admin_resume"];
  if(dangerous.includes(action)&&!confirm(action==="end"?
    "¿Finalizar y archivar esta temporada? No podrás volver a abrirla.":
+   action==="admin_pause"?"¿Pausar la Liga 2VS2? Se detendrán nuevas inscripciones, búsquedas y desafíos, pero no las partidas iniciadas.":
+   action==="admin_resume"?"¿Reanudar la Liga 2VS2 para que los jugadores puedan volver a inscribirse y jugar?":
    action==="admin_resolve"?"¿Confirmás el ganador elegido? Se sumará una victoria al dúo ganador y una derrota al rival. Si ya había un ganador, se revertirán los puntos anteriores.":
    action==="admin_cancel"?"¿Anular este PvP? Se quitarán sus puntos anteriores si los tenía.":
    action==="admin_adjust"?"¿Aplicar "+(payload.delta===1?"+1":"−1")+" "+(payload.stat==="wins"?"victoria":"derrota")+" al dúo seleccionado?":
@@ -472,6 +624,10 @@ async function operation(action,payload={}){
    });
   else if(isSearch)result=await sb.rpc("js_liga_busqueda",{
     p_action:action==="search_join"?"join":"leave"
+   });
+  else if(["admin_pause","admin_resume"].includes(action))
+   result=await sb.rpc("js_liga_control_admin",{
+    p_action:action==="admin_pause"?"pause":"resume"
    });
   else if(["admin_resolve","admin_cancel","admin_adjust"].includes(action))
    result=await sb.rpc("js_liga_admin_arbitrar",{
@@ -503,6 +659,61 @@ document.addEventListener("click",async e=>{
  if(action==="refresh"){await load();return;}
  if(action==="go_matches"){view="partidas";render();return;}
  if(action==="go_team"){view="mi-equipo";render();return;}
+ if(action==="go_play"){view="rivales";render();return;}
+ if(action==="go_rank"){view="ranking";render();return;}
+ if(action==="go_admin"){view="admin";render();return;}
+ if(action==="enable_notices"){
+  if(typeof Notification==="undefined"){
+    flash("Tu navegador no permite mostrar notificaciones del sistema. Los avisos dentro de JS Torneos seguirán funcionando.",true);
+    return;
+  }
+  try{
+   const permission=await Notification.requestPermission();
+   flash(permission==="granted"?"🔔 Avisos del navegador activados mientras tengas la página abierta.":"El navegador no autorizó las notificaciones.",permission!=="granted");
+  }catch(e){flash("No fue posible habilitar notificaciones en este navegador.",true);}
+  return;
+ }
+ if(action.startsWith("room_")){
+  const game=Number(b.dataset.match);
+  if(!Number.isSafeInteger(game))return;
+  if(action==="room_toggle"){
+   if(shownPasswords.has(game))shownPasswords.delete(game);else shownPasswords.add(game);
+   render();return;
+  }
+  if(action==="room_edit"){editingRooms.add(game);render();return;}
+  if(action==="room_edit_cancel"){editingRooms.delete(game);render();return;}
+  if(action==="room_copy_id"||action==="room_copy_pass"){
+   const room=privateRooms.get(game);
+   const value=action==="room_copy_id"?room?.room_id:room?.room_password;
+   if(!value){flash("Consultá primero la sala privada.",true);return;}
+   try{await navigator.clipboard.writeText(value);flash("✅ Copiado al portapapeles.");}
+   catch(_){window.prompt("Copiá el dato:",value);}
+   return;
+  }
+  if(action==="room_clear"&&!confirm("¿Quitar los datos de sala de este PvP?"))return;
+  if(busy)return;
+  busy=true;
+  try{
+   const args={p_action:action==="room_save"?"save":action==="room_clear"?"clear":"get",p_match_id:game};
+   if(action==="room_save"){
+    args.p_room_id=$("room-id-"+game)?.value.trim()||"";
+    args.p_password=$("room-pass-"+game)?.value||"";
+   }
+   const {data,error}=await sb.rpc("js_liga_sala",args);
+   if(error)throw error;
+   if(!data?.ok)throw Error(data?.message||"No se pudo consultar la sala.");
+   if(action!=="room_get"){
+    editingRooms.delete(game);shownPasswords.delete(game);
+    const latest=await sb.rpc("js_liga_sala",{p_action:"get",p_match_id:game});
+    if(latest.error)throw latest.error;
+    privateRooms.set(game,latest.data);
+   }else privateRooms.set(game,data);
+   if(action!=="room_get")flash(data.message||"Sala actualizada.");
+   render();
+  }catch(err){flash(err?.message||"No se pudo consultar la sala",true);}
+  finally{busy=false;}
+  return;
+ }
  if(action==="verify_own_id"){await verifyOwnId();return;}
  const p={};
  const fromSelect=id=>$(id)?.value||"";

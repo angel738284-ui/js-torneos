@@ -38,6 +38,17 @@ select,input{width:100%;min-height:46px;background:#101a2c;color:#f5f8ff;border:
 .accept-countdown.expired{color:#ffb4c0}
 @media(max-width:360px){.acceptance-grid{grid-template-columns:1fr}}
 .error{border:1px solid #9e526b;background:#462639;padding:13px;border-radius:11px;color:#ffd1de;font-size:12px;margin:12px 0}
+.room-card{margin:15px 0;padding:14px;border:1px solid #376389;border-radius:14px;background:linear-gradient(140deg,#10253b,#111b2f)}
+.room-card>strong{display:block;font-size:14px;color:#b1ddff}.room-card .btn{font-size:11px}
+.room-code{display:flex;align-items:center;flex-wrap:wrap;justify-content:space-between;gap:10px;background:#10192e;padding:12px;margin:11px 0;border-radius:11px}
+.room-code>div{display:grid;gap:3px;flex:1;min-width:0}.room-code small{font-size:10px;color:#abbcd3}.room-code strong{font-variant-numeric:tabular-nums;font-size:17px;color:#fff;overflow-wrap:anywhere}
+.home-team{background:#14243a;border:1px solid #355375;border-radius:13px;padding:14px;margin:16px 0}
+.quick-actions{display:flex;flex-wrap:wrap;gap:9px;margin:14px 0}.quick-actions .btn{flex:1;white-space:nowrap}
+.league-paused,.league-active{margin:12px 0;padding:14px;border-radius:13px}
+.league-paused{background:#3b2d38;border:1px solid #a07472}.league-active{background:#15392f;border:1px solid #3b806a}
+.league-paused strong,.league-active strong{font-size:15px;display:block}
+.league-paused p,.league-active p{font-size:12px;color:#d6dfe7;margin:4px 0 0}
+@media(max-width:390px){.quick-actions{display:grid;grid-template-columns:1fr 1fr}.quick-actions .btn:last-child{grid-column:span 2}}
 .toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%);width:min(520px,calc(100% - 30px));border:1px solid #5a927e;background:#123e39;color:#dcfff5;z-index:100;border-radius:15px;padding:15px;box-shadow:0 15px 48px #000a}.toast.fail{background:#492834;border-color:#a7596e;color:#ffe1e9}
 footer{text-align:center;font-size:11px;color:#829ab5;margin:30px auto 0}
 @media(max-width:520px){.wrap{padding:13px 12px 80px}.head .outline{padding:9px}.hero{padding:24px 18px}.grid{grid-template-columns:1fr}.metric{padding:12px 10px}.metrics{gap:6px}.metric b{font-size:23px}.panel{padding:15px}.tabs button{padding:9px 12px}.vs{gap:5px}}
@@ -68,10 +79,11 @@ footer{text-align:center;font-size:11px;color:#829ab5;margin:30px auto 0}
  <div id="league-auth" class="panel" role="status">Verificando tu cuenta de JS Torneos…</div>
  <div id="league-app" hidden>
   <nav class="tabs" id="league-tabs" aria-label="Apartados de liga">
-   <button type="button" data-tab="mi-equipo" class="on">🛡️ Mi dúo</button>
-   <button type="button" data-tab="rivales">⚔️ Desafíos</button>
+   <button type="button" data-tab="inicio" class="on">🏠 Inicio</button>
+   <button type="button" data-tab="rivales">⚔️ Jugar</button>
    <button type="button" data-tab="partidas">📋 Partidas</button>
    <button type="button" data-tab="ranking">🏆 Ranking</button>
+   <button type="button" data-tab="mi-equipo">🛡️ Mi dúo</button>
    <button type="button" data-tab="historial">📚 Historial</button>
    <button type="button" data-tab="admin" id="league-admin-tab" hidden>👑 Admin</button>
   </nav>
@@ -82,6 +94,6 @@ footer{text-align:center;font-size:11px;color:#829ab5;margin:30px auto 0}
 </div>
 <div class="toast" id="league-toast" hidden role="status" aria-live="polite"></div>
 <script src="./config.js?v=1.0.0"></script>
-<script type="module" src="./liga.js?v=1.7.0"></script>
+<script type="module" src="./liga.js?v=1.8.0"></script>
 </body>
 </html>
