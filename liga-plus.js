@@ -80,16 +80,20 @@ export function createLeagueExtras({
   return rankIcon(player.rank)+" "+esc(player.rank||"Bronce")+" · "+Number(player.score||0)+" puntos";
  }
  function myRankCompact(){
-  const self=rank.current?.my;
-  if(!self)return '<div class="rank-mini"><span>🏅 Rango personal</span><strong>Consultando…</strong></div>';
-  const rankName=esc(self.rank||"Bronce");
+  const live=getLive(),self=live?.teams?.find(t=>
+   [t.captain,t.partner,t.substitute].includes(getMe()));
+  if(!self)return '<div class="rank-mini"><div class="rank-mini-copy">'+
+   '<small>🛡️ RANGO DEL DÚO</small><strong>Sin equipo</strong>'+
+   '<span>Formá un dúo para participar en la liga 2VS2.</span></div></div>';
+  const wins=Number(self.wins||0),losses=Number(self.losses||0);
+  const score=Math.max(0,25*wins-10*losses);
+  const name=score>=700?"Maestro":score>=450?"Diamante":
+   score>=250?"Oro":score>=100?"Plata":"Bronce";
   return '<div class="rank-mini"><div class="rank-mini-copy">'+
-    '<small>🏅 MI RANGO</small><strong>'+
-    rankIcon(self.rank)+' '+rankName+'</strong>'+
-    '<span>'+Number(self.score||0)+' puntos · '+Number(self.wins||0)+'V / '+Number(self.losses||0)+'D</span>'+
-    '</div>'+
-    btn("Mi ficha","go_profile",'',"small")+
-    '</div>';
+    '<small>🛡️ RANGO DEL DÚO · 2VS2</small><strong>'+
+    rankIcon(name)+' '+esc(name)+'</strong>'+
+    '<span>'+score+' puntos · '+wins+'V / '+losses+'D (equipo)</span></div>'+
+    btn("Ficha dúo","go_profile",'',"small")+'</div>';
  }
  function myRank(){
   const self=rank.current?.my;

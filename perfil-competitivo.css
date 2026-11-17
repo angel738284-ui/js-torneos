@@ -62,3 +62,14 @@
  .cp-medal{padding:9px 6px}
  .cp-medal strong{font-size:10px}
 }
+
+/* Duo partners visible together on the shared competitive card. */
+.cp-duo-players{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:12px 0}
+.cp-duo-player{display:flex;align-items:center;gap:7px;padding:10px 9px;border:1px solid #475875;background:#121c2e99;border-radius:11px;min-width:0}
+.cp-duo-player-icon{font-size:14px;flex:none}
+.cp-duo-player strong{font-size:11px;line-height:1.4;overflow-wrap:anywhere}
+.cp-duo-profile .cp-cover h2{font-size:20px}
+.cp-duo-profile .cp-avatar{transform:none}
+.cp-duo-profile .cp-stats small{font-size:9px}
+.cp-duo-profile .cp-modes{grid-template-columns:repeat(3,minmax(0,1fr))}
+@media(max-width:390px){.cp-duo-profile .cp-cover h2{font-size:17px}.cp-duo-player{padding:8px 6px}.cp-duo-player strong{font-size:10px}}

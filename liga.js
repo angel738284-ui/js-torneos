@@ -1,6 +1,6 @@
 import {createClient} from "https://esm.sh/@supabase/supabase-js@2.45.6";
-import {createLeagueExtras} from "./liga-plus.js?v=1.0.0";
-import {createCompetitiveProfile} from "./perfil-competitivo.js?v=1.0.0";
+import {createLeagueExtras} from "./liga-plus.js?v=2.0.0";
+import {createCompetitiveProfile} from "./perfil-competitivo.js?v=2.0.0";
 
 const conf=window.JS_CONFIG||{};
 const sb=createClient(conf.supabaseUrl,conf.publishableKey,{
@@ -56,7 +56,7 @@ const extras=createLeagueExtras({
  render:()=>render(),flash:(msg,fail)=>flash(msg,fail),esc,btn,nameOf,personal
 });
 const competitiveProfile=createCompetitiveProfile({
- sb,getMe:()=>me,getView:()=>view,render:()=>render(),
+ sb,getMe:()=>me,getTeam:()=>teamOf(me),getView:()=>view,render:()=>render(),
  flash:(msg,fail)=>flash(msg,fail),esc,btn
 });
 let tickChannel=null,tickTimer=null;
@@ -500,14 +500,18 @@ function matchesScreen(){
 }
 function rankingScreen(){
  const list=teams();
- return extras.rankPanel()+
-  '<details class="rank-duos-details" data-disclosure="duo-rank"><summary>🛡️ Ver ranking de dúos</summary>'+
-  card("🏆 Ranking 2VS2",
-   '<p class="muted">La clasificación del equipo se conserva aunque cambie el suplente.</p>'+
-   (list.length?list.map((t,i)=>'<div class="match"><div class="flex"><strong style="color:var(--gold)">#'+(i+1)+'</strong><div style="flex:1">'+roster(t)+'</div>'+
-    '<div style="text-align:right"><div class="statnum">'+t.wins+'V</div><small class="muted">'+t.losses+'D</small></div></div></div>').join(""):
-    '<div class="empty">Aún no hay equipos en esta temporada.</div>'))+
-  '</details>';
+ return card("🏆 Clasificación de dúos 2VS2",
+  '<p class="muted">Esta liga cuenta las victorias y derrotas del equipo completo. Un encuentro suma una sola victoria y una sola derrota, aunque hayan jugado dos titulares o un suplente.</p>'+
+  (list.length?list.map((t,i)=>{
+   const score=Math.max(0,Number(t.wins||0)*25-Number(t.losses||0)*10);
+   const rank=score>=700?"👑 Maestro":score>=450?"💎 Diamante":
+    score>=250?"🥇 Oro":score>=100?"🥈 Plata":"🥉 Bronce";
+   return '<div class="match"><div class="flex"><strong style="color:var(--gold)">#'+(i+1)+'</strong>'+
+    '<div style="flex:1;min-width:0">'+roster(t)+'</div>'+
+    '<div style="text-align:right;white-space:nowrap"><div class="statnum">'+t.wins+'V</div>'+
+    '<small class="muted">'+t.losses+'D · '+score+' pts</small></div></div>'+
+    '<p class="muted" style="margin:6px 0 0">🏅 '+rank+'</p></div>';
+   }).join(""):'<div class="empty">Todavía no hay equipos.</div>'));
 }
 function historyScreen(){
  const items=live?.history||[];
@@ -669,6 +673,7 @@ async function load(silent=false){
   render();
   subscribeLeagueRealtime();
   void extras.refresh();
+  if(view==="perfil")void competitiveProfile.refresh(true);
   void refreshPresence();
   void refreshPrivateRooms();
  }catch(e){
