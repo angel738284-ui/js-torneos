@@ -38,6 +38,36 @@ select,input{width:100%;min-height:46px;background:#101a2c;color:#f5f8ff;border:
 .accept-countdown.expired{color:#ffb4c0}
 @media(max-width:360px){.acceptance-grid{grid-template-columns:1fr}}
 .error{border:1px solid #9e526b;background:#462639;padding:13px;border-radius:11px;color:#ffd1de;font-size:12px;margin:12px 0}
+
+/* JS Family individual ranks, match waitroom, private chat, evidence and cases */
+.season-prize{border-radius:13px;border:1px solid #8e6f4d;background:#3d2f2e88;padding:13px;margin:12px 0}
+.season-prize strong{color:#ffe2a7;font-size:13px}.season-prize p{margin:8px 0;font-weight:850}
+.season-prize small{color:#bfd1ea;font-size:11px}
+.personal-rank{border:1px solid #aa8847;background:linear-gradient(140deg,#3a2b34,#18263a);border-radius:13px;padding:13px;margin:12px 0}
+.personal-rank>strong{font-size:11px;letter-spacing:1px;color:#ffda9d}
+.personal-rank-name{font-size:22px;font-weight:950;margin-top:7px;color:#ffe3ab}
+.rank-stats{display:flex;flex-wrap:wrap;gap:6px;margin:9px 0}.rank-stats span{background:#12253a;border-radius:8px;padding:6px;font-size:11px;color:#c7dcfa}
+.rank-rules{display:flex;gap:6px;flex-wrap:wrap;margin:12px 0}
+.rank-rules b{font-size:10px;padding:7px 9px;background:#23354a;border-radius:9px}
+.rank-person{display:flex;align-items:center;gap:10px;padding:10px 8px;border-bottom:1px solid #ffffff18}
+.rank-person.mine{border:1px solid #ddbb7399;border-radius:10px;background:#4a383c55}
+.rank-person-name{min-width:0;flex:1;overflow-wrap:anywhere;font-weight:800;font-size:12px}
+.rank-person-name small{display:block;color:#b0c3dc;font-size:10px;font-weight:500}
+.rank-medal{text-align:right;font-size:11px;font-weight:900;color:#ffda98}
+.match-extra{border:1px solid #405774;border-radius:13px;background:#111c30;margin:12px 0;padding:12px}
+.match-extra>strong{display:block;font-size:13px;margin-bottom:8px;color:#daedff}
+.extra-result-grid,.ready-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;margin:9px 0}
+.result-person,.ready-member{padding:9px 8px;background:#1b2a41;border-radius:9px;font-size:11px;overflow-wrap:anywhere}
+.result-person small{display:block;color:#c0cfe3;margin-top:4px}
+.chat-thread{max-height:230px;overflow:auto;background:#0d1728;padding:10px;border-radius:10px}
+.chat-line{padding:8px;border-bottom:1px solid #26374e;display:grid;gap:3px;font-size:12px;overflow-wrap:anywhere}
+.chat-line.mine{background:#173347}.chat-line strong{color:#81d9f4}.chat-line small{color:#9db3d3;font-size:10px}
+textarea{width:100%;background:#101a2c;color:#fff;border:1px solid #415a77;border-radius:10px;padding:10px;font:inherit;resize:vertical}
+.proof-item{display:flex;justify-content:space-between;gap:8px;border-bottom:1px solid #34465e;padding:9px}
+.proof-item a{color:#9be2ff;font-weight:800;text-decoration:underline;font-size:12px}
+.report-item{border-color:#8e6171}.report-item p{overflow-wrap:anywhere}
+#admin-match-list article[hidden]{display:none!important}
+@media(max-width:400px){.rank-person{flex-wrap:wrap}.rank-medal{text-align:left}.extra-result-grid{grid-template-columns:1fr 1fr}}
 .room-card{margin:15px 0;padding:14px;border:1px solid #376389;border-radius:14px;background:linear-gradient(140deg,#10253b,#111b2f)}
 .room-card>strong{display:block;font-size:14px;color:#b1ddff}.room-card .btn{font-size:11px}
 .room-code{display:flex;align-items:center;flex-wrap:wrap;justify-content:space-between;gap:10px;background:#10192e;padding:12px;margin:11px 0;border-radius:11px}
@@ -94,6 +124,6 @@ footer{text-align:center;font-size:11px;color:#829ab5;margin:30px auto 0}
 </div>
 <div class="toast" id="league-toast" hidden role="status" aria-live="polite"></div>
 <script src="./config.js?v=1.0.0"></script>
-<script type="module" src="./liga.js?v=1.8.0"></script>
+<script type="module" src="./liga.js?v=2.0.0"></script>
 </body>
 </html>

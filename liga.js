@@ -1,4 +1,5 @@
 import {createClient} from "https://esm.sh/@supabase/supabase-js@2.45.6";
+import {createLeagueExtras} from "./liga-plus.js?v=1.0.0";
 
 const conf=window.JS_CONFIG||{};
 const sb=createClient(conf.supabaseUrl,conf.publishableKey,{
@@ -46,6 +47,26 @@ const playerIdField=(selector,label)=>{
   'con Google y verificar su ID desde Perfil. Después podrás invitarlo.</p>';
 };
 const pageHint='<p class="muted">Las partidas de esta liga no modifican el historial de torneos existente ni el ranking anterior de JS Guardian.</p>';
+const extras=createLeagueExtras({
+ sb,getLive:()=>live,getMe:()=>me,getView:()=>view,refreshPage:()=>load(true),
+ render:()=>render(),flash:(msg,fail)=>flash(msg,fail),esc,btn,nameOf,personal
+});
+let tickChannel=null,tickTimer=null;
+function subscribeLeagueRealtime(){
+ if(tickChannel||!me)return;
+ tickChannel=sb.channel("js-liga-refrescos-v1")
+  .on("postgres_changes",{
+   event:"UPDATE",schema:"public",table:"js_liga_refresh_ticks"
+  },()=>{
+   if(document.hidden||busy)return;
+   clearTimeout(tickTimer);
+   tickTimer=setTimeout(()=>void load(true),750);
+  }).subscribe();
+}
+function unsubscribeLeagueRealtime(){
+ clearTimeout(tickTimer);
+ if(tickChannel){void sb.removeChannel(tickChannel);tickChannel=null;}
+}
 
 /**
  * Each signed-in account counts once while this page is visible. The server
@@ -271,7 +292,7 @@ function matchCard(b){
  (b.state==="complete"?'<div class="line"></div><strong style="color:var(--gold)">🏆 Ganador: '+validWinner+'</strong>':"")+
  (b.state==="review"?'<p class="muted">No se otorgaron puntos. JS debe verificar y decidir.</p>':"")+
  (b.state==="expired"?'<p class="muted">Este PvP ya había comenzado con 4/4 aceptaciones y espera resolución de JS.</p>':"")+
- roomCard(b)+
+ roomCard(b)+extras.matchPanel(b)+
  (actions?'<div class="line"></div>'+actions:"")+
  '</article>';
 }
@@ -303,6 +324,10 @@ function homeScreen(){
  const resume=live.admin?'<div style="margin-top:12px">'+btn("👑 Ir al panel de administración","go_admin",'',"small")+'</div>':"";
  return statusText+card("🎮 Bienvenido a la Arena JS Family",
   '<p class="muted">Jugá PvP 2VS2 sin comandos. Tu compañero confirma desde su cuenta y el sistema encuentra rival.</p>'+
+  '<div class="season-prize"><strong>🎁 Premio de la temporada #'+Number(live.season.id)+'</strong>'+
+   '<p>'+esc(live.season.prize||"JS anunciará el premio")+'</p>'+
+   '<small>Los premios los valida y entrega JS; no se acreditan automáticamente.</small></div>'+
+  extras.myRank()+
   teamBox+'<div style="margin-top:16px">'+action+'</div>'+
   '<div class="quick-actions">'+btn("🎯 Desafiar dúo","go_play",'',"small")+
   btn("🏆 Ver ranking","go_rank",'',"small")+
@@ -444,7 +469,7 @@ function matchesScreen(){
 }
 function rankingScreen(){
  const list=teams();
- return card("🏆 Ranking 2VS2",
+ return extras.rankPanel()+card("🏆 Ranking 2VS2",
   '<p class="muted">Las parejas conservan sus puntos aunque juegue un suplente. La tabla se actualiza solo con resultados validados.</p>'+
   (list.length?list.map((t,i)=>'<div class="match"><div class="flex"><strong style="color:var(--gold)">#'+(i+1)+'</strong><div style="flex:1">'+roster(t)+'</div>'+
    '<div style="text-align:right"><div class="statnum">'+t.wins+'V</div><small class="muted">'+t.losses+'D</small></div></div></div>').join(""):
@@ -484,7 +509,21 @@ function adminExtras(){
  const played=games().filter(g=>Number(g.confirmed)===4&&g.started_at);
  const matches=card("⚖️ Resolver / corregir partidas aceptadas (4/4)",
   '<p class="muted">Solo los PvP que empezaron con cuatro aceptaciones pueden recibir victorias o derrotas. Podés corregir resultados finalizados y en revisión sin duplicar puntos.</p>'+
-  (played.length?played.map(matchCard).join(""):'<div class="empty">Todavía no hay PvP completos para resolver.</div>'));
+  '<label for="admin-pvp-filter">🔎 Buscar PvP por número o jugador</label>'+
+  '<input id="admin-pvp-filter" type="search" autocomplete="off" placeholder="Ej. 44, nombre, dúo…">'+
+  '<label for="admin-pvp-state">Filtrar por estado</label>'+
+  '<select id="admin-pvp-state">'+
+   '<option value="all">Todos</option>'+
+   '<option value="playing">En juego</option>'+
+   '<option value="review">En revisión</option>'+
+   '<option value="complete">Finalizados</option>'+
+   '<option value="cancelled">Anulados</option></select>'+
+  '<p id="admin-pvp-found" class="muted"></p>'+
+  (played.length?'<div id="admin-match-list">'+played.map(g=>
+   matchCard(g).replace('<article class="match"',
+   '<article class="match" data-match-id="'+Number(g.id)+
+   '" data-match-state="'+esc(g.state)+'"')).join("")+'</div>':
+   '<div class="empty">Todavía no hay PvP completos para resolver.</div>'));
  const correction=card("🧮 Dar o quitar victorias y derrotas",
   '<p class="muted">Ajustes manuales del <b>dúo completo</b>. Para corregir una partida elegí primero el ganador arriba. Estas correcciones se guardan en el historial administrativo.</p>'+
   (teams().length?teams().map(t=>
@@ -506,7 +545,7 @@ function adminExtras(){
     x.action==="resolve"?"Ganador corregido · PVP #"+x.match_id:"Partida anulada · PVP #"+x.match_id;
    return '<div class="match"><strong>'+label+'</strong><p class="muted">'+date(x.created_at)+'</p></div>';
   }).join(""):'<div class="empty">No hay correcciones administrativas.</div>'));
- return matches+correction+history;
+ return matches+extras.adminPanel()+correction+history;
 }
 function render(){
  if(!live)return;
@@ -519,6 +558,7 @@ function render(){
  const fn=({inicio:homeScreen,"mi-equipo":myTeamScreen,rivales:rivalsScreen,partidas:matchesScreen,ranking:rankingScreen,historial:historyScreen,admin:adminScreen})[view]||homeScreen;
  $("league-content").innerHTML=fn()+(live.admin&&view==="admin"?adminExtras():"");
  refreshAcceptCountdowns();
+ extras.afterRender();
 }
 async function load(silent=false){
  if(busy)return;
@@ -526,7 +566,8 @@ async function load(silent=false){
   const {data:{session},error}=await sb.auth.getSession();
   if(error)throw error;
   if(!session?.access_token){
-   live=null;me=null;privateRooms.clear();shownPasswords.clear();editingRooms.clear();
+   live=null;me=null;unsubscribeLeagueRealtime();extras.reset();
+   privateRooms.clear();shownPasswords.clear();editingRooms.clear();
    previousMatchStates.clear();notificationPrimed=false;$("league-app").hidden=true;
    showPresence(null);
    $("league-auth").innerHTML='<h2>🔐 Entrá con tu cuenta</h2><p class="muted">Usá la misma cuenta Google o correo que utilizás en JS Torneos. No necesitás una cuenta nueva.</p>'+
@@ -547,6 +588,7 @@ async function load(silent=false){
    data.audit=!auditError&&Array.isArray(audit)?audit:[];
   }
   if(me!==null&&me!==data.user){
+   unsubscribeLeagueRealtime();extras.reset();
    privateRooms.clear();shownPasswords.clear();editingRooms.clear();
    previousMatchStates.clear();notificationPrimed=false;
   }
@@ -560,6 +602,8 @@ async function load(silent=false){
    }
   }
   render();
+  subscribeLeagueRealtime();
+  void extras.refresh();
   void refreshPresence();
   void refreshPrivateRooms();
  }catch(e){
@@ -656,6 +700,7 @@ document.addEventListener("click",async e=>{
  const b=e.target.closest("button[data-action]");
  if(!b)return;
  const action=b.dataset.action;
+ if(await extras.runAction(action,b))return;
  if(action==="refresh"){await load();return;}
  if(action==="go_matches"){view="partidas";render();return;}
  if(action==="go_team"){view="mi-equipo";render();return;}
@@ -739,6 +784,8 @@ document.addEventListener("click",async e=>{
  }
  await operation(action.startsWith("result_")?"result":action,p);
 });
+document.addEventListener("input",event=>extras.changeFilter(event.target));
+document.addEventListener("change",event=>extras.changeFilter(event.target));
 load();
 sb.auth.onAuthStateChange((event)=>{
  if(event==="SIGNED_IN"||event==="SIGNED_OUT")setTimeout(()=>load(true),50);
