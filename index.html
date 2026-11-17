@@ -173,8 +173,59 @@ body.js-auth-required #js-notice-overlay,body.js-auth-checking #js-notice-overla
 #js-password-editor button{margin:14px 7px 0 0}
 #js-password-success{color:#8ee5bd!important;font-weight:700}
 .js-admin-entry{display:inline-flex;margin-top:14px;padding:11px 15px;text-decoration:none;background:#263b56;border:1px solid #4b617f;border-radius:11px;color:#d2f1ff;font-size:12px;font-weight:800}
+
+/* Public-first onboarding: visitors can explore before account creation */
+body.js-auth-required:not(.js-guest-login) .wrap{display:block!important}
+body.js-auth-required:not(.js-guest-login) nav{display:flex!important}
+body.js-auth-required:not(.js-guest-login) #js-account-view{display:none!important}
+body.js-auth-required:not(.js-guest-login){background:#080e1a}
+body.js-auth-required #js-open-notices{display:none}
+body:not(.js-auth-required) .js-entry-login{display:none}
+.js-quick-start{margin:0 0 18px;padding:19px;border-radius:19px;background:radial-gradient(ellipse at 86% 0,#9c28415a,transparent 54%),linear-gradient(135deg,#211b30,#0d1626);border:1px solid #7c4054;box-shadow:0 10px 38px #0006}
+.js-quick-start .eyebrow{color:#efa6bc;letter-spacing:1.7px;font-weight:900;font-size:10px}
+.js-quick-start h1{font-size:clamp(23px,5vw,36px);line-height:1.1;color:#fff;margin:9px 0}
+.js-quick-start h1 em{color:#ff6788;font-style:normal}
+.js-quick-start p{font-size:12px;color:#c4d3e5;line-height:1.5;margin:0 0 16px}
+.js-start-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.js-start-action{padding:14px;border-radius:14px;border:1px solid #f06288;background:linear-gradient(130deg,#bb2851,#64172f);text-decoration:none;color:#fff;min-height:114px;display:flex;flex-direction:column;justify-content:center;gap:7px}
+.js-start-action.alt{background:linear-gradient(130deg,#233c56,#142239);border-color:#6187a3}
+.js-start-action strong{font-size:clamp(14px,3vw,18px);line-height:1.2}
+.js-start-action small{font-size:11px;color:#f4d9e3;line-height:1.3}
+.js-start-action.alt small{color:#c7d9e9}
+.js-start-action:focus-visible,.js-entry-login:focus-visible{outline:3px solid #ffc1cb;outline-offset:2px}
+.js-start-footer{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-top:13px}
+.js-start-footer span{font-size:11px;color:#b4c9df}
+.js-entry-login{border:0;background:transparent;color:#b2f1d2;font-weight:850;font-size:12px;text-decoration:underline;padding:8px 0}
+.js-promoted{margin-top:12px;padding:12px;border:1px solid #bd8f6b;background:#35251d;border-radius:12px}
+.js-promoted[hidden]{display:none!important}.js-promoted p{font-size:11px;margin:6px 0;color:#efdbc8}
+.js-promoted a{font-size:12px;font-weight:900;border-radius:9px;background:#bd2d50;color:white;padding:10px 12px;text-decoration:none;display:inline-block}
+.js-auth-back{display:none}
+body.js-auth-required.js-guest-login .js-auth-back{display:block;margin:10px auto;padding:10px 14px;border:1px solid #526078;border-radius:10px;color:#e8f1ff;background:#182238}
+#js-tournaments{scroll-margin-top:15px}
+@media(max-width:540px){.js-quick-start{padding:14px}.js-start-actions{gap:8px}.js-start-action{min-height:105px;padding:12px 9px}body.js-auth-required:not(.js-guest-login) .hero{padding:12px 15px 14px}body.js-auth-required:not(.js-guest-login) .hero h1{font-size:21px;margin:5px 0}body.js-auth-required:not(.js-guest-login) .hero p{font-size:11px;margin-bottom:9px}}
+
+.js-play-picker{min-width:0;position:relative}
+.js-play-picker>summary{list-style:none;cursor:pointer;height:100%;box-sizing:border-box;text-align:left}
+.js-play-picker>summary::-webkit-details-marker{display:none}
+.js-play-picker[open]{z-index:20;grid-column:1 / -1}
+.js-play-picker[open]>summary{border-color:#ffa4bf}
+.js-play-choices{position:static;top:0;left:0;width:100%;box-sizing:border-box;z-index:100;border-radius:14px;padding:8px;background:#121c30;border:1px solid #805a78;box-shadow:0 20px 35px #000b}
+.js-play-choices a{display:block;text-decoration:none;color:white;font-size:12px;padding:12px;border-radius:10px;border:1px solid #3e506a;background:#1a2b42;margin:5px 0;line-height:1.4}
+.js-play-choices a b{font-weight:950}
+.js-play-choices a small{display:block;color:#c2d1e5;font-size:11px;margin-top:4px;margin-left:22px}
+.js-play-choices a:focus-visible{outline:3px solid #ffa4bb}
+.js-start-steps{margin:0 0 15px;padding:14px 13px;background:#101e30;border:1px solid #425b71;border-radius:13px}
+.js-start-steps>strong{color:#d7f5ee;font-size:12px}
+.js-start-steps ol{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));list-style:none;padding:0;gap:10px;margin:10px 0 0}
+.js-start-steps li{font-size:11px;color:#b5c5d9;line-height:1.4;border-right:1px solid #34465f;padding-right:7px}
+.js-start-steps li:last-child{border:0}
+.js-start-steps li b{display:block;color:#f6f9ff;font-size:12px}
+.js-solo-banner{border:1px solid #34677a;border-radius:11px;padding:12px;margin:10px 0;background:#142735;color:#e6f9ff;font-size:12px}
+.js-solo-banner a{margin-left:5px;color:#8ce7df}
+.js-empty-play{display:inline-block;margin-top:10px;text-decoration:none;color:white;background:#28465d;padding:9px 14px;border-radius:9px}
+@media(max-width:550px){body .hero{display:none!important}.js-start-steps ol{gap:6px}.js-start-steps li b{font-size:11px}}
 </style></head>
-<body class="js-auth-checking">
+<body class="js-auth-required">
 <div id="js-auth-loading" role="status" aria-live="polite">
   <div class="js-login-icon">JS</div>
   <strong>JS TORNEOS</strong>
@@ -186,9 +237,31 @@ body.js-auth-required #js-notice-overlay,body.js-auth-checking #js-notice-overla
  </button>
  <button id="refresh" class="refresh" aria-label="Actualizar torneos" type="button">↻</button>
  </div></header>
+<section class="js-quick-start" id="js-quick-start" aria-labelledby="js-start-title">
+ <div class="eyebrow">🎮 JS FAMILY · FREE FIRE</div>
+ <h1 id="js-start-title">TU PRÓXIMA PARTIDA <em>EMPIEZA ACÁ.</em></h1>
+ <p>Elegí qué querés jugar. Mirá torneos, premios y cupos antes de registrarte.</p>
+ <div class="js-start-actions">
+  <details class="js-play-picker">
+ <summary class="js-start-action"><span aria-hidden="true">⚔️</span><strong>JUGAR AHORA</strong><small>Elegí un modo para jugar</small></summary>
+ <div class="js-play-choices">
+  <a href="./liga.html">👥 <b>Tengo dúo: PvP 2VS2</b><small>Buscá rival con tu compañero</small></a>
+  <a href="?solo=1#js-tournaments">🎯 <b>Juego solo: Battle Royale</b><small>Ver torneos individuales con cupos</small></a>
+  <a href="./#js-tournaments">🏆 <b>Quiero competir por premios</b><small>Comparar torneos y fechas</small></a>
+ </div>
+ </details>
+  <a class="js-start-action alt" href="./#js-tournaments" aria-label="Ver los torneos y sus cupos"><span aria-hidden="true">🏆</span><strong>VER TORNEOS</strong><small>Premios, fechas y cupos · sin cuenta</small></a>
+ </div>
+ <div id="js-promoted" class="js-promoted" hidden><strong>🎯 ¿Venís del video de un torneo?</strong><p>Consultá el torneo anunciado, su horario y sus cupos reales.</p><a id="js-promoted-link" href="./">Ver torneo anunciado</a></div>
+ <div class="js-start-footer"><span id="js-entry-counter" aria-live="polite">🔄 Consultando torneos...</span><button id="js-entry-login" class="js-entry-login" type="button">¿Ya tenés cuenta? Entrar</button></div>
+</section>
+<section class="js-start-steps" aria-label="Guía para jugadores nuevos">
+ <strong>✨ ¿Es tu primera vez? Son 3 pasos:</strong>
+ <ol><li><b>Elegí</b> qué querés jugar</li><li><b>Verificá tu ID</b> de Free Fire</li><li><b>Confirmá</b> y guardá tu código</li></ol>
+</section>
 <section class="hero"><div class="over">● FREE FIRE · COMPETITIVO</div><h1>Tu próxima<br><em>victoria</em> empieza acá.</h1><p>Encontrá tu campeonato, inscribí a tu escuadra y competí.</p>
 <div class="stats"><div><strong id="openCount">—</strong><span>Inscripciones abiertas</span></div><div><strong id="allCount">—</strong><span>Torneos disponibles</span></div></div></section>
-<div class="title"><div><small>ENCONTRÁ TU DESAFÍO</small><h2>Explorar torneos</h2></div><span id="when">Actualizando…</span></div>
+<div class="title" id="js-tournaments"><div><small>ENCONTRÁ TU DESAFÍO</small><h2>Explorar torneos</h2></div><span id="when">Actualizando…</span></div>
 <input type="search" id="search" placeholder="Buscar torneo por nombre o código" aria-label="Buscar torneos">
 <div class="filters"><button type="button" data-state="open" class="sel">🔥 Abiertos</button><button type="button" data-state="all">Todos</button><button type="button" data-state="closed">⚔️ En curso</button><button type="button" data-state="finished">🏆 Terminados</button></div>
 <div id="error" hidden class="error"></div><div id="cards"><div class="empty">Buscando torneos de TORNEOS JS…</div></div>
@@ -209,17 +282,29 @@ let list=[],mode="open",term="",busy=false;
 const e=(tag,text,cls)=>{const n=document.createElement(tag);if(typeof text==="string")n.textContent=text;if(cls)n.className=cls;return n};
 const fmt=d=>{if(!d)return"Por confirmar";const dt=new Date(d);return Number.isNaN(dt.getTime())?"Por confirmar":new Intl.DateTimeFormat("es-AR",{day:"numeric",month:"short",hour:"2-digit",minute:"2-digit",timeZone:"America/Argentina/Buenos_Aires"}).format(dt)+" h Arg."};
 const allowed=t=>t.status==="open"&&Number(t.registered)<Number(t.max_teams);
+const soloOnly=new URLSearchParams(location.search).get("solo")==="1";
+if(soloOnly){
+ const banner=document.createElement("div");banner.className="js-solo-banner";
+ banner.textContent="🎯 Torneos individuales BR con cupos · ";
+ const reset=document.createElement("a");reset.href="./#js-tournaments";reset.textContent="Ver todos";
+ banner.append(reset);document.getElementById("js-tournaments").after(banner);
+}
 function draw(){
 const root=q("cards");root.replaceChildren();
-const rows=list.filter(t=>(mode==="all"||mode==="open"&&allowed(t)||mode==="closed"&&t.status==="closed"||mode==="finished"&&t.status==="finished")&&(t.name+" "+t.code+" "+t.mode).toLowerCase().includes(term));
-if(!rows.length){root.append(e("div",term?"No encontramos torneos con ese nombre.":mode==="open"?"No hay inscripciones abiertas por ahora.":"No hay torneos en esta categoría.","empty"));return;}
+const rows=list.filter(t=>(mode==="all"||mode==="open"&&allowed(t)||mode==="closed"&&t.status==="closed"||mode==="finished"&&t.status==="finished")&&(t.name+" "+t.code+" "+t.mode).toLowerCase().includes(term)&&(!soloOnly||(t.mode==="BR"&&Number(t.team_size)===1&&allowed(t))));
+if(!rows.length){
+ const empty=e("div",soloOnly?"No hay BR Solo con cupos en este momento. Podés revisar los demás torneos o jugar PvP 2VS2.":term?"No encontramos torneos con ese nombre.":mode==="open"?"No hay inscripciones abiertas por ahora.":"No hay torneos en esta categoría.","empty");
+ const alternative=e("a","⚔️ Explorar Liga 2VS2","js-empty-play");alternative.href="./liga.html";
+ empty.append(document.createElement("br"),alternative);root.append(empty);return;
+}
 for(const t of rows){
 const c=e("article",undefined,"card"+(allowed(t)?" open":""));
 const h=e("div",undefined,"head"),name=e("div");name.append(e("h3",t.name),e("div",t.code,"code"));
 const full=t.status==="open"&&!allowed(t),pill=e("span",allowed(t)?"Abierto":full?"Sin cupos":t.status==="closed"?"En curso":"Finalizado","badge"+(allowed(t)?" yes":""));
 h.append(name,pill);c.append(h);
 const details=e("div",undefined,"info");
-details.append(e("span","🎮 "+(t.mode==="BY"?"Duelo de Escuadras":t.mode)),e("span","👥 "+t.team_size+" titular(es) por equipo"),e("span","🗓️ "+fmt(t.starts_at)));
+const label=t.mode==="BR"?(Number(t.team_size)===1?"Battle Royale · Solo":Number(t.team_size)===2?"Battle Royale · Dúo":"Battle Royale · Escuadra"):t.mode==="BY"?"Duelo de Escuadras":t.mode;
+ details.append(e("span","🎮 "+label),e("span",Number(t.team_size)===1?"👤 Individual":"👥 "+t.team_size+" titulares por equipo"),e("span","🗓️ "+fmt(t.starts_at)));
 c.append(details);
 const prize=String(t.prize_details||"").trim();if(prize||Number(t.prize_quantity)>0)c.append(e("div","🏆 Premio: "+(Number(t.prize_quantity)>0?t.prize_quantity+" ":"")+String(t.prize_kind||"").replace(/_/g," ")+(prize?" · "+prize:""),"prize"));
 const n=e("div",undefined,"count");n.append(e("span","Equipos inscriptos"),e("b",t.registered+" / "+t.max_teams));c.append(n);
@@ -236,7 +321,9 @@ try{
 const ctrl=new AbortController(),timeout=setTimeout(()=>ctrl.abort(),15000);let res;
 try{res=await fetch("https://chfshxlykvmovwryjnxi.supabase.co/functions/v1/js-jugadores?feed=1",{cache:"no-store",signal:ctrl.signal});}finally{clearTimeout(timeout)}
 const data=await res.json();if(!res.ok||!Array.isArray(data.tournaments))throw Error(data.error||"No se pudo cargar");
-list=data.tournaments.filter(t=>t&&t.code&&t.name);q("openCount").textContent=list.filter(allowed).length;q("allCount").textContent=list.length;
+list=data.tournaments.filter(t=>t&&t.code&&t.name);const open=list.filter(allowed).length;
+ q("openCount").textContent=open;q("allCount").textContent=list.length;
+ q("js-entry-counter").textContent=open?("🔥 "+open+" torneo"+(open===1?"":"s")+" con cupos"):"🎮 Explorá las modalidades disponibles";
 q("when").textContent="Actualizado "+new Date().toLocaleTimeString("es-AR",{hour:"2-digit",minute:"2-digit"});draw();
 }catch(err){q("error").hidden=false;q("error").textContent="No se pudo cargar. Tocá ↻ para reintentar. "+(err.message||"");if(!list.length)q("cards").replaceChildren(e("div","Conexión no disponible.","empty"));}
 finally{busy=false;q("refresh").disabled=false}
@@ -248,6 +335,7 @@ setInterval(()=>{if(document.visibilityState==="visible")load()},90000);load();
 })();
 </script>
 <section id="js-account-view" class="account-section account-hide" aria-live="polite">
+ <button id="js-auth-back" class="js-auth-back" type="button">← Ver torneos sin cuenta</button>
   <div id="js-auth-welcome">
     <div class="js-arena-eyebrow"><i></i> COMUNIDAD COMPETITIVA <span>FREE FIRE</span></div>
     <div class="js-arena-crest js-itachi-cover"><img src="./images/torneos-js-itachi-456.webp" alt="Itachi con traje verde 456, luna roja y logo TORNEOS JS" width="850" height="608" fetchpriority="high" decoding="async"></div>
@@ -430,7 +518,7 @@ import {normalizeSocialLink,renderSocialLinks} from "./profile-social.js?v=1.0.0
  const select=(el,show)=>el.classList.toggle("account-hide",!show);
  const make=(tag,txt,cls)=>{const x=document.createElement(tag);if(typeof txt==="string")x.textContent=txt;if(cls)x.className=cls;return x};
  const scenes=["perfil","torneos","mis","amigos"];
- const original=[...document.querySelectorAll(".hero,.title,#search,.filters,#cards,.help,.js-league-promo")];
+ const original=[...document.querySelectorAll(".js-quick-start,.hero,.title,#search,.filters,#cards,.help,.js-league-promo")];
  const views={perfil:q("js-account-view"),mis:q("js-my-view"),amigos:q("js-friends-view")};
  let session=null,profile=null,tournaments=[],fresh=false,activeTab="perfil";
  let friendsController=null;
@@ -464,15 +552,25 @@ import {normalizeSocialLink,renderSocialLinks} from "./profile-social.js?v=1.0.0
    const body=document.body;
    const wasGuest=body.classList.contains("js-auth-required");
    const wasChecking=body.classList.contains("js-auth-checking");
+   const enteredLogin=body.classList.contains("js-guest-login");
    body.classList.remove("js-auth-checking");
    body.classList.toggle("js-auth-required",guest);
-   // El perfil es la primera pantalla después del login, sin forzar cambios
-   // cuando el jugador está navegando entre las otras pestañas.
-   if(guest||wasGuest||wasChecking) switchTab("perfil");
+   if(guest)switchTab(enteredLogin?"perfil":"torneos");
+   else if(wasGuest||wasChecking)switchTab("torneos");
  }
  function menu(){
    const nav=document.querySelector("nav");if(!nav)return;
    nav.replaceChildren();
+   if(!session){
+     for(const [tab,icon,label] of [["torneos","🏆","Torneos"],["perfil","👤","Entrar"]]){
+       const b=make("button",undefined,"player-nav-button"+(activeTab===tab?" is-current":""));
+       b.append(make("span",icon),make("small",label));
+       b.onclick=()=>switchTab(tab);nav.append(b);
+     }
+     const link=make("a",undefined,"player-nav-button");link.href="./liga.html";
+     link.append(make("span","⚔️"),make("small","Jugar 2VS2"));nav.append(link);
+     return;
+   }
    const icons={torneos:"🏆",perfil:"👤",mis:"⚔️",amigos:"👥"};
    const names={torneos:"Torneos",perfil:"Perfil",mis:"Mis torneos",amigos:"Amigos"};
    for(const name of scenes){
@@ -487,6 +585,7 @@ import {normalizeSocialLink,renderSocialLinks} from "./profile-social.js?v=1.0.0
  }
  function switchTab(tab){
    activeTab=tab;
+   document.body.classList.toggle("js-guest-login",!session&&tab==="perfil");
    document.body.classList.toggle("player-account-screen",tab!=="torneos");
    document.body.classList.toggle("js-profile-tab",tab==="perfil"&&!document.body.classList.contains("js-auth-required"));
    const brandLabel=document.querySelector("header .brand b");
@@ -498,7 +597,11 @@ import {normalizeSocialLink,renderSocialLinks} from "./profile-social.js?v=1.0.0
    if(tab==="mis")loadMy();
    if(tab==="amigos")friendsController?.refresh();
 
-   window.scrollTo({top:0,behavior:"instant"});
+   // Los enlaces de TikTok y "Ver torneos" deben abrir el catálogo,
+   // incluso si la comprobación de la sesión termina después del scroll.
+   if(tab==="torneos"&&location.hash==="#js-tournaments"){
+     requestAnimationFrame(()=>document.getElementById("js-tournaments")?.scrollIntoView({block:"start",behavior:"instant"}));
+   }else window.scrollTo({top:0,behavior:"instant"});
  }
  const lastSeenKey="js-torneos-notices-last-read-v1";
  function noticeUnread(){
@@ -977,6 +1080,13 @@ import {normalizeSocialLink,renderSocialLinks} from "./profile-social.js?v=1.0.0
    getAccount:()=>({session,profile})
  });
  sb.auth.onAuthStateChange((event)=>{if(event==="SIGNED_IN"||event==="SIGNED_OUT")setTimeout(current,0)});
+ q("js-entry-login").onclick=()=>switchTab("perfil");
+ q("js-auth-back").onclick=()=>switchTab("torneos");
+ const promoCode=new URLSearchParams(location.search).get("codigo");
+ if(promoCode&&/^JS-[A-F0-9]{8}$/i.test(promoCode)){
+   q("js-promoted-link").href="./inscripcion.html?codigo="+encodeURIComponent(promoCode.toUpperCase());
+   q("js-promoted").hidden=false;
+ }
  menu();
  current();
  setInterval(()=>{if(session&&profile&&document.visibilityState==="visible")loadMy()},45000);

@@ -23,8 +23,19 @@ $("rulesToggle").onclick=()=>{
 };
 const params=new URLSearchParams(location.search);
 const code=params.get("codigo")||"";
+// Al llegar desde un video, mostrar el torneo antes que el panel opcional de acceso.
+if(code){const access=$("js-web-access"),form=$("form");if(access&&form)form.before(access)}
 if(code){$("code").value=code;setTimeout(loadTournament,100)}
 $("find").onclick=loadTournament;
+function suggestOwnId(){
+ const id=String(window.JSRegisterPlayerId||"");
+ const row=starterRows[0];
+ if(!row||row.input.value||!/^[0-9]{5,16}$/.test(id))return;
+ row.input.value=id;
+ row.status.textContent="✅ Tu ID verificado está cargado. Tocá Verificar para inscribirlo en este torneo.";
+ row.status.style.color="#a9f3d4";
+}
+window.addEventListener("js-web-player-id",suggestOwnId);
 
 function updateSubButton(){
  const count=substituteRows.length;
@@ -157,6 +168,7 @@ async function loadTournament(){
   tournament=data;
   show("tournament",true);
   const canRegister=data.status==="open"&&data.queue_open===true;
+  $("js-register-jump").hidden=!canRegister;
   const isFull=data.registered>=data.max_teams;
   show("form",canRegister);show("success",false);
   show("waitlistInfo",canRegister&&(isFull||data.waitlist_count>0));
@@ -204,11 +216,12 @@ async function loadTournament(){
   }
   if(canRegister&&minSub()===1)addSubstitute();
   else updateSubButton();
+  suggestOwnId();
   if(!canRegister)tell("Este torneo ya cerró inscripciones o comenzó sus enfrentamientos.",true);
   else if(isFull||data.waitlist_count>0)tell("⏳ Cupos completos o lista pendiente: podés verificar tus ID y anotarte en espera.");
   else tell("Torneo encontrado: verificá "+data.team_size+" titular(es). "+(minSub()?"Al menos un suplente obligatorio.":"No necesitás suplente."));
  }catch(e){
-  tournament=null;resetRoster();show("form",false);show("tournament",false);
+  tournament=null;resetRoster();show("form",false);show("tournament",false);$("js-register-jump").hidden=true;
   tell(e.message,true);
  }
 }

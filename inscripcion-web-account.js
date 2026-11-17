@@ -46,11 +46,14 @@
    $("js-web-login").style.display=logged?"none":"grid";
    $("js-web-profile").style.display=logged?"block":"none";
    profile=null;
+   window.JSRegisterPlayerId=null;
    if(logged){
     $("js-web-identity").textContent="✅ Cuenta: "+(session.user.email||session.user.user_metadata?.full_name||"Google");
     const p=await call("profile");
     profile=p.profile;
     if(profile?.game_id){
+     window.JSRegisterPlayerId=String(profile.game_id);
+     window.dispatchEvent(new CustomEvent("js-web-player-id",{detail:{gameId:window.JSRegisterPlayerId}}));
      $("js-web-game-id").value=profile.game_id;
      $("js-web-profile-id").style.display="none";
      info("✅ ID "+profile.game_id+" · "+profile.nickname+". Tus inscripciones se vinculan automáticamente.");
@@ -64,7 +67,7 @@
  }
  $("js-web-guest").onclick=()=>{
   info("Modo sin cuenta: verificá los IDs y guardá el código al terminar.");
-  $("code").scrollIntoView({behavior:"smooth",block:"start"});
+  ($("form").classList.contains("hidden")?$("code"):$("form")).scrollIntoView({behavior:"smooth",block:"start"});
  };
  $("js-web-signin").onclick=async()=>{
   const email=$("js-web-email").value.trim(),password=$("js-web-password").value;
@@ -83,7 +86,7 @@
   info("Creando cuenta…");
   try{
    const {data,error}=await sb.auth.signUp({email,password,
-    options:{emailRedirectTo:location.origin+location.pathname}});
+    options:{emailRedirectTo:location.origin+location.pathname+location.search}});
    if(error)throw error;
    if(!data.session)info("✅ Revisá tu correo y confirmá la cuenta. Volvé aquí para iniciar sesión.");
    else{info("✅ Cuenta creada.");await current();}
