@@ -29,7 +29,7 @@ const line=t=>{
  return [t.replaced===t.captain?t.substitute:t.captain,t.replaced===t.partner?t.substitute:t.partner];
 };
 const running=b=>["pending","playing","review"].includes(b.state);
-const status=b=>({pending:"⏳ Esperando aceptación",playing:"🎮 En juego · sin vencimiento",review:"⚠️ Revisión de JS",complete:"✅ Finalizado",cancelled:"🚫 Anulado",expired:"⌛ Aceptación vencida · JS decide"}[b.state]||b.state);
+const status=b=>({pending:"⏳ Esperando aceptación",playing:"🎮 En juego · sin vencimiento",review:"⚠️ Revisión de JS",complete:"✅ Finalizado",cancelled:"🚫 Anulado",expired:"⚠️ Revisión de JS"}[b.state]||b.state);
 const theme=b=>b.state==="complete"?"good":b.state==="review"?"danger":"";
 const isRealParticipant=b=>[...(b.lineup_a||[]),...(b.lineup_b||[])].includes(me);
 const errorHtml=msg=>'<div class="error">'+esc(msg)+'</div>';
@@ -109,8 +109,8 @@ function matchCard(b){
  if(canReport)actions='<div class="row">'+btn("🏆 Gané","result_win",'data-match="'+b.id+'"',"good")+
  btn("📋 Perdí","result_loss",'data-match="'+b.id+'"',"danger")+'</div>';
  if(b.state==="playing"&&participant&&b.my_vote?.result)actions='<p class="muted">✅ Ya informaste: '+(b.my_vote.result==="win"?"Gané":"Perdí")+'. Esperando al resto.</p>';
- if(live?.admin){
-   actions+='<div class="line"></div><p class="muted">👑 Resolución de JS · también partidas vencidas o finalizadas</p><div class="row">'+
+ if(live?.admin&&Number(b.confirmed)===4&&b.started_at){
+   actions+='<div class="line"></div><p class="muted">👑 Resolución de JS · solo PvP con 4/4 aceptaciones</p><div class="row">'+
     btn("🏆 Ganó azul","admin_resolve",'data-match="'+b.id+'" data-side="a"',"small")+
     btn("🏆 Ganó rojo","admin_resolve",'data-match="'+b.id+'" data-side="b"',"small")+
     (b.state==="cancelled"?"":btn("🚫 Anular","admin_cancel",'data-match="'+b.id+'"',"danger small"))+'</div>';
@@ -121,7 +121,7 @@ function matchCard(b){
  '<span class="muted">'+(b.state==="pending"?"Límite: "+date(b.accept_until):b.state==="playing"?"Sin vencimiento · inicio: "+date(b.started_at||b.created):date(b.created))+'</span></div>'+
  (b.state==="complete"?'<div class="line"></div><strong style="color:var(--gold)">🏆 Ganador: '+validWinner+'</strong>':"")+
  (b.state==="review"?'<p class="muted">No se otorgaron puntos. JS debe verificar y decidir.</p>':"")+
- (b.state==="expired"?'<p class="muted">Si realmente jugaron este PvP, JS puede asignar el ganador.</p>':"")+
+ (b.state==="expired"?'<p class="muted">Este PvP ya había comenzado con 4/4 aceptaciones y espera resolución de JS.</p>':"")+
  (actions?'<div class="line"></div>'+actions:"")+
  '</article>';
 }
@@ -241,10 +241,20 @@ function rivalsScreen(){
 function matchesScreen(){
  if(!live?.season)return card("📋 Partidas","La temporada todavía no fue abierta.");
  const mine=teamOf(me);
- const list=games().filter(g=>[g.a,g.b].includes(mine?.id)||live.admin);
- return (mine?searchScreen():"")+card("📋 Partidas y confirmaciones",
-  '<p class="muted">En desafíos manuales, los cuatro deben aceptar. En búsqueda aleatoria ya aceptaron al confirmar la búsqueda. Después todos informan Gané o Perdí. Si no coinciden, JS decide. Las partidas sin confirmar no dan puntos.</p>'+
-  (list.length?list.map(matchCard).join(""):'<div class="empty">Todavía no tenés partidas registradas.</div>'));
+ const inTeam=g=>[g.a,g.b].includes(mine?.id);
+ // An invitation is NOT a PvP. During the 2-minute window, members of
+ // the involved duos can accept it here; after that it disappears.
+ const invites=games().filter(g=>g.state==="pending"&&inTeam(g)&&
+   new Date(g.accept_until).getTime()>Date.now());
+ const matches=games().filter(g=>Number(g.confirmed)===4&&g.started_at&&
+   (inTeam(g)||live.admin));
+ return (mine?searchScreen():"")+
+  (invites.length?card("⏳ Invitaciones pendientes (máximo 2 minutos)",
+   '<p class="muted">Este desafío todavía no es una partida. Todos deben aceptar antes de que venza; de lo contrario, desaparece sin puntos.</p>'+
+   invites.map(matchCard).join("")):"")+
+  card("📋 Partidas confirmadas (4/4)",
+   '<p class="muted">Acá solo se muestran encuentros aceptados por los cuatro jugadores. Las partidas no vencen después de comenzar; deben confirmar el resultado o JS decidirá el ganador.</p>'+
+   (matches.length?matches.map(matchCard).join(""):'<div class="empty">Todavía no hay partidas aceptadas por los cuatro.</div>'));
 }
 function rankingScreen(){
  const list=teams();
@@ -280,9 +290,10 @@ function adminScreen(){
 }
 function adminExtras(){
  if(!live?.admin||!live?.season)return "";
- const matches=card("⚖️ Resolver / corregir cualquier PvP",
-  '<p class="muted">Elegí quién ganó aunque el PvP figure vencido, anulado o finalizado. Si ya había un ganador, se revierten los puntos anteriores antes de actualizar el ranking.</p>'+
-  (games().length?games().map(matchCard).join(""):'<div class="empty">Todavía no hay partidas.</div>'));
+ const played=games().filter(g=>Number(g.confirmed)===4&&g.started_at);
+ const matches=card("⚖️ Resolver / corregir partidas aceptadas (4/4)",
+  '<p class="muted">Solo los PvP que empezaron con cuatro aceptaciones pueden recibir victorias o derrotas. Podés corregir resultados finalizados y en revisión sin duplicar puntos.</p>'+
+  (played.length?played.map(matchCard).join(""):'<div class="empty">Todavía no hay PvP completos para resolver.</div>'));
  const correction=card("🧮 Dar o quitar victorias y derrotas",
   '<p class="muted">Ajustes manuales del <b>dúo completo</b>. Para corregir una partida elegí primero el ganador arriba. Estas correcciones se guardan en el historial administrativo.</p>'+
   (teams().length?teams().map(t=>
