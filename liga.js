@@ -1,5 +1,6 @@
 import {createClient} from "https://esm.sh/@supabase/supabase-js@2.45.6";
 import {createLeagueExtras} from "./liga-plus.js?v=1.0.0";
+import {createCompetitiveProfile} from "./perfil-competitivo.js?v=1.0.0";
 
 const conf=window.JS_CONFIG||{};
 const sb=createClient(conf.supabaseUrl,conf.publishableKey,{
@@ -53,6 +54,10 @@ const pageHint='<p class="muted">Las partidas de esta liga no modifican el histo
 const extras=createLeagueExtras({
  sb,getLive:()=>live,getMe:()=>me,getView:()=>view,refreshPage:()=>load(true),
  render:()=>render(),flash:(msg,fail)=>flash(msg,fail),esc,btn,nameOf,personal
+});
+const competitiveProfile=createCompetitiveProfile({
+ sb,getMe:()=>me,getView:()=>view,render:()=>render(),
+ flash:(msg,fail)=>flash(msg,fail),esc,btn
 });
 let tickChannel=null,tickTimer=null;
 function subscribeLeagueRealtime(){
@@ -600,14 +605,16 @@ function render(){
  if(!live.admin&&view==="admin")view="inicio";
  for(const tab of document.querySelectorAll("#league-tabs [data-tab], #league-more [data-tab]"))
   tab.classList.toggle("on",tab.dataset.tab===view);
- const isMore=["ranking","mi-equipo","historial","admin"].includes(view);
+ const isMore=["ranking","mi-equipo","perfil","historial","admin"].includes(view);
  const moreButton=$("league-more-toggle");
  if(moreButton){
   moreButton.classList.toggle("on",isMore||moreOpen);
   moreButton.setAttribute("aria-expanded",String(moreOpen));
  }
  $("league-more").hidden=!moreOpen;
- const fn=({inicio:homeScreen,"mi-equipo":myTeamScreen,rivales:rivalsScreen,partidas:matchesScreen,ranking:rankingScreen,historial:historyScreen,admin:adminScreen})[view]||homeScreen;
+ const fn=({inicio:homeScreen,"mi-equipo":myTeamScreen,rivales:rivalsScreen,
+ partidas:matchesScreen,ranking:rankingScreen,perfil:()=>competitiveProfile.screen(),
+ historial:historyScreen,admin:adminScreen})[view]||homeScreen;
  for(const node of document.querySelectorAll("#league-content details[data-disclosure]"))
   disclosureStates.set(node.dataset.disclosure,node.open);
  $("league-content").innerHTML=fn()+(live.admin&&view==="admin"?adminExtras():"");
@@ -622,7 +629,7 @@ async function load(silent=false){
   const {data:{session},error}=await sb.auth.getSession();
   if(error)throw error;
   if(!session?.access_token){
-   live=null;me=null;unsubscribeLeagueRealtime();extras.reset();
+   live=null;me=null;unsubscribeLeagueRealtime();extras.reset();competitiveProfile.reset();
    expandedPvps.clear();expandedAdminPanels.clear();disclosureStates.clear();moreOpen=false;
    privateRooms.clear();shownPasswords.clear();editingRooms.clear();
    previousMatchStates.clear();notificationPrimed=false;$("league-app").hidden=true;
@@ -645,7 +652,7 @@ async function load(silent=false){
    data.audit=!auditError&&Array.isArray(audit)?audit:[];
   }
   if(me!==null&&me!==data.user){
-   unsubscribeLeagueRealtime();extras.reset();
+   unsubscribeLeagueRealtime();extras.reset();competitiveProfile.reset();
    expandedPvps.clear();expandedAdminPanels.clear();disclosureStates.clear();moreOpen=false;
    privateRooms.clear();shownPasswords.clear();editingRooms.clear();
    previousMatchStates.clear();notificationPrimed=false;
@@ -752,6 +759,7 @@ async function operation(action,payload={}){
 }
 function switchLeagueTab(next){
  view=next;moreOpen=false;render();
+ if(next==="perfil")void competitiveProfile.refresh();
  const top=$("league-tabs").getBoundingClientRect().top+window.scrollY-10;
  window.scrollTo({top:Math.max(0,top),behavior:"smooth"});
 }
@@ -770,11 +778,13 @@ document.addEventListener("click",async e=>{
  if(!b)return;
  const action=b.dataset.action;
  if(await extras.runAction(action,b))return;
+ if(await competitiveProfile.runAction(action))return;
  if(action==="refresh"){await load();return;}
  if(action==="go_matches"){switchLeagueTab("partidas");return;}
  if(action==="go_team"){switchLeagueTab("mi-equipo");return;}
  if(action==="go_play"){switchLeagueTab("rivales");return;}
  if(action==="go_rank"){switchLeagueTab("ranking");return;}
+ if(action==="go_profile"){switchLeagueTab("perfil");return;}
  if(action==="go_admin"){view="admin";moreOpen=false;render();return;}
  if(action==="toggle_admin_panel"){
    const panel=b.dataset.panel;

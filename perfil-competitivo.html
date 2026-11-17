@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="es">
+<head>
+ <meta charset="utf-8">
+ <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+ <meta name="theme-color" content="#101729">
+ <title>Perfil competitivo | JS Family Torneos</title>
+ <meta name="description" content="Insignias, rango y estadísticas competitivas oficiales de JS Family Torneos.">
+ <link rel="stylesheet" href="./perfil-competitivo.css?v=1.0.0">
+ <style>
+  :root{font-family:system-ui,-apple-system,Roboto,Arial,sans-serif;color-scheme:dark}
+  *{box-sizing:border-box}body{margin:0;background:radial-gradient(circle at 50% 0,#263452,#080e1b 65%);color:#eaf2ff;min-height:100vh}
+  .cp-wrap{width:min(100%,760px);margin:0 auto;padding:15px 13px 45px}
+  .cp-head{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:17px}
+  .cp-head a{color:#f1f6ff;text-decoration:none;font-weight:900}
+  .cp-head a:first-child{display:flex;align-items:center;gap:9px}
+  .cp-mark{width:37px;height:37px;border-radius:11px;display:grid;place-items:center;background:#c43c66}
+  .cp-head .back{border:1px solid #344d6d;padding:9px 12px;border-radius:11px;font-size:12px;background:#18273c}
+  .cp-main-heading{display:grid;gap:4px;margin:8px 0 17px}
+  .cp-main-heading h1{font-size:20px;margin:0}.cp-main-heading p{font-size:12px;color:#a4bbd2;margin:0}
+  .cp-state{border:1px solid #33465c;padding:20px;border-radius:15px;background:#17253c;text-align:center;color:#cad9ed;line-height:1.6}
+  .cp-public-actions{margin-top:15px;display:grid;grid-template-columns:1fr 1fr;gap:9px}
+  .cp-public-actions button,.cp-public-actions a{border:1px solid #476487;background:#1d3453;border-radius:12px;padding:12px;color:#fff;text-align:center;text-decoration:none;font-weight:800;cursor:pointer;font-size:12px}
+  .cp-public-actions button{background:#bb365e}
+  footer{font-size:10px;color:#7c97b6;text-align:center;margin-top:29px;letter-spacing:1px}
+  @media (min-width:650px){.cp-wrap{padding:25px}.cp-main-heading h1{font-size:25px}}
+ </style>
+</head>
+<body>
+ <main class="cp-wrap">
+  <header class="cp-head">
+   <a href="./index.html"><span class="cp-mark">JS</span> JS FAMILY</a>
+   <a class="back" href="./liga.html">⚔️ Ver liga</a>
+  </header>
+  <div class="cp-main-heading"><h1>🏅 Perfil competitivo</h1><p>Rango personal · Free Fire · JS Torneos</p></div>
+  <div id="profile-public-content" aria-live="polite" class="cp-state">Cargando ficha competitiva…</div>
+  <div id="profile-public-controls" class="cp-public-actions" hidden>
+   <button type="button" id="profile-share">↗ Compartir ficha</button>
+   <a href="./liga.html">🎮 Jugar en JS Torneos</a>
+  </div>
+  <footer>JS FAMILY · LOS RANGOS SE BASAN EN PARTIDAS OFICIALES</footer>
+ </main>
+ <script src="./config.js?v=1.0.0"></script>
+ <script type="module" src="./perfil-competitivo-public.js?v=1.0.0"></script>
+</body>
+</html>

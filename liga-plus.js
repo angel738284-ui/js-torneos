@@ -88,7 +88,7 @@ export function createLeagueExtras({
     rankIcon(self.rank)+' '+rankName+'</strong>'+
     '<span>'+Number(self.score||0)+' puntos · '+Number(self.wins||0)+'V / '+Number(self.losses||0)+'D</span>'+
     '</div>'+
-    btn("Ver rango","go_rank",'',"small")+
+    btn("Mi ficha","go_profile",'',"small")+
     '</div>';
  }
  function myRank(){
