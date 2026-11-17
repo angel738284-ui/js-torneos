@@ -13,6 +13,7 @@ const btn=(text,action,extra="",color="")=>'<button type="button" class="btn '+c
 let live=null,me=null,view="inicio",busy=false,seenError="";
 let moreOpen=false;
 const expandedPvps=new Set(),expandedAdminPanels=new Set();
+const disclosureStates=new Map();
 const privateRooms=new Map(),shownPasswords=new Set(),editingRooms=new Set();
 const previousMatchStates=new Map();
 let notificationPrimed=false,roomSyncing=false;
@@ -350,7 +351,7 @@ function homeScreen(){
   '<div class="home-main-action">'+play+'</div>'+
   (invitations.length?'<div class="home-invites">📨 Tenés '+invitations.length+
    ' invitación(es) de dúo pendiente(s). '+btn("Ver","go_team",'',"small")+'</div>':"")+
-  '<details class="home-help"><summary>⚙️ Avisos y ayuda</summary>'+
+  '<details class="home-help" data-disclosure="home-help"><summary>⚙️ Avisos y ayuda</summary>'+
   '<p class="muted">El compañero confirma desde su cuenta. Solo se juegan partidas con 4/4 aceptaciones; los desafíos sin aceptar vencen a los dos minutos.</p>'+
   btn("🔔 Activar notificaciones","enable_notices",'',"small")+
   '<p class="muted">Los avisos fuera del navegador todavía necesitan notificaciones push.</p>'+
@@ -461,7 +462,7 @@ function rivalsScreen(){
  if(!mine)return searchScreen();
  const eligible=(line(mine)||[]).includes(me);
  return searchScreen()+
-  '<details class="rival-manual"><summary>🎯 Desafiar a un dúo específico</summary>'+
+  '<details class="rival-manual" data-disclosure="manual-rivals"><summary>🎯 Desafiar a un dúo específico</summary>'+
   card("⚔️ Desafío manual",
    '<p class="muted">Elegí un dúo de tu misma región.</p>'+
    (teams().filter(t=>t.id!==mine.id).length?
@@ -489,13 +490,13 @@ function matchesScreen(){
   card("🎮 Partidas en curso",
    '<p class="muted">Confirmá el resultado cuando terminen.</p>'+
    (playing.length?playing.map(matchCard).join(""):'<div class="empty">No tenés PvP pendientes de resultado.</div>'))+
-  (history.length?'<details class="history-match-list"><summary>📚 Partidas finalizadas ('+history.length+')</summary>'+
+  (history.length?'<details class="history-match-list" data-disclosure="historic-pvps"><summary>📚 Partidas finalizadas ('+history.length+')</summary>'+
     history.map(matchCard).join("")+'</details>':"");
 }
 function rankingScreen(){
  const list=teams();
  return extras.rankPanel()+
-  '<details class="rank-duos-details"><summary>🛡️ Ver ranking de dúos</summary>'+
+  '<details class="rank-duos-details" data-disclosure="duo-rank"><summary>🛡️ Ver ranking de dúos</summary>'+
   card("🏆 Ranking 2VS2",
    '<p class="muted">La clasificación del equipo se conserva aunque cambie el suplente.</p>'+
    (list.length?list.map((t,i)=>'<div class="match"><div class="flex"><strong style="color:var(--gold)">#'+(i+1)+'</strong><div style="flex:1">'+roster(t)+'</div>'+
@@ -607,7 +608,11 @@ function render(){
  }
  $("league-more").hidden=!moreOpen;
  const fn=({inicio:homeScreen,"mi-equipo":myTeamScreen,rivales:rivalsScreen,partidas:matchesScreen,ranking:rankingScreen,historial:historyScreen,admin:adminScreen})[view]||homeScreen;
+ for(const node of document.querySelectorAll("#league-content details[data-disclosure]"))
+  disclosureStates.set(node.dataset.disclosure,node.open);
  $("league-content").innerHTML=fn()+(live.admin&&view==="admin"?adminExtras():"");
+ for(const node of document.querySelectorAll("#league-content details[data-disclosure]"))
+  if(disclosureStates.get(node.dataset.disclosure)===true)node.open=true;
  refreshAcceptCountdowns();
  extras.afterRender();
 }
@@ -618,7 +623,7 @@ async function load(silent=false){
   if(error)throw error;
   if(!session?.access_token){
    live=null;me=null;unsubscribeLeagueRealtime();extras.reset();
-   expandedPvps.clear();expandedAdminPanels.clear();moreOpen=false;
+   expandedPvps.clear();expandedAdminPanels.clear();disclosureStates.clear();moreOpen=false;
    privateRooms.clear();shownPasswords.clear();editingRooms.clear();
    previousMatchStates.clear();notificationPrimed=false;$("league-app").hidden=true;
    showPresence(null);
@@ -641,7 +646,7 @@ async function load(silent=false){
   }
   if(me!==null&&me!==data.user){
    unsubscribeLeagueRealtime();extras.reset();
-   expandedPvps.clear();expandedAdminPanels.clear();moreOpen=false;
+   expandedPvps.clear();expandedAdminPanels.clear();disclosureStates.clear();moreOpen=false;
    privateRooms.clear();shownPasswords.clear();editingRooms.clear();
    previousMatchStates.clear();notificationPrimed=false;
   }
