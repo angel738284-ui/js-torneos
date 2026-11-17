@@ -95,6 +95,53 @@ function lineupText(b,side){
  const list=(side==="a"?b.lineup_a:b.lineup_b)||[];
  return list.map(personal).join(" + ");
 }
+/**
+ * The server provides a status for each of the four actual match players.
+ * Do not infer an individual acceptance from the 2/4 aggregate.
+ */
+function acceptanceDetails(b){
+ const votes=new Map((Array.isArray(b.acceptances)?b.acceptances:[])
+  .map(v=>[v.user_id,v.status]));
+ const sides=[
+  {ids:b.lineup_a||[],label:"🔵 EQUIPO AZUL"},
+  {ids:b.lineup_b||[],label:"🔴 EQUIPO ROJO"}
+ ];
+ const waiting=[];
+ const cards=sides.map(side=>{
+  const people=side.ids.map(uid=>{
+   const status=votes.get(uid)||"pending";
+   if(status==="pending")waiting.push(nameOf(uid));
+   const ready=status==="accepted",declined=status==="rejected";
+   const icon=ready?"✓":declined?"✕":"◷";
+   const label=ready?"Confirmó":declined?"Rechazó":"Sin confirmar";
+   const css=ready?"accepted":declined?"rejected":"waiting";
+   return '<div class="accept-player">'+
+    '<span class="accept-symbol '+css+'" aria-label="'+label+'" title="'+label+'">'+icon+'</span>'+
+    '<span class="accept-person">'+personal(uid)+(uid===me?' <small class="muted">(vos)</small>':"")+'</span>'+
+    '</div>';
+  }).join("");
+  return '<div class="accept-team"><strong>'+side.label+'</strong>'+people+'</div>';
+ }).join("");
+ const timer=b.state==="pending"&&b.accept_until?
+  '<div class="accept-timer">⏳ Tiempo para aceptar: <strong class="accept-countdown" data-accept-deadline="'+
+   esc(b.accept_until)+'">—</strong></div>':"";
+ const missing=b.state==="pending"&&waiting.length?
+  '<p class="accept-missing">Faltan por aceptar: '+esc(waiting.join(", "))+'</p>':"";
+ return '<div class="acceptance-panel" aria-label="Confirmaciones individuales de los cuatro jugadores">'+
+  '<div class="acceptance-title">✔ ¿Quién confirmó? <span class="muted">'+Number(b.confirmed||0)+'/4</span></div>'+
+  '<div class="acceptance-grid">'+cards+'</div>'+missing+timer+'</div>';
+}
+function refreshAcceptCountdowns(){
+ document.querySelectorAll("[data-accept-deadline]").forEach(node=>{
+  const time=Date.parse(node.dataset.acceptDeadline||"");
+  if(!Number.isFinite(time)){node.textContent="—";return;}
+  const seconds=Math.max(0,Math.ceil((time-Date.now())/1000));
+  const minutes=Math.floor(seconds/60);
+  const rest=String(seconds%60).padStart(2,"0");
+  node.textContent=minutes+":"+rest+(seconds===0?" · tiempo agotado":"");
+  node.classList.toggle("expired",seconds===0);
+ });
+}
 function matchCard(b){
  const a=teams().find(t=>t.id===b.a),z=teams().find(t=>t.id===b.b);
  const mine=teamOf(me);
@@ -117,6 +164,7 @@ function matchCard(b){
  }
  return '<article class="match"><div class="flex"><b>⚔️ PVP #'+b.id+'</b><span class="badge">'+esc(status(b))+'</span></div>'+
  '<div class="vs"><span>'+lineupText(b,"a")+'<br><span class="vsmuted">🔵 EQUIPO AZUL</span></span><i>VS</i><span>'+lineupText(b,"b")+'<br><span class="vsmuted">🔴 EQUIPO ROJO</span></span></div>'+
+ acceptanceDetails(b)+
  '<div class="flex"><span class="muted">✅ '+b.confirmed+'/4 aceptaron · 📝 '+b.reported+'/4 resultados</span>'+
  '<span class="muted">'+(b.state==="pending"?"Límite: "+date(b.accept_until):b.state==="playing"?"Sin vencimiento · inicio: "+date(b.started_at||b.created):date(b.created))+'</span></div>'+
  (b.state==="complete"?'<div class="line"></div><strong style="color:var(--gold)">🏆 Ganador: '+validWinner+'</strong>':"")+
@@ -327,6 +375,7 @@ function render(){
  if(!live.admin&&view==="admin")view="mi-equipo";
  const fn=({"mi-equipo":myTeamScreen,rivales:rivalsScreen,partidas:matchesScreen,ranking:rankingScreen,historial:historyScreen,admin:adminScreen})[view]||myTeamScreen;
  $("league-content").innerHTML=fn()+(live.admin&&view==="admin"?adminExtras():"");
+ refreshAcceptCountdowns();
 }
 async function load(silent=false){
  if(busy)return;
@@ -492,6 +541,8 @@ setInterval(async()=>{
  if(error)void load(true);
 },25000);
 setInterval(()=>{if(!document.hidden)void refreshPresence();},20000);
+// Smooth local countdown; actual acceptance data are refreshed from Supabase.
+setInterval(()=>{if(!document.hidden)refreshAcceptCountdowns();},1000);
 document.addEventListener("visibilitychange",()=>{
  if(!document.hidden){void load(true);void refreshPresence();}
 });

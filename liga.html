@@ -21,6 +21,22 @@ a{color:inherit;text-decoration:none}button,input,select{font:inherit}button,sel
 .btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;min-height:43px;border:1px solid #4b607f;border-radius:12px;padding:9px 14px;color:#fff;background:#253c55;font-weight:850;font-size:12px;text-align:center}.btn.hot{background:linear-gradient(110deg,#ef5c79,#ad3054);border-color:#f584a1}.btn.good{background:#15493f;border-color:#3a967d;color:#aaf5e2}.btn.danger{background:#482d3b;border-color:#8d4c62;color:#ffbecb}.btn.small{min-height:37px;padding:6px 11px}.btn.block{width:100%}
 select,input{width:100%;min-height:46px;background:#101a2c;color:#f5f8ff;border:1px solid #425975;border-radius:11px;padding:10px 12px;outline:none}select:focus,input:focus{border-color:var(--mint)}label{display:block;font-weight:850;font-size:12px;color:#d3e2f5;margin:12px 0 7px}.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}.row>*{min-width:0}.row select{flex:1}
 .team{display:flex;align-items:center;gap:13px}.emblem{display:grid;place-items:center;flex:0 0 44px;height:44px;border-radius:12px;background:linear-gradient(135deg,#554267,#253d5b);border:1px solid #5c6582;font-size:21px}.team-txt{min-width:0;flex:1}.team-txt strong{display:block;overflow-wrap:anywhere;font-size:14px}.team-txt small{color:#abbcd5;font-size:11px}.match{border:1px solid #374c67;background:#111d30;border-radius:14px;padding:15px;margin:13px 0}.vs{display:grid;grid-template-columns:1fr auto 1fr;gap:10px;align-items:center;text-align:center;font-weight:900;margin:15px 0}.vs span{overflow-wrap:anywhere}.vs i{font-style:normal;color:#ff9caf;font-size:16px}.vsmuted{font-weight:500;font-size:11px;color:#9fb3cd}.command{color:#a0f2dc;font-weight:850}
+.acceptance-panel{margin:14px 0 16px;padding:13px;border:1px solid #35506f;background:#0c192b;border-radius:12px}
+.acceptance-title{display:flex;align-items:center;justify-content:space-between;gap:10px;font-weight:900;color:#dbe8fa;margin-bottom:10px}
+.acceptance-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+.accept-team{min-width:0;border:1px solid #283e59;border-radius:10px;padding:10px 9px;background:#121f32}
+.accept-team>strong{display:block;color:#c3d5ec;font-size:10px;letter-spacing:.3px;margin-bottom:6px}
+.accept-player{display:flex;align-items:center;gap:7px;min-width:0;padding:6px 0;border-top:1px solid #ffffff0d}
+.accept-person{min-width:0;font-size:11px;font-weight:750;overflow-wrap:anywhere;line-height:1.5}
+.accept-symbol{display:grid;place-items:center;flex:0 0 23px;height:23px;border-radius:50%;font-size:15px;font-weight:1000}
+.accept-symbol.accepted{color:#c8eaff;background:#17559a;border:1px solid #3aa2ff}
+.accept-symbol.waiting{color:#afbdd0;background:#344055;border:1px solid #52667f}
+.accept-symbol.rejected{color:#ffccd5;background:#81384b;border:1px solid #ef7489}
+.accept-missing{font-size:11px;color:#b9c8dc;line-height:1.5;margin:10px 0 0;overflow-wrap:anywhere}
+.accept-timer{display:flex;justify-content:space-between;gap:12px;align-items:center;border-top:1px solid #344862;padding-top:10px;margin-top:11px;font-size:12px;color:#c7d9ee}
+.accept-countdown{font-variant-numeric:tabular-nums;color:#83cbff;font-size:14px}
+.accept-countdown.expired{color:#ffb4c0}
+@media(max-width:360px){.acceptance-grid{grid-template-columns:1fr}}
 .error{border:1px solid #9e526b;background:#462639;padding:13px;border-radius:11px;color:#ffd1de;font-size:12px;margin:12px 0}
 .toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%);width:min(520px,calc(100% - 30px));border:1px solid #5a927e;background:#123e39;color:#dcfff5;z-index:100;border-radius:15px;padding:15px;box-shadow:0 15px 48px #000a}.toast.fail{background:#492834;border-color:#a7596e;color:#ffe1e9}
 footer{text-align:center;font-size:11px;color:#829ab5;margin:30px auto 0}
@@ -66,6 +82,6 @@ footer{text-align:center;font-size:11px;color:#829ab5;margin:30px auto 0}
 </div>
 <div class="toast" id="league-toast" hidden role="status" aria-live="polite"></div>
 <script src="./config.js?v=1.0.0"></script>
-<script type="module" src="./liga.js?v=1.6.0"></script>
+<script type="module" src="./liga.js?v=1.7.0"></script>
 </body>
 </html>
