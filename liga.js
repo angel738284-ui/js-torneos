@@ -337,7 +337,7 @@ function homeScreen(){
   btn("📋 VER PVP #"+active.id,"go_matches",'',"hot block"):
   !t?btn("👥 CREAR MI DÚO","go_team",'',"hot block"):
   live.paused?
-   (live.admin?btn("▶ REANUDAR LIGA","go_admin",'',"good block"):
+   (live.admin?btn("▶ REANUDAR LIGA","admin_resume",'',"good block"):
     '<div class="home-disabled">⏸ Búsquedas temporalmente pausadas</div>'):
    btn("⚔️ JUGAR AHORA","go_play",'',"hot block");
  return '<section class="panel dashboard-home">'+
