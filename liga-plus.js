@@ -79,6 +79,18 @@ export function createLeagueExtras({
   if(!player)return "🥉 Bronce · 0 puntos";
   return rankIcon(player.rank)+" "+esc(player.rank||"Bronce")+" · "+Number(player.score||0)+" puntos";
  }
+ function myRankCompact(){
+  const self=rank.current?.my;
+  if(!self)return '<div class="rank-mini"><span>🏅 Rango personal</span><strong>Consultando…</strong></div>';
+  const rankName=esc(self.rank||"Bronce");
+  return '<div class="rank-mini"><div class="rank-mini-copy">'+
+    '<small>🏅 MI RANGO</small><strong>'+
+    rankIcon(self.rank)+' '+rankName+'</strong>'+
+    '<span>'+Number(self.score||0)+' puntos · '+Number(self.wins||0)+'V / '+Number(self.losses||0)+'D</span>'+
+    '</div>'+
+    btn("Ver rango","go_rank",'',"small")+
+    '</div>';
+ }
  function myRank(){
   const self=rank.current?.my;
   if(!self)return '<p class="muted">🏅 Consultando tu rango individual…</p>';
@@ -358,6 +370,6 @@ export function createLeagueExtras({
   if(target?.id==="admin-pvp-filter"){admin.filter=target.value.trim().toLowerCase();filterAdmin();}
   if(target?.id==="admin-pvp-state"){admin.state=target.value;filterAdmin();}
  }
- return {matchPanel,myRank,rankPanel,adminPanel,refresh,reset,
+ return {matchPanel,myRank,myRankCompact,rankPanel,adminPanel,refresh,reset,
   runAction,afterRender,changeFilter,filterAdmin};
 }

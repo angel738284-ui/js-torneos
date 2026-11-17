@@ -11,6 +11,8 @@ const date=value=>value?new Intl.DateTimeFormat("es-AR",{timeZone:"America/Argen
 const id=value=>esc(value??"");
 const btn=(text,action,extra="",color="")=>'<button type="button" class="btn '+color+'" data-action="'+esc(action)+'" '+extra+'>'+esc(text)+'</button>';
 let live=null,me=null,view="inicio",busy=false,seenError="";
+let moreOpen=false;
+const expandedPvps=new Set(),expandedAdminPanels=new Set();
 const privateRooms=new Map(),shownPasswords=new Set(),editingRooms=new Set();
 const previousMatchStates=new Map();
 let notificationPrimed=false,roomSyncing=false;
@@ -286,14 +288,22 @@ function matchCard(b){
  }
  return '<article class="match"><div class="flex"><b>⚔️ PVP #'+b.id+'</b><span class="badge">'+esc(status(b))+'</span></div>'+
  '<div class="vs"><span>'+lineupText(b,"a")+'<br><span class="vsmuted">🔵 EQUIPO AZUL</span></span><i>VS</i><span>'+lineupText(b,"b")+'<br><span class="vsmuted">🔴 EQUIPO ROJO</span></span></div>'+
- acceptanceDetails(b)+
+ (b.state==="pending"?acceptanceDetails(b):"")+
  '<div class="flex"><span class="muted">✅ '+b.confirmed+'/4 aceptaron · 📝 '+b.reported+'/4 resultados</span>'+
  '<span class="muted">'+(b.state==="pending"?"Límite: "+date(b.accept_until):b.state==="playing"?"Sin vencimiento · inicio: "+date(b.started_at||b.created):date(b.created))+'</span></div>'+
  (b.state==="complete"?'<div class="line"></div><strong style="color:var(--gold)">🏆 Ganador: '+validWinner+'</strong>':"")+
  (b.state==="review"?'<p class="muted">No se otorgaron puntos. JS debe verificar y decidir.</p>':"")+
  (b.state==="expired"?'<p class="muted">Este PvP ya había comenzado con 4/4 aceptaciones y espera resolución de JS.</p>':"")+
- roomCard(b)+extras.matchPanel(b)+
  (actions?'<div class="line"></div>'+actions:"")+
+ (b.started_at&&Number(b.confirmed)===4&&
+   (isRealParticipant(b)||live?.admin)?
+   '<div class="match-extra-toggle">'+
+    btn(expandedPvps.has(b.id)?"⌃ Ocultar sala y detalles":"⌄ Sala, chat y detalles",
+     "toggle_pvp_tools",'data-match="'+b.id+'"',"small block")+
+   '</div>'+
+   (expandedPvps.has(b.id)?
+     acceptanceDetails(b)+roomCard(b)+extras.matchPanel(b):""):
+   "")+
  '</article>';
 }
 function incomingInvites(){
@@ -306,37 +316,46 @@ function incomingInvites(){
   btn("❌ Rechazar","decline_invite",'data-invite="'+id(i.id)+'"',"danger")+'</div></div>').join(""));
 }
 function homeScreen(){
- if(!live?.season)return card("🎮 Bienvenido a JS Family",
-  '<p class="muted">La temporada todavía no está abierta. Podés preparar tu perfil mientras tanto.</p>'+
-  btn("👤 Configurar mi perfil","go_team",'',"hot block"));
- const t=teamOf(me),active=myActiveGame(),pendingInvites=(live.invites||[]).filter(i=>i.to_user===me);
- const statusText=live.paused?
-  '<div class="league-paused"><strong>⏸ Liga pausada por JS</strong><p>Durante la pausa no se generan nuevas partidas ni registros. Los PvP que comenzaron siguen abiertos para confirmar resultados.</p></div>':"";
- const teamBox=t?'<div class="home-team"><div class="flex"><strong>🛡️ Tu dúo</strong>'+
-  '<span class="pill">✓ Equipo registrado</span></div>'+
-  '<div style="margin-top:10px">'+roster(t)+'</div></div>':
-  '<p class="muted">Todavía no tenés un dúo. Verificá tu ID y formá tu equipo desde Mi dúo.</p>';
- const action=active?
-  btn("📋 TENÉS UN PVP #"+active.id+" · VER PARTIDA","go_matches",'',"hot block"):
-  t&&!live.paused?
-  btn("⚔️ JUGAR AHORA · BUSCAR RIVAL","go_play",'',"hot block"):
-  btn(t?"⏸ Liga pausada":"👥 CREAR MI DÚO","go_team",'data-action-pause="'+Boolean(live.paused)+'"'+(live.paused?" disabled":""),"hot block");
- const resume=live.admin?'<div style="margin-top:12px">'+btn("👑 Ir al panel de administración","go_admin",'',"small")+'</div>':"";
- return statusText+card("🎮 Bienvenido a la Arena JS Family",
-  '<p class="muted">Jugá PvP 2VS2 sin comandos. Tu compañero confirma desde su cuenta y el sistema encuentra rival.</p>'+
-  '<div class="season-prize"><strong>🎁 Premio de la temporada #'+Number(live.season.id)+'</strong>'+
-   '<p>'+esc(live.season.prize||"JS anunciará el premio")+'</p>'+
-   '<small>Los premios los valida y entrega JS; no se acreditan automáticamente.</small></div>'+
-  extras.myRank()+
-  teamBox+'<div style="margin-top:16px">'+action+'</div>'+
-  '<div class="quick-actions">'+btn("🎯 Desafiar dúo","go_play",'',"small")+
-  btn("🏆 Ver ranking","go_rank",'',"small")+
-  btn("🛡️ Mi dúo","go_team",'',"small")+
-  '</div>'+
-  (pendingInvites.length?'<p class="muted">📨 Tenés '+pendingInvites.length+' invitación(es) pendiente(s) para responder.</p>':"")+
-  '<p class="muted">💡 Podés activar avisos mientras esta página esté abierta. Las notificaciones fuera del navegador todavía requieren instalar avisos push.</p>'+
-  btn("🔔 Activar avisos del navegador","enable_notices",'',"good small")+
-  resume);
+ if(!live?.season)return card("🎮 JS Family",
+  '<p class="muted">La temporada todavía no está abierta.</p>'+
+  btn("Mi perfil y dúo","go_team",'',"hot block"));
+ const t=teamOf(me),active=myActiveGame();
+ const invitations=(live.invites||[]).filter(i=>i.to_user===me);
+ const prize=live.season.prize||"A confirmar";
+ const status=live.paused?
+  '<div class="home-pause"><strong>⏸ Liga pausada</strong><span>JS reanudará las búsquedas. Los PvP iniciados pueden finalizar.</span></div>':"";
+ const teamBox=t?
+  '<div class="home-duo"><span class="home-icon">🛡️</span><div class="home-duo-name">'+
+  '<small>MI DÚO</small><strong>'+teamName(t)+'</strong>'+
+  '<span>'+Number(t.wins)+' victorias · '+Number(t.losses)+' derrotas</span></div>'+
+  btn("Editar","go_team",'',"small")+'</div>':
+  '<div class="home-duo home-no-team"><span class="home-icon">👥</span>'+
+  '<div class="home-duo-name"><strong>Sin dúo todavía</strong><span>Verificá tu ID y elegí compañero.</span></div>'+
+  btn("Crear","go_team",'',"small")+'</div>';
+ const play=active?
+  btn("📋 VER PVP #"+active.id,"go_matches",'',"hot block"):
+  !t?btn("👥 CREAR MI DÚO","go_team",'',"hot block"):
+  live.paused?
+   (live.admin?btn("▶ REANUDAR LIGA","go_admin",'',"good block"):
+    '<div class="home-disabled">⏸ Búsquedas temporalmente pausadas</div>'):
+   btn("⚔️ JUGAR AHORA","go_play",'',"hot block");
+ return '<section class="panel dashboard-home">'+
+  '<div class="home-top"><div><span class="home-eyebrow">JS FAMILY · TEMPORADA #'+Number(live.season.id)+'</span>'+
+  '<h2>Arena 2VS2</h2></div><span class="home-season '+(live.paused?"paused":"")+'">'+
+  (live.paused?"⏸ Pausada":"● Activa")+'</span></div>'+
+  status+
+  '<div class="home-reward"><span>🎁 Premio</span><strong>'+esc(prize)+'</strong></div>'+
+  extras.myRankCompact()+
+  teamBox+
+  '<div class="home-main-action">'+play+'</div>'+
+  (invitations.length?'<div class="home-invites">📨 Tenés '+invitations.length+
+   ' invitación(es) de dúo pendiente(s). '+btn("Ver","go_team",'',"small")+'</div>':"")+
+  '<details class="home-help"><summary>⚙️ Avisos y ayuda</summary>'+
+  '<p class="muted">El compañero confirma desde su cuenta. Solo se juegan partidas con 4/4 aceptaciones; los desafíos sin aceptar vencen a los dos minutos.</p>'+
+  btn("🔔 Activar notificaciones","enable_notices",'',"small")+
+  '<p class="muted">Los avisos fuera del navegador todavía necesitan notificaciones push.</p>'+
+  '</details>'+
+  '</section>';
 }
 function myTeamScreen(){
  if(live?.paused)return card("⏸ Inscripciones pausadas",
@@ -441,13 +460,16 @@ function rivalsScreen(){
  const mine=teamOf(me);
  if(!mine)return searchScreen();
  const eligible=(line(mine)||[]).includes(me);
- return searchScreen()+card("⚔️ Desafío manual (opcional)",
-   '<p class="muted">Desafiá a cualquier equipo disponible de la misma región. El servidor bloquea los encuentros repetidos hasta que ambos dúos enfrenten otros dos equipos distintos.</p>'+
+ return searchScreen()+
+  '<details class="rival-manual"><summary>🎯 Desafiar a un dúo específico</summary>'+
+  card("⚔️ Desafío manual",
+   '<p class="muted">Elegí un dúo de tu misma región.</p>'+
    (teams().filter(t=>t.id!==mine.id).length?
      teams().filter(t=>t.id!==mine.id).map(t=>'<div class="match"><div class="flex">'+
       '<div>'+roster(t)+'</div>'+btn("⚔️ Desafiar","challenge",'data-team="'+id(t.id)+'"'+(!eligible?' disabled':''),"hot small")+
       '</div></div>').join(""):'<div class="empty">Todavía no hay otros dúos inscritos.</div>')+
-   (!eligible?'<p class="muted">⚠️ Tu titular está reemplazado por un suplente. Solo los dos jugadores activos pueden desafiar.</p>':""));
+   (!eligible?'<p class="muted">⚠️ El suplente está activo. Solo los titulares de la alineación actual pueden desafiar.</p>':""))+
+  '</details>';
 }
 function matchesScreen(){
  if(!live?.season)return card("📋 Partidas","La temporada todavía no fue abierta.");
@@ -459,21 +481,27 @@ function matchesScreen(){
    new Date(g.accept_until).getTime()>Date.now());
  const matches=games().filter(g=>Number(g.confirmed)===4&&g.started_at&&
    (inTeam(g)||live.admin));
- return (mine?searchScreen():"")+
-  (invites.length?card("⏳ Invitaciones pendientes (máximo 2 minutos)",
-   '<p class="muted">Este desafío todavía no es una partida. Todos deben aceptar antes de que venza; de lo contrario, desaparece sin puntos.</p>'+
+ const playing=matches.filter(g=>["playing","review"].includes(g.state));
+ const history=matches.filter(g=>!["playing","review"].includes(g.state));
+ return (invites.length?card("⏳ Invitaciones pendientes (máximo 2 minutos)",
+   '<p class="muted">Los cuatro deben aceptar en dos minutos.</p>'+
    invites.map(matchCard).join("")):"")+
-  card("📋 Partidas confirmadas (4/4)",
-   '<p class="muted">Acá solo se muestran encuentros aceptados por los cuatro jugadores. Las partidas no vencen después de comenzar; deben confirmar el resultado o JS decidirá el ganador.</p>'+
-   (matches.length?matches.map(matchCard).join(""):'<div class="empty">Todavía no hay partidas aceptadas por los cuatro.</div>'));
+  card("🎮 Partidas en curso",
+   '<p class="muted">Confirmá el resultado cuando terminen.</p>'+
+   (playing.length?playing.map(matchCard).join(""):'<div class="empty">No tenés PvP pendientes de resultado.</div>'))+
+  (history.length?'<details class="history-match-list"><summary>📚 Partidas finalizadas ('+history.length+')</summary>'+
+    history.map(matchCard).join("")+'</details>':"");
 }
 function rankingScreen(){
  const list=teams();
- return extras.rankPanel()+card("🏆 Ranking 2VS2",
-  '<p class="muted">Las parejas conservan sus puntos aunque juegue un suplente. La tabla se actualiza solo con resultados validados.</p>'+
-  (list.length?list.map((t,i)=>'<div class="match"><div class="flex"><strong style="color:var(--gold)">#'+(i+1)+'</strong><div style="flex:1">'+roster(t)+'</div>'+
-   '<div style="text-align:right"><div class="statnum">'+t.wins+'V</div><small class="muted">'+t.losses+'D</small></div></div></div>').join(""):
-   '<div class="empty">Aún no hay equipos en esta temporada.</div>'));
+ return extras.rankPanel()+
+  '<details class="rank-duos-details"><summary>🛡️ Ver ranking de dúos</summary>'+
+  card("🏆 Ranking 2VS2",
+   '<p class="muted">La clasificación del equipo se conserva aunque cambie el suplente.</p>'+
+   (list.length?list.map((t,i)=>'<div class="match"><div class="flex"><strong style="color:var(--gold)">#'+(i+1)+'</strong><div style="flex:1">'+roster(t)+'</div>'+
+    '<div style="text-align:right"><div class="statnum">'+t.wins+'V</div><small class="muted">'+t.losses+'D</small></div></div></div>').join(""):
+    '<div class="empty">Aún no hay equipos en esta temporada.</div>'))+
+  '</details>';
 }
 function historyScreen(){
  const items=live?.history||[];
@@ -545,7 +573,22 @@ function adminExtras(){
     x.action==="resolve"?"Ganador corregido · PVP #"+x.match_id:"Partida anulada · PVP #"+x.match_id;
    return '<div class="match"><strong>'+label+'</strong><p class="muted">'+date(x.created_at)+'</p></div>';
   }).join(""):'<div class="empty">No hay correcciones administrativas.</div>'));
- return matches+extras.adminPanel()+correction+history;
+ return extras.adminPanel()+
+  '<div class="admin-fold">'+
+   btn((expandedAdminPanels.has("matches")?"⌃ Ocultar":"⌄ Ver")+" partidas y buscar PvP",
+    "toggle_admin_panel",'data-panel="matches"',"small block")+
+   (expandedAdminPanels.has("matches")?matches:"")+
+  '</div>'+
+  '<div class="admin-fold">'+
+   btn((expandedAdminPanels.has("points")?"⌃ Ocultar":"⌄ Abrir")+" corrección de puntos",
+    "toggle_admin_panel",'data-panel="points"',"small block")+
+   (expandedAdminPanels.has("points")?correction:"")+
+  '</div>'+
+  '<div class="admin-fold">'+
+   btn((expandedAdminPanels.has("history")?"⌃ Ocultar":"⌄ Ver")+" historial administrativo",
+    "toggle_admin_panel",'data-panel="history"',"small block")+
+   (expandedAdminPanels.has("history")?history:"")+
+  '</div>';
 }
 function render(){
  if(!live)return;
@@ -553,8 +596,16 @@ function render(){
  const meName=nameOf(me);
  $("league-auth").innerHTML='<div class="flex"><div><strong>✅ '+esc(meName)+'</strong><br><span class="muted">Cuenta conectada · '+(live.admin?"👑 Administrador":"Jugador")+'</span></div>'+btn("↻ Actualizar","refresh",'',"small")+'</div>';
  $("league-app").hidden=false;
- for(const tab of $("league-tabs").querySelectorAll("[data-tab]"))tab.classList.toggle("on",tab.dataset.tab===view);
  if(!live.admin&&view==="admin")view="inicio";
+ for(const tab of document.querySelectorAll("#league-tabs [data-tab], #league-more [data-tab]"))
+  tab.classList.toggle("on",tab.dataset.tab===view);
+ const isMore=["ranking","mi-equipo","historial","admin"].includes(view);
+ const moreButton=$("league-more-toggle");
+ if(moreButton){
+  moreButton.classList.toggle("on",isMore||moreOpen);
+  moreButton.setAttribute("aria-expanded",String(moreOpen));
+ }
+ $("league-more").hidden=!moreOpen;
  const fn=({inicio:homeScreen,"mi-equipo":myTeamScreen,rivales:rivalsScreen,partidas:matchesScreen,ranking:rankingScreen,historial:historyScreen,admin:adminScreen})[view]||homeScreen;
  $("league-content").innerHTML=fn()+(live.admin&&view==="admin"?adminExtras():"");
  refreshAcceptCountdowns();
@@ -567,6 +618,7 @@ async function load(silent=false){
   if(error)throw error;
   if(!session?.access_token){
    live=null;me=null;unsubscribeLeagueRealtime();extras.reset();
+   expandedPvps.clear();expandedAdminPanels.clear();moreOpen=false;
    privateRooms.clear();shownPasswords.clear();editingRooms.clear();
    previousMatchStates.clear();notificationPrimed=false;$("league-app").hidden=true;
    showPresence(null);
@@ -589,6 +641,7 @@ async function load(silent=false){
   }
   if(me!==null&&me!==data.user){
    unsubscribeLeagueRealtime();extras.reset();
+   expandedPvps.clear();expandedAdminPanels.clear();moreOpen=false;
    privateRooms.clear();shownPasswords.clear();editingRooms.clear();
    previousMatchStates.clear();notificationPrimed=false;
   }
@@ -692,9 +745,20 @@ async function operation(action,payload={}){
  }catch(e){flash(e?.message||"Error desconocido",true);}
  finally{busy=false;await load(true);}
 }
+function switchLeagueTab(next){
+ view=next;moreOpen=false;render();
+ const top=$("league-tabs").getBoundingClientRect().top+window.scrollY-10;
+ window.scrollTo({top:Math.max(0,top),behavior:"smooth"});
+}
 $("league-tabs").addEventListener("click",e=>{
- const b=e.target.closest("button[data-tab]");if(!b)return;
- view=b.dataset.tab;render();window.scrollTo({top:280,behavior:"smooth"});
+ const toggle=e.target.closest("button[data-more-toggle]");
+ if(toggle){moreOpen=!moreOpen;render();return;}
+ const b=e.target.closest("button[data-tab]");
+ if(b)switchLeagueTab(b.dataset.tab);
+});
+$("league-more").addEventListener("click",e=>{
+ const b=e.target.closest("button[data-tab]");
+ if(b)switchLeagueTab(b.dataset.tab);
 });
 document.addEventListener("click",async e=>{
  const b=e.target.closest("button[data-action]");
@@ -702,11 +766,29 @@ document.addEventListener("click",async e=>{
  const action=b.dataset.action;
  if(await extras.runAction(action,b))return;
  if(action==="refresh"){await load();return;}
- if(action==="go_matches"){view="partidas";render();return;}
- if(action==="go_team"){view="mi-equipo";render();return;}
- if(action==="go_play"){view="rivales";render();return;}
- if(action==="go_rank"){view="ranking";render();return;}
- if(action==="go_admin"){view="admin";render();return;}
+ if(action==="go_matches"){switchLeagueTab("partidas");return;}
+ if(action==="go_team"){switchLeagueTab("mi-equipo");return;}
+ if(action==="go_play"){switchLeagueTab("rivales");return;}
+ if(action==="go_rank"){switchLeagueTab("ranking");return;}
+ if(action==="go_admin"){view="admin";moreOpen=false;render();return;}
+ if(action==="toggle_admin_panel"){
+   const panel=b.dataset.panel;
+   if(["matches","points","history"].includes(panel)){
+    if(expandedAdminPanels.has(panel))expandedAdminPanels.delete(panel);
+    else expandedAdminPanels.add(panel);
+    render();
+   }
+   return;
+ }
+ if(action==="toggle_pvp_tools"){
+   const number=Number(b.dataset.match);
+   if(Number.isSafeInteger(number)){
+    if(expandedPvps.has(number))expandedPvps.delete(number);
+    else expandedPvps.add(number);
+    render();
+   }
+   return;
+ }
  if(action==="enable_notices"){
   if(typeof Notification==="undefined"){
     flash("Tu navegador no permite mostrar notificaciones del sistema. Los avisos dentro de JS Torneos seguirán funcionando.",true);
