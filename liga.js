@@ -29,7 +29,7 @@ const line=t=>{
  return [t.replaced===t.captain?t.substitute:t.captain,t.replaced===t.partner?t.substitute:t.partner];
 };
 const running=b=>["pending","playing","review"].includes(b.state);
-const status=b=>({pending:"⏳ Esperando aceptación",playing:"🎮 En juego",review:"⚠️ Revisión de JS",complete:"✅ Finalizado",cancelled:"🚫 Anulado",expired:"⌛ Vencido"}[b.state]||b.state);
+const status=b=>({pending:"⏳ Esperando aceptación",playing:"🎮 En juego · sin vencimiento",review:"⚠️ Revisión de JS",complete:"✅ Finalizado",cancelled:"🚫 Anulado",expired:"⌛ Aceptación vencida · JS decide"}[b.state]||b.state);
 const theme=b=>b.state==="complete"?"good":b.state==="review"?"danger":"";
 const isRealParticipant=b=>[...(b.lineup_a||[]),...(b.lineup_b||[])].includes(me);
 const errorHtml=msg=>'<div class="error">'+esc(msg)+'</div>';
@@ -109,18 +109,19 @@ function matchCard(b){
  if(canReport)actions='<div class="row">'+btn("🏆 Gané","result_win",'data-match="'+b.id+'"',"good")+
  btn("📋 Perdí","result_loss",'data-match="'+b.id+'"',"danger")+'</div>';
  if(b.state==="playing"&&participant&&b.my_vote?.result)actions='<p class="muted">✅ Ya informaste: '+(b.my_vote.result==="win"?"Gané":"Perdí")+'. Esperando al resto.</p>';
- if(live?.admin&&["pending","playing","review"].includes(b.state)){
-   actions+='<div class="line"></div><p class="muted">👑 Resolución de JS</p><div class="row">'+
-    btn("Ganó azul","admin_resolve",'data-match="'+b.id+'" data-side="a"',"small")+
-    btn("Ganó rojo","admin_resolve",'data-match="'+b.id+'" data-side="b"',"small")+
-    btn("Anular","admin_cancel",'data-match="'+b.id+'"',"danger small")+'</div>';
+ if(live?.admin){
+   actions+='<div class="line"></div><p class="muted">👑 Resolución de JS · también partidas vencidas o finalizadas</p><div class="row">'+
+    btn("🏆 Ganó azul","admin_resolve",'data-match="'+b.id+'" data-side="a"',"small")+
+    btn("🏆 Ganó rojo","admin_resolve",'data-match="'+b.id+'" data-side="b"',"small")+
+    (b.state==="cancelled"?"":btn("🚫 Anular","admin_cancel",'data-match="'+b.id+'"',"danger small"))+'</div>';
  }
  return '<article class="match"><div class="flex"><b>⚔️ PVP #'+b.id+'</b><span class="badge">'+esc(status(b))+'</span></div>'+
  '<div class="vs"><span>'+lineupText(b,"a")+'<br><span class="vsmuted">🔵 EQUIPO AZUL</span></span><i>VS</i><span>'+lineupText(b,"b")+'<br><span class="vsmuted">🔴 EQUIPO ROJO</span></span></div>'+
  '<div class="flex"><span class="muted">✅ '+b.confirmed+'/4 aceptaron · 📝 '+b.reported+'/4 resultados</span>'+
- '<span class="muted">'+(b.state==="pending"?"Límite: "+date(b.accept_until):b.state==="playing"?"Hasta: "+date(b.result_until):date(b.created))+'</span></div>'+
+ '<span class="muted">'+(b.state==="pending"?"Límite: "+date(b.accept_until):b.state==="playing"?"Sin vencimiento · inicio: "+date(b.started_at||b.created):date(b.created))+'</span></div>'+
  (b.state==="complete"?'<div class="line"></div><strong style="color:var(--gold)">🏆 Ganador: '+validWinner+'</strong>':"")+
  (b.state==="review"?'<p class="muted">No se otorgaron puntos. JS debe verificar y decidir.</p>':"")+
+ (b.state==="expired"?'<p class="muted">Si realmente jugaron este PvP, JS puede asignar el ganador.</p>':"")+
  (actions?'<div class="line"></div>'+actions:"")+
  '</article>';
 }
@@ -277,6 +278,34 @@ function adminScreen(){
   btn("Retirar suplente","remove_sub",'data-team="'+id(t.id)+'"',"danger small")+'</div>').join("")||
    '<p class="muted">Todavía no hay suplentes registrados.</p>'));
 }
+function adminExtras(){
+ if(!live?.admin||!live?.season)return "";
+ const matches=card("⚖️ Resolver / corregir cualquier PvP",
+  '<p class="muted">Elegí quién ganó aunque el PvP figure vencido, anulado o finalizado. Si ya había un ganador, se revierten los puntos anteriores antes de actualizar el ranking.</p>'+
+  (games().length?games().map(matchCard).join(""):'<div class="empty">Todavía no hay partidas.</div>'));
+ const correction=card("🧮 Dar o quitar victorias y derrotas",
+  '<p class="muted">Ajustes manuales del <b>dúo completo</b>. Para corregir una partida elegí primero el ganador arriba. Estas correcciones se guardan en el historial administrativo.</p>'+
+  (teams().length?teams().map(t=>
+   '<div class="match"><strong>'+teamName(t)+'</strong>'+
+   '<p class="muted">🏆 '+t.wins+' victorias · 📉 '+t.losses+' derrotas</p>'+
+   '<div class="row">'+
+   btn("🏆 +1 victoria","admin_adjust",'data-team="'+id(t.id)+'" data-stat="wins" data-delta="1"',"good small")+
+   btn("−1 victoria","admin_adjust",'data-team="'+id(t.id)+'" data-stat="wins" data-delta="-1"',"danger small")+
+   btn("📉 +1 derrota","admin_adjust",'data-team="'+id(t.id)+'" data-stat="losses" data-delta="1"',"small")+
+   btn("−1 derrota","admin_adjust",'data-team="'+id(t.id)+'" data-stat="losses" data-delta="-1"',"danger small")+
+   '</div></div>').join(""):'<p class="muted">Todavía no hay dúos.</p>'));
+ const logs=Array.isArray(live.audit)?live.audit:[];
+ const history=card("🧾 Últimas correcciones realizadas por JS",
+  (logs.length?logs.map(x=>{
+   const t=teams().find(t=>t.id===x.team_id);
+   const d=x.details||{};
+   const label=x.action==="adjust"?
+    (d.stat==="wins"?"Victorias ":"Derrotas ")+(d.delta===1?"+1":"−1")+" · "+(t?teamName(t):"Dúo"):
+    x.action==="resolve"?"Ganador corregido · PVP #"+x.match_id:"Partida anulada · PVP #"+x.match_id;
+   return '<div class="match"><strong>'+label+'</strong><p class="muted">'+date(x.created_at)+'</p></div>';
+  }).join(""):'<div class="empty">No hay correcciones administrativas.</div>'));
+ return matches+correction+history;
+}
 function render(){
  if(!live)return;
  statusBanner();
@@ -286,7 +315,7 @@ function render(){
  for(const tab of $("league-tabs").querySelectorAll("[data-tab]"))tab.classList.toggle("on",tab.dataset.tab===view);
  if(!live.admin&&view==="admin")view="mi-equipo";
  const fn=({"mi-equipo":myTeamScreen,rivales:rivalsScreen,partidas:matchesScreen,ranking:rankingScreen,historial:historyScreen,admin:adminScreen})[view]||myTeamScreen;
- $("league-content").innerHTML=fn();
+ $("league-content").innerHTML=fn()+(live.admin&&view==="admin"?adminExtras():"");
 }
 async function load(silent=false){
  if(busy)return;
@@ -309,6 +338,10 @@ async function load(silent=false){
   const previousSearch=live?.search?.my_ready===true;
   const previousGameId=myActiveGame()?.id;
   data.search=searchResult.error?null:searchResult.data;
+  if(data.admin){
+   const {data:audit,error:auditError}=await sb.rpc("js_liga_admin_historial");
+   data.audit=!auditError&&Array.isArray(audit)?audit:[];
+  }
   live=data;me=data.user;
   if(previousSearch&&!data.search?.my_ready){
    const newActive=myActiveGame();
@@ -360,9 +393,12 @@ async function verifyOwnId(){
 }
 async function operation(action,payload={}){
  if(busy)return;
- const dangerous=["end","admin_cancel","admin_resolve","remove_sub"];
+ const dangerous=["end","admin_cancel","admin_resolve","admin_adjust","remove_sub"];
  if(dangerous.includes(action)&&!confirm(action==="end"?
    "¿Finalizar y archivar esta temporada? No podrás volver a abrirla.":
+   action==="admin_resolve"?"¿Confirmás el ganador elegido? Se sumará una victoria al dúo ganador y una derrota al rival. Si ya había un ganador, se revertirán los puntos anteriores.":
+   action==="admin_cancel"?"¿Anular este PvP? Se quitarán sus puntos anteriores si los tenía.":
+   action==="admin_adjust"?"¿Aplicar "+(payload.delta===1?"+1":"−1")+" "+(payload.stat==="wins"?"victoria":"derrota")+" al dúo seleccionado?":
    "¿Confirmás esta acción de administrador?"))return;
  busy=true;
  const disabled=[...document.querySelectorAll("button[data-action]")];
@@ -376,6 +412,14 @@ async function operation(action,payload={}){
    });
   else if(isSearch)result=await sb.rpc("js_liga_busqueda",{
     p_action:action==="search_join"?"join":"leave"
+   });
+  else if(["admin_resolve","admin_cancel","admin_adjust"].includes(action))
+   result=await sb.rpc("js_liga_admin_arbitrar",{
+    p_action:action==="admin_resolve"?"resolve":action==="admin_cancel"?"cancel":"adjust",
+    p_match_id:payload.match_id??null,p_side:payload.side??null,
+    p_team_id:payload.team_id??null,p_stat:payload.stat??null,
+    p_delta:payload.delta??null,p_request_id:crypto.randomUUID(),
+    p_reason:"Corrección desde el panel JS"
    });
   else result=await sb.rpc("js_liga_accion",{p_accion:action,p_datos:payload});
   const {data,error}=result;
@@ -417,6 +461,8 @@ document.addEventListener("click",async e=>{
   p.match_id=Number(b.dataset.match);
   if(action==="result_win"||action==="result_loss")p.result=action==="result_win"?"win":"loss";
   if(action==="admin_resolve")p.side=b.dataset.side;
+ }else if(action==="admin_adjust"){
+  p.team_id=b.dataset.team;p.stat=b.dataset.stat;p.delta=Number(b.dataset.delta);
  }else if(action==="prize"){
   p.prize=fromSelect("prize-input").trim();
  }
