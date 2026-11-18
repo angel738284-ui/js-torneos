@@ -44,5 +44,5 @@ test("no se pierden partidas ni resultados",()=>{
  assert.match(sql,/update public\.js_liga_duo_sharing/);
 });
 test("cache actualizada para el celular",()=>{
- assert.match(html,/liga\.js\?v=2\.5\.0/);
+ assert.match(html,/liga\.js\?v=2\.6\.0/);
 });

@@ -1,5 +1,5 @@
 import {createClient} from "https://esm.sh/@supabase/supabase-js@2.45.6";
-import {createLeagueExtras} from "./liga-plus.js?v=2.0.0";
+import {createLeagueExtras} from "./liga-plus.js?v=2.1.0";
 import {createCompetitiveProfile} from "./perfil-competitivo.js?v=2.0.0";
 import {createLeagueWhatsApp} from "./liga-wa-link.js?v=1.0.0";
 
@@ -293,7 +293,7 @@ function matchCard(b){
  btn("❌ Rechazar","reject_match",'data-match="'+b.id+'"',"danger")+'</div>';
  if(canReport)actions='<div class="row">'+btn("🏆 Gané","result_win",'data-match="'+b.id+'"',"good")+
  btn("📋 Perdí","result_loss",'data-match="'+b.id+'"',"danger")+'</div>';
- if(b.state==="playing"&&participant&&b.my_vote?.result)actions='<p class="muted">✅ Ya informaste: '+(b.my_vote.result==="win"?"Gané":"Perdí")+'. Esperando al resto.</p>';
+ if(b.state==="playing"&&participant&&b.my_vote?.result)actions='<p class="muted">✅ Ya informaste: '+(b.my_vote.result==="win"?"Gané":"Perdí")+'. Solo falta la confirmación de un integrante del dúo contrario.</p>';
  if(live?.admin&&Number(b.confirmed)===4&&b.started_at){
    actions+='<div class="line"></div><p class="muted">👑 Resolución de JS · solo PvP con 4/4 aceptaciones</p><div class="row">'+
     btn("🏆 Ganó azul","admin_resolve",'data-match="'+b.id+'" data-side="a"',"small")+
@@ -303,7 +303,7 @@ function matchCard(b){
  return '<article class="match"><div class="flex"><b>⚔️ PVP #'+b.id+'</b><span class="badge">'+esc(status(b))+'</span></div>'+
  '<div class="vs"><span>'+lineupText(b,"a")+'<br><span class="vsmuted">🔵 EQUIPO AZUL</span></span><i>VS</i><span>'+lineupText(b,"b")+'<br><span class="vsmuted">🔴 EQUIPO ROJO</span></span></div>'+
  (b.state==="pending"?acceptanceDetails(b):"")+
- '<div class="flex"><span class="muted">✅ '+b.confirmed+'/4 aceptaron · 📝 '+b.reported+'/4 resultados</span>'+
+ '<div class="flex"><span class="muted">✅ '+b.confirmed+'/4 aceptaron · 📝 '+b.reported+'/2 dúos informaron</span>'+
  '<span class="muted">'+(b.state==="pending"?"Límite: "+date(b.accept_until):b.state==="playing"?"Sin vencimiento · inicio: "+date(b.started_at||b.created):date(b.created))+'</span></div>'+
  (b.state==="complete"?'<div class="line"></div><strong style="color:var(--gold)">🏆 Ganador: '+validWinner+'</strong>':"")+
  (b.state==="review"?'<p class="muted">No se otorgaron puntos. JS debe verificar y decidir.</p>':"")+
@@ -445,7 +445,7 @@ function searchScreen(){
   btn("📋 Ver mis partidas","go_matches",'',"small"));
  const mine=teamOf(me);
  if(!mine)return card("🎲 Búsqueda aleatoria",
-   '<p class="muted">Primero formá tu dúo desde «Mi dúo». Después los dos podrán confirmar la búsqueda.</p>'+
+   '<p class="muted">Primero formá tu dúo desde «Mi dúo». Después, con que uno de los dos toque Buscar rival alcanza para activar la búsqueda.</p>'+
    btn("🛡️ Ir a mi dúo","go_team",'',"hot"));
  const active=myActiveGame();
  if(active)return card("🎮 ¡Tu dúo tiene un PvP!",'<p class="muted">Ya hay una partida en curso o pendiente para tu equipo. No se puede buscar otra hasta terminarla.</p>'+
@@ -460,22 +460,22 @@ function searchScreen(){
  const waiting=Number.isInteger(state.waiting_teams)?Math.max(0,state.waiting_teams):0;
  const count=(ownReady?1:0)+(partnerReady?1:0);
  const label=ownReady&&partnerReady?
-  '🔄 Los dos confirmaron. Buscando otro dúo listo…':
-  ownReady?'✅ Confirmaste. Esperando a tu compañero…':
-  partnerReady?'🟢 Tu compañero ya confirmó. Falta tu aceptación.':
+  '🔄 Tu dúo está buscando rival…':
+  ownReady?'✅ Ya activaste la búsqueda para tu dúo. Esperando rival…':
+  partnerReady?'🟢 Tu compañero ya está buscando rival por los dos.':
    '⚪ Tu dúo todavía no está buscando.';
- const commands=ownReady?
-   btn("✕ Cancelar búsqueda","search_leave",'',"danger block"):
-   btn("🎲 Confirmar y buscar rival","search_join",'',"hot block");
+ const commands=ownReady||partnerReady?
+   btn("✕ Cancelar búsqueda del dúo","search_leave",'',"danger block"):
+   btn("🎲 Buscar rival para mi dúo","search_join",'',"hot block");
  return card("🎲 Buscar rival aleatorio",
-  '<p class="muted">Los dos jugadores activos del dúo tienen que confirmar por separado. Cuando otro dúo de la misma región haga lo mismo, el sistema los empareja automáticamente y crea el PvP.</p>'+
-  '<div class="grid"><div class="metric"><b>'+count+'/2</b><small>TU DÚO CONFIRMADO</small></div>'+
+  '<p class="muted">Con que <b>uno de los dos</b> integrantes toque Buscar rival alcanza. Cuando otro dúo de la misma región haga lo mismo, se crea el PvP. Los cuatro IDs deben estar verificados.</p>'+
+  '<div class="grid"><div class="metric"><b>'+(count>=1?"✅ Activa":"⚪ Inactiva")+'</b><small>BÚSQUEDA DEL DÚO</small></div>'+
   '<div class="metric"><b>'+waiting+'</b><small>DÚOS BUSCANDO</small></div></div>'+
   '<div class="match"><strong>'+label+'</strong><p class="muted">'+
-  (ownReady&&partnerReady?'Mantené esta página abierta. La búsqueda se actualiza automáticamente.':
-   'Cada jugador confirma desde su propia cuenta JS Torneos.')+'</p></div>'+
+  (ownReady||partnerReady?'Mantené esta página abierta si querés ver cuándo aparece un rival. El bot también puede ayudarte por privado.':
+   'Cualquiera de los titulares activos puede iniciar la búsqueda.')+'</p></div>'+
   commands+
-  '<p class="muted">⏳ La confirmación vence si un jugador deja de estar activo durante unos 90 segundos. Si cualquiera cancela, sale el dúo completo. Nunca emparejamos contra una región diferente.</p>');
+  '<p class="muted">⏳ La búsqueda se renueva mientras esté activa en la web o con el bot. Si cualquiera la cancela, termina para todo el dúo. Nunca emparejamos regiones distintas.</p>');
 }
 function rivalsScreen(){
  if(live?.paused)return searchScreen();

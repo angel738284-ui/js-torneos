@@ -141,10 +141,14 @@ export function createLeagueExtras({
   if(!Array.isArray(match.result_details)||!activeMatch(match))return "";
   return '<div class="match-extra"><strong>📋 ¿Quién confirmó el resultado?</strong>'+
     '<div class="extra-result-grid">'+match.result_details.map(x=>{
-      const status=x.result==="win"?"🏆 Gané":x.result==="loss"?"📉 Perdí":"⏳ Falta informar";
+      const mySide=(match.lineup_a||[]).includes(x.user_id)?"a":"b";
+      const sideReported=(match.result_details||[]).some(y=>y.result&&
+        ((mySide==="a"&&(match.lineup_a||[]).includes(y.user_id))||
+         (mySide==="b"&&(match.lineup_b||[]).includes(y.user_id))));
+      const status=x.result==="win"?"🏆 Gané":x.result==="loss"?"📉 Perdí":sideReported?"✅ Su dúo ya informó":"⏳ Falta informar";
       return '<div class="result-person">'+personal(x.user_id)+'<small>'+status+'</small></div>';
     }).join("")+'</div>'+
-    '<p class="muted">Cuando los cuatro coinciden, el resultado se acredita. Si se contradicen, JS decide.</p></div>';
+    '<p class="muted">Con una respuesta por dúo alcanza: uno informa Gané y el otro Perdí. Si se contradicen, JS revisa y no da puntos automáticamente.</p></div>';
  }
  function waitingRoom(match){
   if(!isOn(match))return "";
@@ -159,8 +163,8 @@ export function createLeagueExtras({
     (accepted?"✅":"◷")+" "+personal(user)+'</span>';
   }).join("");
   return '<div class="match-extra wait-room">'+
-   '<strong>🎮 Sala de espera · '+number+'/4 listos</strong>'+
-   '<p class="muted">'+(fully?"✅ ¡Los cuatro están listos! Ya pueden jugar.":"Los cuatro deben tocar Estoy listo, cada uno desde su cuenta.")+'</p>'+
+   '<strong>🎮 Sala de espera · '+number+'/2 dúos listos</strong>'+
+   '<p class="muted">'+(fully?"✅ ¡Ambos dúos están listos! Ya pueden jugar.":"Alcanza con que una persona de cada dúo marque Estoy listo.")+'</p>'+
    '<div class="ready-list">'+slots+'</div>'+
    (ids(match).includes(getMe())?
     btn(mine?"↩️ Ya no estoy listo":"✅ ESTOY LISTO",mine?"unready":"ready",
