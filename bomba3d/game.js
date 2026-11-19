@@ -17,6 +17,8 @@ let projectile=null,flight=null;
 let demoHolder=null,demoPending=null,demoEndsAt=0;
 let demoFuseStartAt=0,demoFuseDeadlineAt=0,serverClockOffset=0;
 let demoSecondPass=null,demoVictimId=null,demoExplodedAt=0,demoFinishedAt=0;
+const demoEliminated=new Set();
+let demoRound=0,demoChampionId=null;
 const DEMO_FULL_DURATION_MS=20000,DEMO_FALL_HOLD_MS=4600;
 const reducedMotion=()=>Boolean(window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches);
 const status=text=>{const node=el("bomb3dStatus");if(node)node.textContent=text;};
@@ -80,6 +82,7 @@ function disposeStages(){
  projectile=null;flight=null;demoHolder=null;demoPending=null;demoEndsAt=0;
  demoFuseStartAt=0;demoFuseDeadlineAt=0;
  demoSecondPass=null;demoVictimId=null;demoExplodedAt=0;demoFinishedAt=0;
+ demoEliminated.clear();demoRound=0;demoChampionId=null;
 }
 function setPosition(actor,card,total,w,h){
  const x=parseFloat(card.style.left),y=parseFloat(card.style.top);
@@ -104,19 +107,21 @@ export function syncRoom(data,clockOffsetMs){
  if(data?.estado==="playing"){
   // If the DEMO finished with a fake elimination, undo that pose before
   // using authoritative server state. The DEMO never touches Supabase.
-  if(demoHolder||demoExplodedAt){
+  if(demoHolder||demoExplodedAt||demoEliminated.size||demoChampionId){
    flight=null;
    for(const p of data.jugadores||[]){
     const actor=actors.get(p.id);
     if(actor){
      actor.alive=Boolean(p.vivo);
      actor.action=actor.alive?"idle":"death";
+     actor.root.visible=true;
     }
    }
   }
   demoHolder=null;demoPending=null;demoEndsAt=0;
   demoFuseStartAt=0;demoFuseDeadlineAt=0;
   demoSecondPass=null;demoVictimId=null;demoExplodedAt=0;demoFinishedAt=0;
+  demoEliminated.clear();demoRound=0;demoChampionId=null;
  }
  if(!ready||!arena||!hasOriginalModel()||!data?.jugadores)return;
  const stage=el("tableStage");
@@ -138,14 +143,17 @@ export function syncRoom(data,clockOffsetMs){
    (actor.handAnchor||actor.root).add(actor.bomb.root);
    actor.bomb.root.visible=false;
    actor.stamp=signature;actor.playerId=p.id;
-   actor.action=p.vivo?"idle":"death";
-   actor.alive=Boolean(p.vivo);actor.until=0;
+   actor.alive=Boolean(p.vivo)&&!demoEliminated.has(p.id);
+   actor.action=actor.alive?"idle":"death";
+   actor.until=0;
+   actor.root.visible=!demoEliminated.has(p.id)||Boolean(demoExplodedAt&&demoVictimId===p.id);
    arena.scene.add(actor.root);actors.set(p.id,actor);
   }
   if(actor.alive&&!p.vivo){actor.alive=false;actor.action="death";}
   setPosition(actor,card,data.jugadores.length,w,h);
  }
  stage?.classList.add("is3d");
+ syncDemoCards();
  status("🟢 "+actors.size+" muñequitos GLB con ropa 3D personalizada");
 }
 export function syncPreview(avatar){
@@ -162,29 +170,77 @@ export function syncPreview(avatar){
  el("preview")?.classList.add("is3d");
 }
 /**
- * Visual-only pass in the fictional demo room. No RPC calls, no scores,
- * and never available during an actual game.
+ * Only a visual demo. Real eliminations and scores remain server-owned.
+ * Eight fictional players continue for multiple rounds until one wins.
  */
-export function demoThrow(){
- if(!ready||!roomData||roomData.estado!=="ready"||
-    !String(roomData.titulo||"").startsWith("DEMO")||
-    flight||demoPending||demoHolder||demoExplodedAt)return false;
- const living=(roomData.jugadores||[]).filter(p=>p.vivo&&actors.has(p.id));
- if(living.length<2)return false;
- const now=performance.now();
- const first=living[0],second=living[1],third=living[2]||second;
+function availableDemoPlayers(){
+ return (roomData?.jugadores||[]).filter(p=>
+  p.vivo&&!demoEliminated.has(p.id)&&actors.has(p.id));
+}
+function syncDemoCards(){
+ const cards=el("players")?.children||[];
+ for(const card of cards){
+  const wasEliminated=card.classList.contains("demo-eliminated");
+  const eliminated=demoEliminated.has(card.dataset.playerId);
+  card.classList.toggle("demo-eliminated",eliminated);
+  const badge=card.querySelector?.(".player-status");
+  if(badge&&eliminated)badge.textContent="💥 ELIMINADO";
+  else if(badge&&demoChampionId===card.dataset.playerId)badge.textContent="🏆 GANADOR";
+  else if(badge&&demoRound)badge.textContent="🎮 EN JUEGO";
+  else if(badge&&wasEliminated){
+   const player=roomData?.jugadores?.find(p=>p.id===card.dataset.playerId);
+   badge.textContent=!player?.vivo?"💥 Eliminado":
+     player?.id===roomData?.bomba_de?"💣 TIENE BOMBA":"🎮 En juego";
+  }
+ }
+}
+function resetDemoVisuals(){
+ demoHolder=null;demoPending=null;demoSecondPass=null;demoVictimId=null;
+ demoEndsAt=0;demoFuseStartAt=0;demoFuseDeadlineAt=0;
+ demoExplodedAt=0;demoFinishedAt=0;demoRound=0;demoChampionId=null;
+ demoEliminated.clear();flight=null;
+ for(const p of roomData?.jugadores||[]){
+  const actor=actors.get(p.id);
+  if(!actor)continue;
+  actor.alive=Boolean(p.vivo);
+  actor.action=actor.alive?"idle":"death";
+  actor.root.visible=true;
+  actor.until=0;
+ }
+ syncDemoCards();
+}
+function startDemoRound(now){
+ const living=availableDemoPlayers();
+ if(living.length<=1){
+  demoChampionId=living[0]?.id||null;
+  demoHolder=null;demoPending=null;demoSecondPass=null;
+  demoFuseStartAt=0;demoFuseDeadlineAt=0;demoEndsAt=0;
+  syncDemoCards();
+  return false;
+ }
+ demoRound++;
+ const firstIndex=(demoRound-1)%living.length;
+ const first=living[firstIndex];
+ const second=living[(firstIndex+1)%living.length];
+ const third=living[(firstIndex+2)%living.length];
  demoHolder=first.id;
  demoPending={fromId:first.id,toId:second.id,when:now+4600};
  demoSecondPass=third.id!==second.id
   ?{fromId:second.id,toId:third.id,when:now+12000}:null;
- demoVictimId=third.id;
- demoFuseStartAt=now;
- demoFuseDeadlineAt=now+DEMO_FULL_DURATION_MS;
+ demoVictimId=null;demoExplodedAt=0;demoFinishedAt=0;
+ demoFuseStartAt=now;demoFuseDeadlineAt=now+DEMO_FULL_DURATION_MS;
  demoEndsAt=demoFuseDeadlineAt;
- demoExplodedAt=0;demoFinishedAt=0;
+ syncDemoCards();
  return true;
 }
-/** Manual explosion in the DEMO only. Never changes the server's player data. */
+export function demoThrow(){
+ if(!ready||!roomData||roomData.estado!=="ready"||
+    !String(roomData.titulo||"").startsWith("DEMO")||
+    flight||demoPending||demoHolder||demoExplodedAt)return false;
+ resetDemoVisuals();
+ return startDemoRound(performance.now());
+}
+/** Speed up the CURRENT demo round, not the real multiplayer timer. */
 export function demoExplodeNow(){
  if(!ready||roomData?.estado!=="ready"||!demoHolder||
     !demoFuseStartAt||demoExplodedAt)return false;
@@ -223,7 +279,7 @@ export function onGameTransition(before,after){
  receiver.action="catch";receiver.until=now+flight.duration+450;
 }
 function animateHeldAndFlyingBomb(time,reduced){
- // Fictional demo: 20 real seconds, two passes, one explosion and fall.
+ // Fictional demo: 20 seconds per round, two passes, one elimination.
  if(demoSecondPass&&time>=demoSecondPass.when&&!flight&&!demoPending&&!demoExplodedAt){
   demoPending=demoSecondPass;demoSecondPass=null;
  }
@@ -247,6 +303,8 @@ function animateHeldAndFlyingBomb(time,reduced){
   demoVictimId=demoHolder;
   const victim=actors.get(demoVictimId);
   if(victim){victim.alive=false;victim.action="death";}
+  demoEliminated.add(demoVictimId);
+  syncDemoCards();
   demoHolder=null;
   demoExplodedAt=time;
   demoFinishedAt=time+DEMO_FALL_HOLD_MS;
@@ -254,12 +312,9 @@ function animateHeldAndFlyingBomb(time,reduced){
  }
  if(demoExplodedAt&&time>=demoFinishedAt){
   const victim=actors.get(demoVictimId);
-  if(victim){
-   victim.alive=Boolean(roomData?.jugadores?.find(p=>p.id===demoVictimId)?.vivo);
-   victim.action=victim.alive?"idle":"death";
-  }
+  if(victim)victim.root.visible=false;
   demoExplodedAt=0;demoFinishedAt=0;demoVictimId=null;
-  demoFuseStartAt=0;demoFuseDeadlineAt=0;demoEndsAt=0;
+  startDemoRound(time);
  }
  const fuseProgress=demoFuseStartAt&&demoFuseDeadlineAt>demoFuseStartAt
   ?Math.max(0,Math.min(1,(demoFuseDeadlineAt-time)/(demoFuseDeadlineAt-demoFuseStartAt)))
@@ -273,14 +328,36 @@ function animateHeldAndFlyingBomb(time,reduced){
  }
  const demoExplodeButton=el("bomb3dDemoExplode");
  if(demoExplodeButton)demoExplodeButton.disabled=!(demoHolder&&demoFuseStartAt&&!demoExplodedAt);
+ const demoStartButton=el("bomb3dDemoThrow");
+ if(demoStartButton){
+  demoStartButton.disabled=Boolean(demoHolder||demoExplodedAt);
+  demoStartButton.textContent=demoChampionId
+   ?"🔄 Reiniciar DEMO desde 8 jugadores"
+   :"🎬 Jugar 8 bots · hasta un ganador";
+ }
  const demoStatus=el("bomb3dDemoStatus");
  if(demoStatus){
-  demoStatus.textContent=demoExplodedAt
-   ?"💥 ¡BOOM! El muñeco se cayó. Se recuperará en unos segundos."
-   :demoHolder&&demoFuseDeadlineAt>0
-    ?"🔥 Prueba completa · quedan "+Math.max(0,Math.ceil((demoFuseDeadlineAt-time)/1000))+
-      " segundos · mecha consumiéndose"
-    :"🎮 Probá una secuencia de 20 segundos con lanzamientos, explosión y caída.";
+  const remaining=availableDemoPlayers().length;
+  const champion=roomData?.jugadores?.find(p=>p.id===demoChampionId);
+  demoStatus.textContent=demoChampionId
+   ?"🏆 GANADOR: "+(champion?.nombre||"Jugador")+" · "+demoEliminated.size+
+      " eliminados · podés volver a jugar"
+   :demoExplodedAt
+    ?"💥 Ronda "+demoRound+": ¡BOOM! Eliminado · "+remaining+
+      " siguen · nueva bomba enseguida"
+    :demoHolder&&demoFuseDeadlineAt>0
+     ?"🎮 Ronda "+demoRound+" · "+remaining+" vivos · 🔥 "+
+       Math.max(0,Math.ceil((demoFuseDeadlineAt-time)/1000))+
+       " s · el eliminado no vuelve"
+     :"🎬 8 bots · una bomba nueva por ronda · gana el último sobreviviente";
+ }
+ const championBanner=el("bomb3dDemoWinner");
+ if(championBanner){
+  championBanner.hidden=!demoChampionId;
+  if(demoChampionId){
+   const winner=roomData?.jugadores?.find(p=>p.id===demoChampionId);
+   championBanner.textContent="🏆 ¡GANADOR: "+(winner?.nombre||"Jugador")+"!";
+  }
  }
  if(!projectile)return;
  if(!flight){projectile.root.visible=false;return;}

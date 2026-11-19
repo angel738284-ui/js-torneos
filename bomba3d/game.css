@@ -70,3 +70,13 @@
 .bomb3dToolbar #bomb3dDemoExplode:disabled{opacity:.5}
 .bomb3dToolbar .demoStatus{display:block;width:100%;text-align:center;
  color:#dbeef5;font-size:12px;line-height:1.6}
+
+/* Fictional contestants knocked out in the DEMO stop playing permanently. */
+.tableStage.is3d .player.demo-eliminated{opacity:.38;filter:grayscale(.72)!important;
+ border-color:#6b5866;background:#331e2b38!important;box-shadow:none}
+.tableStage.is3d .player.demo-eliminated .player-status{color:#ffc1bd}
+.bomb3dToolbar #bomb3dDemoThrow:disabled{opacity:.55;cursor:wait}
+
+.bomb3dToolbar .demoWinner{width:100%;padding:12px;border-radius:11px;
+ text-align:center;font-size:17px;font-weight:1000;color:#fcf3bd;
+ background:linear-gradient(125deg,#63512c,#294c59);border:1px solid #d2b965}

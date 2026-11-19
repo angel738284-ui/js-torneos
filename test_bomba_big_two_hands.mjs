@@ -83,6 +83,6 @@ test("Giant bomb stays in both hands before launch, then flies in a bigger arc",
  assert.match(game,/playingAction=isHolder&&a\.action==="idle"\?"hold":a\.action/);
  assert.match(game,/actor\.bomb\.root\.position\.set\(\.\.\.HAND_OFFSET\)/);
  assert.match(game,/projectile\.root\.position\.copy\(flight\.point\(time\)\)/);
- assert.match(page,/Probar ronda completa · 20 segundos/);
- assert.match(page,/bomba3d\/game\.js\?v=10/);
+ assert.match(page,/Jugar 8 bots · hasta un ganador/);
+ assert.match(page,/bomba3d\/game\.js\?v=11/);
 });

@@ -37,7 +37,9 @@ El selector \`wear3d\` (yes/no) se guarda con la función de avatar existente en
 
 ## Sala DEMO con explosión y caída (noviembre de 2026)
 
-- La sala ficticia permite una prueba visual de 20 segundos con dos lanzamientos automáticos, mecha continua, explosión `💥` y caída completa del GLB; el personaje se levanta después de 4,6 segundos para poder repetir la DEMO.
-- Un segundo botón `💥 Explotar ahora` adelanta solo la explosión de la prueba. No modifica jugadores reales ni datos de Supabase.
+- La sala ficticia permite una partida visual de siete rondas de 20 segundos con dos lanzamientos automáticos por ronda, mecha continua, explosión `💥` y caída completa del GLB; el eliminado permanece caído 4,6 segundos y luego desaparece de la mesa; no reaparece en rondas posteriores.
+- Un segundo botón `💥 Explotar ahora` adelanta la explosión de la ronda actual, permitiendo acelerar hasta el ganador. No modifica jugadores reales ni datos de Supabase.
 - Cuando la sala pasa a `playing`, el motor anula cualquier simulación y restaura los personajes al estado auténtico de servidor.
 - La duración real de cada ronda sigue en el backend (aprox. 17–26 segundos).
+
+- Cada ronda tiene una bomba nueva con mecha completa; solo los sobrevivientes pueden recibirla. El último que queda gana y se puede reiniciar la demostración con los ocho bots originales.

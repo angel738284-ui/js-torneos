@@ -108,7 +108,7 @@ test("The old 2D projectile is suppressed while the GLB viewer is working",()=>{
  assert.match(page,/if\(!window\.Bomb3D\?\.isEnabled\(\)\)animateTransfer/);
  assert.match(page,/p_action:"pasar",p_target:target\.id/);
  assert.match(page,/id="passBomb"/);
- assert.match(page,/bomba3d\/game\.js\?v=10/);
+ assert.match(page,/bomba3d\/game\.js\?v=11/);
  assert.match(game,/actor\.bomb=createBombProp\(\)/);
  assert.match(game,/animateHeldAndFlyingBomb\(time,reduced\)/);
 });
