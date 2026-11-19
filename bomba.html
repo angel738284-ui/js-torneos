@@ -113,6 +113,107 @@ select{width:100%;background:#25354d;border:1px solid #536a8f;border-radius:9px;
 @media(max-width:510px){header{padding:15px 13px}.mainGrid{display:block}.sidebar{grid-template-columns:1fr;display:grid;margin-top:14px}.panel{padding:11px}.field{grid-template-columns:repeat(3,minmax(0,1fr));gap:7px}.player{min-height:170px;padding:9px 3px}.char{transform:scale(.86);margin:-8px 0}.player.held .char{transform:scale(.9)}.player.dead .char{transform:rotate(-15deg) scale(.85)}.hero p{font-size:12px}}
 @media(max-width:350px){.field{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(prefers-reduced-motion:reduce){.char .held-bomb,.timer.urgent{animation:none!important}}
+
+/* JS FAMILY TABLE ARENA: responsive seats around a shared tabletop. */
+.tableStage{position:relative;isolation:isolate;height:630px;border-radius:24px;
+ background:radial-gradient(ellipse at 49% 43%,#2f967b 0%,#247b72 42%,#153b45 89%);
+ border:2px solid #3c837d;box-shadow:inset 0 0 50px #071b3088,0 15px 38px #06162288;
+ margin:8px 0 14px;overflow:hidden}
+.tableStage:before{content:"";position:absolute;inset:12px;pointer-events:none;border-radius:23px;
+ border:1px solid #7bffcf1e}
+.tableStage.shock{animation:stageQuake .48s ease-out}
+.tableStage.shock:after{content:"";position:absolute;inset:0;z-index:11;pointer-events:none;
+ background:radial-gradient(circle,#ffdcaa99,#ff646666 56%,transparent 80%);animation:screenFlash .58s ease-out forwards}
+.tableTop{position:absolute;z-index:1;left:50%;top:50%;width:54%;max-width:390px;aspect-ratio:1;
+ transform:translate(-50%,-50%);border-radius:50%;pointer-events:none;
+ background:repeating-radial-gradient(circle at 37% 30%,transparent 0,transparent 24px,#71391313 25px,#71391313 26px),
+ radial-gradient(circle at 31% 25%,#e5ab76 0%,#c48250 34%,#9b5738 74%,#713b2b 100%);
+ border:clamp(8px,1.5vw,16px) solid #703e2d;
+ box-shadow:inset 0 0 0 3px #f9d2a04d,inset 0 14px 28px #fff2b744,
+  inset 0 -16px 30px #582617aa,0 0 0 6px #2d5b55,0 17px 28px #071c258a}
+.tableTop:before{content:"";position:absolute;inset:9%;border:1px solid #ffe2b066;border-radius:50%}
+.tableLabel{position:absolute;z-index:2;inset:0;display:flex;align-items:center;justify-content:center;
+ flex-direction:column;gap:5px;color:#502e25;text-align:center;font-weight:1000;
+ text-shadow:0 1px #f1c08d6b;padding:16px}
+.tableLabel .centerMark{font-size:clamp(30px,5vw,54px);line-height:1;
+ filter:drop-shadow(0 7px 5px #6438277b);animation:bombBreathe 1.1s ease-in-out infinite alternate}
+.tableLabel .centerTitle{font-size:clamp(11px,2.8vw,19px);max-width:100%;
+ overflow-wrap:anywhere}
+.tableLabel .centerSub{font-size:clamp(10px,2.3vw,14px);font-variant-numeric:tabular-nums;
+ color:#633325;max-width:100%}
+.tableStage .field{position:absolute;inset:0;display:block!important;min-height:0!important;
+ height:100%;width:100%;padding:0;margin:0;z-index:3}
+.tableStage .player{position:absolute;z-index:3;left:50%;top:50%;
+ transform:translate(-50%,-50%);width:90px;min-height:140px;
+ padding:7px 4px;gap:3px;
+ background:radial-gradient(ellipse at center,#0c35435d,transparent 82%);
+ border:1px solid transparent;border-radius:28px;
+ box-shadow:none;
+ transition:border-color .15s,box-shadow .15s,opacity .25s,filter .25s;
+ backdrop-filter:none}
+.tableStage .player .player-name{border-radius:7px;padding:3px 5px;background:#0b2a38d6;text-shadow:0 1px 2px #0a1a2b}
+.tableStage .player .player-status{border-radius:7px;padding:2px 5px;background:#12344099}
+.tableStage .player.held{transform:translate(-50%,-50%);background:linear-gradient(165deg,#652c3d,#233f4b);
+ border:2px solid #ffbf8b;box-shadow:0 0 0 2px #f67a5570,0 0 20px #ff82589f}
+.tableStage .player.selected{transform:translate(-50%,-50%);z-index:5}
+.tableStage .player.targetable:active{transform:translate(-50%,-50%) scale(.97)}
+.tableStage .player .player-name{font-size:10px;max-width:100%;z-index:2}
+.tableStage .player .player-status{font-size:9px}
+.tableStage .player .char{transform:scale(.75);margin:-12px 0 -12px;
+ animation:seatIdle 2.9s ease-in-out infinite;animation-delay:var(--seat-delay,0s);
+ transform-origin:50% 55%}
+.tableStage .player.held .char{animation:seatHolder 0.48s ease-in-out infinite alternate}
+.tableStage .player.dead .char{animation:none;transform:scale(.68) rotate(-28deg)}
+.tableStage .player .eyes{animation:eyeblink 6.5s infinite;animation-delay:var(--seat-delay,0s);
+ transform-origin:50% 50%}
+.tableStage .player .held-bomb{font-size:29px;right:-5px}
+.tableStage .player.held .char .held-bomb{animation:bombHop .25s infinite alternate}
+.tableStage .player.dead{opacity:.38;filter:grayscale(1)}
+.tableStage .player:disabled:not(.dead){opacity:1}
+.tableStage .player.selected:after{top:-6px;right:-4px;font-size:8px;z-index:6}
+.tableStage .tableFloor{position:absolute;inset:0;z-index:0;pointer-events:none;
+ background:radial-gradient(circle at 50% 50%,transparent 30%,#05192419 90%);
+ opacity:.9}
+.effectLayer{position:absolute;inset:0;z-index:12;pointer-events:none;overflow:hidden}
+.flyingBomb{position:absolute;font-size:38px;line-height:1;filter:drop-shadow(0 4px 10px #ff725b);
+ animation:bombFly .83s cubic-bezier(.25,.1,.3,1) both}
+.bombExplosion{position:absolute;line-height:1;font-size:65px;transform:translate(-50%,-50%);
+ filter:drop-shadow(0 0 25px #ffce5c);animation:bombBurst .8s ease-out both}
+@keyframes seatIdle{0%,100%{transform:scale(.75) translateY(0) rotate(-2deg)}
+ 50%{transform:scale(.76) translateY(-4px) rotate(2deg)}}
+@keyframes seatHolder{from{transform:scale(.77) translateY(0) rotate(-3deg)}
+ to{transform:scale(.82) translateY(-5px) rotate(3deg)}}
+@keyframes eyeblink{0%,26%,28%,60%,62%,100%{transform:scaleY(1)}
+ 27%,61%{transform:scaleY(.12)}}
+@keyframes bombBreathe{from{transform:scale(1) rotate(-7deg)}
+ to{transform:scale(1.14) rotate(7deg)}}
+@keyframes bombFly{
+ 0%{transform:translate(-50%,-50%) translate(0,0) scale(.8) rotate(-30deg);opacity:0}
+ 12%{opacity:1}
+ 48%{transform:translate(-50%,-50%) translate(var(--mid-x),var(--mid-y)) scale(1.42) rotate(250deg);opacity:1}
+ 100%{transform:translate(-50%,-50%) translate(var(--end-x),var(--end-y)) scale(.84) rotate(650deg);opacity:0}}
+@keyframes bombBurst{0%{opacity:0;transform:translate(-50%,-50%) scale(.3)}
+ 25%{opacity:1;transform:translate(-50%,-50%) scale(1.1)}
+ 100%{opacity:0;transform:translate(-50%,-50%) scale(2.3)}}
+@keyframes screenFlash{from{opacity:1}to{opacity:0}}
+@keyframes stageQuake{0%,100%{transform:translateX(0)}15%,65%{transform:translateX(-4px)}
+ 40%,85%{transform:translateX(4px)}}
+@media(max-width:510px){
+ .tableStage .player{min-height:125px;padding:5px 2px}
+ .tableStage .player .char{margin:-14px 0 -15px}
+ .tableStage .player .player-name{font-size:9px}
+ .tableTop{width:56%}
+}
+@media(max-width:760px){
+ .arena{overflow:visible}
+ .passControls{position:sticky;bottom:calc(env(safe-area-inset-bottom, 0px) + 8px);
+  z-index:25;box-shadow:0 9px 24px #071625b8}
+}
+@media(prefers-reduced-motion:reduce){
+ .tableStage .player .char,.tableStage .player .eyes,.tableLabel .centerMark,
+ .flyingBomb,.bombExplosion,.tableStage.shock,.tableStage.shock:after{animation:none!important}
+}
+
 </style>
 <script src="./config.js"></script>
 </head>
@@ -125,7 +226,17 @@ select{width:100%;background:#25354d;border:1px solid #536a8f;border-radius:9px;
 <section class="panel arena">
 <div id="winner" class="winner" hidden></div>
 <div class="hud"><b id="round">🎮 Sala JS Family</b><span id="alive" class="pill">— jugadores</span><span id="timer" class="timer">00:00</span></div>
-<div id="players" class="field" aria-label="Todos los jugadores de la sala"></div>
+<div id="tableStage" class="tableStage" aria-label="Mesa redonda con todos los jugadores">
+ <div class="tableFloor" aria-hidden="true"></div>
+ <div class="tableTop" aria-hidden="true">
+  <div class="tableLabel"><span class="centerMark" id="centerMark">💣</span>
+   <strong id="tableCenterName" class="centerTitle">JS FAMILY</strong>
+   <span id="tableCenterTimer" class="centerSub">Esperando jugadores...</span>
+  </div>
+ </div>
+ <div id="players" class="field" aria-label="Jugadores sentados alrededor de la mesa"></div>
+ <div id="effectLayer" class="effectLayer" aria-hidden="true"></div>
+</div>
 <div class="passControls" id="passControls">
  <strong>💣 Pasá la bomba antes de que explote</strong>
  <div class="passHelp" id="selectedTargetLabel" role="status" aria-live="polite">Elegí el personaje de otro jugador para pasarle la bomba.</div>
@@ -263,6 +374,93 @@ async function passSelected(){
  }finally{busy=false;updateHud();}
 }
 el("passBomb").addEventListener("click",()=>void passSelected());
+// Place seats at EQUAL ARC LENGTH along an ellipse: avoids crowding near the ends.
+function seatPositions(total,width,height,cardWidth=78){
+ const centerX=width/2,centerY=height/2;
+ const rx=Math.max(40,centerX-cardWidth/2-7);
+ const ry=Math.max(90,centerY-72);
+ const samples=720,curve=[],circum=0;
+ let lastX=centerX,lastY=centerY-ry,length=circum;
+ for(let j=1;j<=samples;j++){
+  const a=-Math.PI/2+2*Math.PI*j/samples;
+  const x=centerX+rx*Math.cos(a),y=centerY+ry*Math.sin(a);
+  length+=Math.hypot(x-lastX,y-lastY);
+  curve.push({distance:length,x,y});
+  lastX=x;lastY=y;
+ }
+ return Array.from({length:total},(_,i)=>{
+  const aim=length*i/total;
+  if(i===0)return {x:centerX,y:centerY-ry};
+  let lo=0,hi=curve.length-1;
+  while(lo<hi){const mid=(lo+hi)>>1;if(curve[mid].distance<aim)lo=mid+1;else hi=mid;}
+  const after=curve[lo],before=curve[Math.max(0,lo-1)];
+  const pct=Math.max(0,Math.min(1,(aim-before.distance)/Math.max(.0001,after.distance-before.distance)));
+  return {x:before.x+(after.x-before.x)*pct,y:before.y+(after.y-before.y)*pct};
+ });
+}
+function layoutSeats(){
+ const root=el("players"),stage=el("tableStage");
+ if(!root||!stage)return;
+ const total=root.children.length;
+ const width=root.clientWidth||stage.clientWidth||340;
+ const compact=width<510;
+ const height=total<=8?(compact?520:630):total<=12?(compact?635:680):
+  (compact?Math.min(1580,790+(total-12)*62):Math.min(1440,740+(total-12)*55));
+ stage.style.height=height+"px";
+ const cardWidth=compact?(total>14?66:total>9?72:82):(total>14?78:92);
+ const pts=seatPositions(total,width,height,cardWidth);
+ for(let i=0;i<total;i++){
+  const card=root.children[i];if(!card)continue;
+  card.style.left=pts[i].x+"px";
+  card.style.top=pts[i].y+"px";
+  card.style.width=cardWidth+"px";
+  card.style.setProperty("--seat-delay",(-i*.42)+"s");
+ }
+}
+function animateTransfer(fromId,toId){
+ const stage=el("tableStage"),layer=el("effectLayer");
+ if(!stage||!layer||typeof stage.getBoundingClientRect!=="function")return;
+ if(typeof window.matchMedia==="function"&&window.matchMedia("(prefers-reduced-motion: reduce)").matches)return;
+ const cards=Array.from(el("players").children||[]);
+ const from=cards.find(p=>p.dataset.playerId===fromId);
+ const to=cards.find(p=>p.dataset.playerId===toId);
+ if(!from||!to||typeof from.getBoundingClientRect!=="function")return;
+ const stageRect=stage.getBoundingClientRect();
+ const a=from.getBoundingClientRect(),b=to.getBoundingClientRect();
+ const sx=a.left+a.width/2-stageRect.left,sy=a.top+a.height/2-stageRect.top;
+ const dx=b.left+b.width/2-stageRect.left-sx,dy=b.top+b.height/2-stageRect.top-sy;
+ const flyer=document.createElement("div");flyer.className="flyingBomb";flyer.textContent="💣";
+ flyer.style.left=sx+"px";flyer.style.top=sy+"px";
+ flyer.style.setProperty("--end-x",dx+"px");flyer.style.setProperty("--end-y",dy+"px");
+ flyer.style.setProperty("--mid-x",dx/2+"px");
+ flyer.style.setProperty("--mid-y",dy/2-Math.min(115,Math.max(45,Math.abs(dx)*.25))+"px");
+ layer.append(flyer);
+ setTimeout(()=>flyer.remove(),950);
+}
+function animateExplosion(playerId){
+ const stage=el("tableStage"),layer=el("effectLayer");
+ if(!stage||!layer||typeof stage.getBoundingClientRect!=="function")return;
+ if(typeof window.matchMedia==="function"&&window.matchMedia("(prefers-reduced-motion: reduce)").matches)return;
+ const card=Array.from(el("players").children||[]).find(p=>p.dataset.playerId===playerId);
+ if(!card||typeof card.getBoundingClientRect!=="function")return;
+ const s=stage.getBoundingClientRect(),p=card.getBoundingClientRect();
+ const blast=document.createElement("div");blast.className="bombExplosion";blast.textContent="💥";
+ blast.style.left=p.left+p.width/2-s.left+"px";
+ blast.style.top=p.top+p.height/2-s.top+"px";
+ layer.append(blast);
+ stage.classList.add("shock");
+ setTimeout(()=>{blast.remove();stage.classList.remove("shock");},840);
+}
+function animateGameChanges(before,after){
+ if(!before||before.estado==="canceled")return;
+ const old=new Map((before.jugadores||[]).map(p=>[p.id,p]));
+ const newlyDead=(after.jugadores||[]).filter(p=>old.get(p.id)?.vivo&&!p.vivo);
+ if(newlyDead.length){
+  for(const p of newlyDead)animateExplosion(p.id);
+ }else if(before.bomba_de&&after.bomba_de&&before.bomba_de!==after.bomba_de){
+  animateTransfer(before.bomba_de,after.bomba_de);
+ }
+}
 function drawRoster(){
  const all=room.jugadores||[],root=el("players");root.replaceChildren();
  for(const p of all){
@@ -284,6 +482,7 @@ function drawRoster(){
   if(clickable)card.addEventListener("click",()=>selectTarget(p.id));
   root.append(card);
  }
+ layoutSeats();
  roomSignature=JSON.stringify(all.map(p=>[p.id,p.vivo,p.avatar]))+"|"+room.bomba_de+"|"+(me?.id||"");
 }
 function renderEvents(){
@@ -323,14 +522,21 @@ function render(){
  const signature=JSON.stringify((room.jugadores||[]).map(p=>[p.id,p.vivo,p.avatar]))+"|"+room.bomba_de+"|"+(me?.id||"");
  if(signature!==roomSignature)drawRoster();
  renderEvents();
+ const center=el("tableCenterName");
+ const mark=el("centerMark");if(mark)mark.textContent=status==="finished"?"🏆":"💣";
+ if(center)center.textContent=status==="playing"?(room.jugadores?.find(p=>p.id===room.bomba_de)?.nombre||"¡La bomba!") :
+  status==="finished"?(winner?.nombre||"¡GANADOR!") :
+  status==="ready"?"SALA LISTA":"JS FAMILY";
  updateHud();
 }
 function updateHud(){
  if(!room)return;
  const timer=el("timer"),hint=el("actionHint");
+ const centerTimer=el("tableCenterTimer");
  if(room.estado==="playing"){
   const remain=remainingMs();
   timer.textContent=(remain/1000).toFixed(1)+" s";
+  if(centerTimer)centerTimer.textContent="💥 "+timer.textContent;
   timer.classList.toggle("urgent",remain<4000);
   const holder=activeHolder();
   if(!me){hint.textContent="👀 Sos espectador. Para controlar tu personaje, abrí tu enlace personal.";}
@@ -342,6 +548,8 @@ function updateHud(){
   }else hint.textContent="👀 "+(holder?.nombre||"Otro jugador")+" tiene la bomba. ¡Cuidado!";
  }else{
   timer.textContent="--:--";timer.classList.remove("urgent");
+  if(centerTimer)centerTimer.textContent=room.estado==="ready"?"Esperando inicio":
+   room.estado==="finished"?"🏆 Último sobreviviente":"Inscripciones";
   hint.textContent=room.estado==="finished"?"🏆 ¡Partida terminada!":
    "🎭 Aprovechá para preparar y guardar tu avatar.";
  }
@@ -377,12 +585,14 @@ async function refresh(){
  try{
   const result=await rpc("js_bomba_publica",{p_code:code});
   const server=Date.parse(result.servidor_ahora);if(Number.isFinite(server))offset=server-Date.now();
+  const before=room;
   room=result;
   if(me){
    const current=result.jugadores?.find(p=>p.id===me.id);
    if(current)me.vivo=current.vivo;
   }
   render();
+  animateGameChanges(before,result);
  }catch(err){
   if(!room)showError("No pude cargar la partida: "+err.message);
   else el("phase").textContent="⚠️ Conexión interrumpida. Reintentando…";
@@ -394,6 +604,7 @@ el("share").addEventListener("click",async()=>{
  catch{window.prompt("Copiá el enlace público:",url);}
  setTimeout(()=>el("share").textContent="🔗 Compartir sala pública",2300);
 });
+if(typeof window.addEventListener==="function")window.addEventListener("resize",()=>layoutSeats());
 if(!/^[A-F0-9]{12}$/.test(code))showError("El enlace no tiene un código válido. Abrí el enlace de sala que te mande JS Guardian.");
 else{void identity().then(refresh);setInterval(()=>void refresh(),1400);setInterval(updateHud,90);}
 </script>
