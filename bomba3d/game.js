@@ -4,6 +4,8 @@
  * The Supabase multiplayer game and WhatsApp registration are unchanged.
  */
 import * as THREE from "./vendor/three.module.js";
+import {createBombSFX} from "./sounds.js?v=1";
+window.JSBombSFX=createBombSFX();
 import {preloadOriginalModel,hasOriginalModel,createOriginalRubberActor} from "./imported.js?v=5";
 import {
  createBombProp,handWorldPosition,makePassAnimation,HAND_OFFSET,roundFuseProgress
@@ -253,6 +255,7 @@ export function onGameTransition(before,after){
  if(!ready||!before||!after)return;
  const old=new Map((before.jugadores||[]).map(p=>[p.id,p]));
  const newDeaths=(after.jugadores||[]).filter(p=>old.get(p.id)?.vivo&&!p.vivo);
+ if(newDeaths.length)window.JSBombSFX?.playExplosion?.();
  for(const p of newDeaths){
   const actor=actors.get(p.id);
   if(actor){actor.alive=false;actor.action="death";}
@@ -275,6 +278,7 @@ export function onGameTransition(before,after){
   fromId:before.bomba_de,toId:after.bomba_de,
   start:origin,end:destination,startTime:now
  });
+ window.JSBombSFX?.playThrow?.();
  sender.action="throw";sender.until=now+Math.min(450,flight.duration*.58);
  receiver.action="catch";receiver.until=now+flight.duration+450;
 }
@@ -292,6 +296,7 @@ function animateHeldAndFlyingBomb(time,reduced){
     startTime:time
    });
    demoHolder=recipient.playerId;
+   window.JSBombSFX?.playThrow?.();
    sender.action="throw";sender.until=time+420;
    recipient.action="catch";recipient.until=time+flight.duration+450;
   }
@@ -308,6 +313,7 @@ function animateHeldAndFlyingBomb(time,reduced){
   demoHolder=null;
   demoExplodedAt=time;
   demoFinishedAt=time+DEMO_FALL_HOLD_MS;
+  window.JSBombSFX?.playExplosion?.();
   window.JSBombDemoExplosion?.(demoVictimId);
  }
  if(demoExplodedAt&&time>=demoFinishedAt){
@@ -320,6 +326,7 @@ function animateHeldAndFlyingBomb(time,reduced){
   ?Math.max(0,Math.min(1,(demoFuseDeadlineAt-time)/(demoFuseDeadlineAt-demoFuseStartAt)))
   :roundFuseProgress(roomData,Date.now()+serverClockOffset);
  const current=demoHolder||(roomData?.estado==="playing"?roomData.bomba_de:null);
+ window.JSBombSFX?.setFuseActive?.(Boolean(current&&!flight&&!demoExplodedAt),fuseProgress);
  for(const [id,actor] of actors){
   if(actor.bomb){
    actor.bomb.root.visible=Boolean(current===id&&actor.alive&&!flight);

@@ -1,0 +1,64 @@
+/* JS Family · mobile-first visual wardrobe, no extra 3D models. */
+#wardrobeCatalog{display:none}
+#wardrobeCatalog.ready{display:block;margin:12px 0}
+#wardrobeCatalog.ready + .customSections{display:none}
+.wardTabs{display:flex;gap:7px;overflow-x:auto;padding:2px 1px 10px;
+ scroll-snap-type:x proximity;overscroll-behavior-inline:contain;
+ scrollbar-width:thin;scrollbar-color:#4b9aaf transparent}
+.wardTab{flex:0 0 auto;scroll-snap-align:start;min-height:45px!important;
+ padding:9px 13px!important;border-radius:12px!important;
+ white-space:nowrap;font-size:12px!important;background:#213348!important;
+ border-color:#466381!important;color:#cbdfea!important}
+.wardTab.active{background:linear-gradient(130deg,#136e78,#6958b6)!important;
+ border-color:#8af0da!important;color:#fff!important;box-shadow:0 0 0 1px #8af0da55}
+.wardCategory{padding:13px;border:1px solid #416580;border-radius:15px;
+ background:linear-gradient(150deg,#1b3448,#132638)}
+.wardCategory h3{font-size:15px;margin:0 0 12px;color:#f1fafc}
+.wardBlock:not(:last-child){margin-bottom:17px;padding-bottom:15px;
+ border-bottom:1px solid #496c845a}
+.wardBlock h4{font-size:12px;margin:0 0 9px;font-weight:800;color:#cde6ed}
+.wardChoices{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.wardChoices.wardColors{grid-template-columns:repeat(4,minmax(0,1fr))}
+.wardTile{position:relative;display:flex;flex-direction:column;
+ justify-content:center;align-items:center;gap:6px;width:100%;min-width:0;
+ min-height:86px;padding:9px 3px!important;border:1px solid #4e667c!important;
+ background:linear-gradient(155deg,#2a3e54,#1e3146)!important;
+ border-radius:12px!important;color:#e7effa!important;
+ font-weight:700!important;line-height:1.25;transition:border-color .15s,background .15s,transform .15s}
+.wardTile:active{transform:scale(.95)}
+.wardTile.chosen{border:2px solid #77f4d3!important;
+ background:linear-gradient(130deg,#235961,#36365f)!important;
+ box-shadow:0 0 0 1px #77f4d34b,inset 0 0 14px #2b958333}
+.wardTile.chosen:after{content:"✓";position:absolute;top:3px;right:5px;
+ color:#74f8d6;font-size:14px;font-weight:1000}
+.wardThumb{display:grid;place-items:center;width:45px;height:42px;
+ font-size:27px;line-height:1;filter:drop-shadow(0 2px 3px #0005)}
+.wardSwatch{width:41px;height:41px;border-radius:50%;background:var(--swatch);
+ border:3px solid #f4f7ff33;box-shadow:0 3px 9px #0005}
+.wardColor .wardSwatch{font-size:19px;color:#fff;text-shadow:0 1px 3px #000}
+.wardColor.chosen .wardSwatch{outline:2px solid #98ffe5;outline-offset:2px}
+.wardName{font-size:10px;max-width:100%;overflow-wrap:anywhere;text-align:center}
+.wardClassic:before{content:"💡 Tocá una prenda para activar la ropa automáticamente";
+ display:block;font-size:11px;color:#c6f2e9;padding:8px 9px;margin-bottom:12px;
+ background:#1e5055;border-radius:9px}
+.wardSummary{margin:11px 0 3px;color:#b8f6e4;font-weight:750;
+ line-height:1.45;font-size:12px}
+.wardInfo{font-size:11px;color:#b6cede;margin:8px 0 3px;line-height:1.5}
+.avatarEditor #save{width:100%;min-height:49px;font-size:14px}
+.avatarEditor .avatarTools{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.avatarEditor .avatarTools button{min-width:0}
+.bomb3dToolbar #bombSoundToggle{flex:1 1 140px;width:auto!important;
+ min-height:42px;background:#244351;border:1px solid #569aaa;font-size:12px}
+.bomb3dToolbar #bombSoundToggle[aria-pressed="true"]{
+ background:linear-gradient(135deg,#216953,#21617a)}
+.bomb3dToolbar #openWardrobe{flex:1 1 135px;width:auto!important;
+ background:#4b3b77;border-color:#a38ad9;font-size:12px;min-height:42px}
+.bomb3dToolbar .soundControls{display:flex;width:100%;gap:8px}
+@media(max-width:380px){
+ .wardChoices{gap:6px}
+ .wardCategory{padding:10px}
+ .wardTile{min-height:82px}
+ .wardThumb{width:38px;height:38px}
+ .wardChoices.wardColors{grid-template-columns:repeat(3,minmax(0,1fr))}
+}
+@media(prefers-reduced-motion:reduce){.wardTile{transition:none!important}}
