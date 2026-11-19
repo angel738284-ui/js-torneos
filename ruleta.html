@@ -31,6 +31,9 @@ canvas{width:100%;height:100%;display:block}
 .names{padding:0;margin:0;list-style:none;max-height:430px;overflow:auto;display:grid;gap:7px}
 .names li{padding:8px 10px;border:1px solid #344763;border-radius:10px;background:#202e45;font-size:12px;overflow-wrap:anywhere;display:flex;gap:9px;align-items:center}
 .names li b{color:#b9e1ec;font-variant-numeric:tabular-nums}.names li.chosen{border-color:#76ecca;background:#24505c;font-weight:800}
+.names li.eliminated{opacity:.5;background:#291e32;text-decoration:line-through;text-decoration-color:#fd8b8b}
+.last-eliminated{margin:13px auto 0;max-width:560px;border:1px solid #cd6576;background:#3c2231;border-radius:14px;padding:12px 15px;text-align:center;font-weight:850;color:#ffd9e0;overflow-wrap:anywhere;font-size:14px}
+.phase{margin:14px auto 0;text-align:center;font-size:12px;color:#b5dfd5}
 .controls{margin-top:14px;display:flex;gap:8px;flex-wrap:wrap}
 button,.link{border:1px solid #50768c;border-radius:11px;background:#25415c;color:white;min-height:45px;padding:11px 14px;font-weight:800;cursor:pointer;text-decoration:none;font-size:12px;text-align:center;flex:1}
 button:focus-visible,.link:focus-visible{outline:3px solid #aafce0}
@@ -50,6 +53,8 @@ button:focus-visible,.link:focus-visible{outline:3px solid #aafce0}
 <section class="layout" id="content" hidden>
 <div class="wheel-panel">
 <div class="wheel-box"><div class="pointer" aria-hidden="true"></div><canvas id="wheel" width="630" height="630" aria-label="Ruleta con nombres de los participantes" role="img"></canvas><div class="center-dot">JS</div></div>
+<div id="lastEliminated" class="last-eliminated" hidden aria-live="polite"></div>
+<div id="phase" class="phase" hidden aria-live="polite"></div>
 <div id="winner" class="winner" aria-live="polite"><span>🏆 GANADOR DEL SORTEO</span><strong id="winnerName"></strong></div>
 </div>
 <aside class="board"><h2>👥 Participantes</h2><div id="count" class="counter">Cargando nombres…</div><ol id="names" class="names"></ol><div class="controls"><button id="share" type="button">🔗 Copiar enlace</button><a class="link" href="./">🏠 JS Torneos</a></div></aside>
@@ -64,18 +69,25 @@ const api=(config.supabaseUrl||"")+"/rest/v1/rpc/js_ruleta_publica";
 const canvas=document.getElementById("wheel"),c=canvas.getContext("2d");
 const statusEl=document.getElementById("status"),errorEl=document.getElementById("error"),content=document.getElementById("content");
 const namesEl=document.getElementById("names"),countEl=document.getElementById("count"),winEl=document.getElementById("winner"),winName=document.getElementById("winnerName");
+const eliminatedEl=document.getElementById("lastEliminated"),phaseEl=document.getElementById("phase");
 const pointerStart=-Math.PI/2;
 const palette=["#ed4c88","#965bda","#288ab7","#49b3a3","#f0a64d","#7766cc","#e95d65","#2f90a4","#9e5fd7","#47a18a"];
-let data=null,serverOffset=0,rotation=0,spinId="",lastState="",settle=null,lastPoll=0;
+let data=null,serverOffset=0,rotation=0,settle=null;
 const reduced=window.matchMedia&&window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 const p2=Math.PI*2;
 function setMessage(text,kind){
  statusEl.textContent=text;statusEl.className="status "+kind;
 }
 function showError(text){errorEl.hidden=false;errorEl.textContent=text;content.hidden=true;}
+function visibleParticipants(){
+ const items=data?.participantes||[];
+ if(data?.modalidad!=="eliminacion")return items.map((p,i)=>({...p,originalIndex:i}));
+ const eliminated=new Set((data.eliminados||[]).map(x=>Number(x.indice)));
+ return items.map((p,i)=>({...p,originalIndex:i})).filter(p=>!eliminated.has(p.originalIndex));
+}
 function draw(angle=0){
  if(!data?.participantes?.length)return;
- const items=data.participantes,n=items.length,sz=canvas.width,mid=sz/2,r=sz*.465,arc=p2/n;
+ const items=visibleParticipants(),n=items.length,sz=canvas.width,mid=sz/2,r=sz*.465,arc=p2/Math.max(1,n);
  c.clearRect(0,0,sz,sz);
  c.save();c.translate(mid,mid);c.rotate(angle);
  for(let i=0;i<n;i++){
@@ -87,25 +99,29 @@ function draw(angle=0){
   c.rotate(Math.PI/2);c.fillStyle="#fff";c.textAlign="center";c.textBaseline="middle";
   c.font="800 "+(n>55?11:n>28?13:n>15?15:19)+"px system-ui";
   const name=String(items[i].nombre||"");
-  const txt=n>28?"#"+(i+1):(name.length>13?name.slice(0,12)+"…":name);
+  const txt=n>28?"#"+items[i].numero:(name.length>13?name.slice(0,12)+"…":name);
   c.shadowColor="#08101f";c.shadowBlur=4;c.fillText(txt,0,0,r*.65);
   c.restore();
  }
  c.beginPath();c.arc(0,0,r,0,p2);c.lineWidth=10;c.strokeStyle="#e9e3ec";c.stroke();
  c.restore();
 }
-function fillNames(items,winner){
+function fillNames(items,winner,eliminated=[]){
+ const gone=new Set(eliminated.map(x=>Number(x.indice)));
  namesEl.replaceChildren();
  const frag=document.createDocumentFragment();
  items.forEach((p,i)=>{
   const li=document.createElement("li");
+  if(gone.has(i))li.className="eliminated";
   if(i===winner)li.className="chosen";
   const n=document.createElement("b");n.textContent="#"+(i+1);
   const name=document.createElement("span");name.textContent=p.nombre;
   li.append(n,name);frag.append(li);
  });
  namesEl.append(frag);
- countEl.textContent=items.length+" participantes · lista cerrada";
+ countEl.textContent=eliminated.length?
+  (items.length-eliminated.length)+" siguen · "+eliminated.length+" eliminados · "+items.length+" anotados":
+  items.length+" participantes · lista cerrada";
 }
 function clock(){return Date.now()+serverOffset;}
 function alignedTarget(index,n,from){
@@ -119,7 +135,14 @@ function currentSpinRotation(){
  return p2*9*(1-Math.pow(1-t,3));
 }
 function frame(){
- if(data?.estado==="spinning"&&data.inicio){
+ if(data?.modalidad==="eliminacion"&&data.estado==="spinning"&&data.inicio){
+  const elapsed=Math.max(0,clock()-Date.parse(data.inicio));
+  const stepMs=Number(data.duracion_paso_ms||7000);
+  const phase=(elapsed%stepMs)/stepMs;
+  const completed=Math.floor(elapsed/stepMs);
+  rotation=reduced?0:p2*(completed*4+4*(1-Math.pow(1-phase,3)));
+  draw(rotation);
+ }else if(data?.estado==="spinning"&&data.inicio){
   rotation=reduced?0:currentSpinRotation();
   draw(rotation);
  }else if(settle){
@@ -131,9 +154,54 @@ function frame(){
  }
  requestAnimationFrame(frame);
 }
+function renderElimination(next){
+ document.getElementById("title").textContent=next.titulo||"Ruleta JS Family";
+ content.hidden=false;errorEl.hidden=true;
+ const players=next.participantes||[];
+ const lost=next.eliminados||[];
+ const winner=next.estado==="finished"?Number(next.ganador_indice):-1;
+ fillNames(players,winner,lost);
+ const last=lost.at(-1);
+ eliminatedEl.hidden=!last;
+ if(last)eliminatedEl.textContent="❌ Eliminado #"+last.orden+": "+last.nombre;
+ phaseEl.hidden=false;
+ winEl.classList.toggle("show",winner>=0);
+ if(winner>=0){
+  const name=players[winner]?.nombre||"Ganador registrado";
+  winName.textContent=name;
+  phaseEl.textContent="🏆 ¡Último sobreviviente!";
+  setMessage("🏆 ¡ÚLTIMO SOBREVIVIENTE! Sorteo finalizado y registrado.","done");
+  rotation=0;draw(0);
+  return;
+ }
+ if(next.estado==="closed"){
+  phaseEl.textContent=players.length+" jugadores listos · "+(players.length-1)+" eliminaciones";
+  setMessage("🔒 Lista cerrada. JS iniciará las eliminaciones desde WhatsApp.","waiting");
+  draw(0);return;
+ }
+ const start=Date.parse(next.inicio);
+ if(!Number.isFinite(start)){
+  setMessage("🎡 Preparando la eliminación…","spin");return;
+ }
+ const timeToStart=start-clock();
+ if(timeToStart>0){
+  setMessage("⏳ Comienzan las eliminaciones en "+Math.ceil(timeToStart/1000)+" segundos.","spin");
+ }else{
+  setMessage("🎡 Ronda "+next.ronda_actual+" de "+next.total_eliminaciones+
+   " · Quedan "+next.sobrevivientes+" jugadores. ¡El último gana!","spin");
+ }
+ phaseEl.textContent="❌ Cada 7 segundos sale uno · "+
+   next.sobrevivientes+" siguen en juego · "+lost.length+" eliminados";
+ draw(rotation);
+}
 function render(next){
  const previous=data,oldState=data?.estado||"";
  data=next;
+ if(next.modalidad==="eliminacion"){
+  renderElimination(next);
+  return;
+ }
+ eliminatedEl.hidden=true;phaseEl.hidden=true;
  document.getElementById("title").textContent=next.titulo||"Ruleta JS Family";
  content.hidden=false;errorEl.hidden=true;
  const names=next.participantes||[];
