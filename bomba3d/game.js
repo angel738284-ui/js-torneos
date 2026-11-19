@@ -5,12 +5,34 @@
  */
 import * as THREE from "./vendor/three.module.js";
 import {createJellyAvatar,normalizeJelly,setSeamlessGeometry,hasSeamlessGeometry} from "./jelly.js?v=3";
+import {preloadOriginalModel,hasOriginalModel,createOriginalRubberActor} from "./imported.js?v=1";
 
 const el=id=>document.getElementById(id);
 const actors=new Map();
 let active=false,arena=null,studio=null,roomData=null,previewData=null;
 let previewStamp="",frameId=0,lastTime=0,reduced=false;
-let warningIssued=false,loadingSeamless=null;
+let warningIssued=false,loadingSeamless=null,loadingUploaded=null;
+async function ensureUploaded(){
+ if(hasOriginalModel())return;
+ if(loadingUploaded)return loadingUploaded;
+ loadingUploaded=preloadOriginalModel().then(()=>{
+  if(!active||!arena)return;
+  // Swap the default/classic characters to the EXACT GLB supplied by JS.
+  // Existing animal costumes stay unchanged, and game state is unaffected.
+  for(const [id,actor] of actors){
+   if(actor.costume==="plain"){removeActor(actor,arena.scene);actors.delete(id);}
+  }
+  syncRoom(roomData);
+  previewStamp="";
+  syncPreview(previewData);
+  announce("✅ Muñeco original GLB cargado, con texturas y ojos reales");
+ }).catch(err=>{
+  console.warn("Modelo GLB no disponible, conservamos el anterior:",err);
+  announce("No cargó el archivo original. Se mantiene el muñeco anterior.");
+  void ensureSeamless();
+ }).finally(()=>{loadingUploaded=null;});
+ return loadingUploaded;
+}
 async function ensureSeamless(){
  if(hasSeamlessGeometry())return;
  if(loadingSeamless)return loadingSeamless;
@@ -130,7 +152,7 @@ export function set3DEnabled(value){
   announce("Cargando muñequitos 3D originales…");
   syncRoom(roomData);
   syncPreview(previewData);
-  void ensureSeamless();
+  void ensureUploaded();
   if(!frameId)frameId=requestAnimationFrame(animate);
   return true;
  }catch(err){
@@ -165,9 +187,10 @@ export function syncRoom(data){
   if(!card)continue;
   const stamp=JSON.stringify(p.avatar||{});
   let actor=actors.get(p.id);
-  if(!actor||actor.stamp!==stamp){
+  const wantsUploaded=(p.avatar?.costume3d||"plain")==="plain"&&hasOriginalModel();
+  if(!actor||actor.stamp!==stamp||(wantsUploaded&&actor.kind!=="uploaded")){
    if(actor)removeActor(actor,arena.scene);
-   actor=createJellyAvatar(p.avatar||{});
+   actor=wantsUploaded?createOriginalRubberActor(p.avatar||{}):createJellyAvatar(p.avatar||{});
    actor.stamp=stamp;actor.playerId=p.id;actor.alive=Boolean(p.vivo);
    actor.action=p.vivo?"idle":"death";actor.until=0;
    arena.scene.add(actor.root);actors.set(p.id,actor);
@@ -178,7 +201,8 @@ export function syncRoom(data){
   setPosition(actor,card,data.jugadores.length,width,height);
  }
  el("tableStage")?.classList.add("is3d");
- announce("💣 "+actors.size+" muñequitos 3D en la mesa · editables y animados");
+ announce("💣 "+actors.size+" personajes en la mesa · "+
+  [...actors.values()].filter(a=>a.kind==="uploaded").length+" con el modelo original GLB");
 }
 export function syncPreview(avatar){
  previewData=avatar;
@@ -187,7 +211,8 @@ export function syncPreview(avatar){
  if(previewStamp===stamp)return;
  previewStamp=stamp;
  removeActor(studio.actor,studio.scene);
- studio.actor=createJellyAvatar(avatar);
+ studio.actor=(avatar.costume3d||"plain")==="plain"&&hasOriginalModel()
+  ?createOriginalRubberActor(avatar):createJellyAvatar(avatar);
  studio.scene.add(studio.actor.root);
  studio.actor.root.scale.setScalar(.84);
  studio.actor.root.position.set(0,-1.42*.84,0);

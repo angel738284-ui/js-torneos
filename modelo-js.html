@@ -32,8 +32,8 @@ a.link{display:inline-flex;min-height:42px;align-items:center;border-radius:11px
 <body>
 <header><strong>💣 JS FAMILY · MODELOS 3D</strong><a href="./bomba.html?r=BE5BBA5D2FA4">Volver al juego</a></header>
 <main>
-<h1>🧸 Nuestro muñeco rojo — Vista 3D</h1>
-<p>Este es el modelo de cuerpo continuo que creamos para Bomba Mortal. Podés girarlo con el dedo, acercarlo y cambiarle el color, directamente en Android.</p>
+<h1>🧸 Muñeco original JS — Vista 3D</h1>
+<p>Este es el archivo GLB original que me mandaste, con sus texturas y detalles. Podés girarlo y cambiarle el color directamente desde el celular.</p>
 <div id="stage" role="img" aria-label="Visor interactivo del muñeco rojo 3D. Arrastrá para girarlo.">
  <div id="wait">Cargando muñeco 3D…</div>
  <div id="hint">👆 Arrastrá para girar · Deslizá el zoom</div>
@@ -56,74 +56,99 @@ a.link{display:inline-flex;min-height:42px;align-items:center;border-radius:11px
 </main>
 <script type="module">
 import * as THREE from "./bomba3d/vendor/three.module.js";
-const stage=document.getElementById("stage"),wait=document.getElementById("wait"),feedback=document.getElementById("feedback");
-let renderer,scene,camera,model,bodyMat,autoSpin=false,zoom=1,rotY=0,rotX=0,prev=0,raf=0;
+import {preloadOriginalModel,createOriginalRubberActor} from "./bomba3d/imported.js?v=1";
+
+const stage=document.getElementById("stage");
+const wait=document.getElementById("wait");
+const feedback=document.getElementById("feedback");
 const pointers=new Map();
+let renderer,scene,camera,model,current,autoSpin=false,zoom=1,rotY=.19,rotX=-.12,prev=0,raf=0;
 try{
- if(!window.WebGLRenderingContext)throw new Error("Este navegador no tiene WebGL.");
- const res=await fetch("./bomba3d/seamless_body.bin",{cache:"force-cache"});
- if(!res.ok)throw new Error("No se pudo cargar el modelo.");
- const bytes=await res.arrayBuffer(),v=new DataView(bytes);
- if(bytes.byteLength<20||String.fromCharCode(...new Uint8Array(bytes,0,4))!=="JSJB"||v.getUint32(4,true)!==1)throw new Error("Formato del modelo inválido.");
- const n=v.getUint32(8,true),i=v.getUint32(12,true);
- if(n<100||n>120000||i<100||i>1000000||16+n*24+i*4!==bytes.byteLength)throw new Error("Archivo del modelo incompleto.");
- const geom=new THREE.BufferGeometry();
- geom.setAttribute("position",new THREE.BufferAttribute(new Float32Array(bytes.slice(16,16+n*12)),3));
- geom.setAttribute("normal",new THREE.BufferAttribute(new Float32Array(bytes.slice(16+n*12,16+n*24)),3));
- geom.setIndex(new THREE.BufferAttribute(new Uint32Array(bytes.slice(16+n*24)),1));
- geom.computeBoundingSphere();
+ if(!window.WebGLRenderingContext)throw Error("Este navegador no admite WebGL.");
+ await preloadOriginalModel();
  scene=new THREE.Scene();
- camera=new THREE.OrthographicCamera(-1.85,1.85,2,-2,.1,100);camera.position.set(0,1.38,6);camera.lookAt(0,1.38,0);
+ camera=new THREE.OrthographicCamera(-2,2,2,-2,.1,70);
+ camera.position.set(0,1.3,6.8);
+ camera.lookAt(0,1.3,0);
  renderer=new THREE.WebGLRenderer({antialias:true,alpha:true,powerPreference:"low-power"});
- renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,1.5));renderer.setClearColor(0x000000,0);renderer.outputColorSpace=THREE.SRGBColorSpace;
+ renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,1.4));
+ renderer.setClearColor(0,0);
+ renderer.outputColorSpace=THREE.SRGBColorSpace;
+ renderer.toneMapping=THREE.ACESFilmicToneMapping;
+ renderer.toneMappingExposure=1.0;
  stage.insertBefore(renderer.domElement,stage.firstChild);
- scene.add(new THREE.HemisphereLight(0xfafcff,0x56677b,2.5));
- const light=new THREE.DirectionalLight(0xffefd9,2.7);light.position.set(-3,7,5);scene.add(light);
- const rim=new THREE.DirectionalLight(0x97ccff,1.15);rim.position.set(4,2,-4);scene.add(rim);
+ scene.add(new THREE.HemisphereLight(0xf4fbff,0x7082a2,1.5));
+ const mainLight=new THREE.DirectionalLight(0xffefe1,1.9);
+ mainLight.position.set(-4,6,7);scene.add(mainLight);
+ const rim=new THREE.DirectionalLight(0xc1d7ff,.75);
+ rim.position.set(4,3,-4);scene.add(rim);
  model=new THREE.Group();scene.add(model);
- bodyMat=new THREE.MeshStandardMaterial({color:"#f83e50",roughness:.27,metalness:0});
- const body=new THREE.Mesh(geom,bodyMat);model.add(body);
- const eyeMat=new THREE.MeshStandardMaterial({color:"#fffefb",roughness:.14,emissive:"#ffffff",emissiveIntensity:.26});
- for(const x of [-.205,.205]){
-  const eye=new THREE.Mesh(new THREE.SphereGeometry(1,24,16),eyeMat);
-  eye.position.set(x,2.205,.553);eye.scale.set(.115,.13,.073);model.add(eye);
- }
- const base=new THREE.Mesh(new THREE.CylinderGeometry(.77,.9,.085,48),new THREE.MeshStandardMaterial({color:"#243e58",roughness:.52}));
- base.position.y=-.085;model.add(base);
+ const platform=new THREE.Mesh(
+  new THREE.CylinderGeometry(.72,.8,.085,48),
+  new THREE.MeshStandardMaterial({color:"#203751",roughness:.67,metalness:.04}));
+ platform.position.y=-.06;scene.add(platform);
+
+ const applyColor=(color)=>{
+  if(current){model.remove(current.root);current.dispose();}
+  current=createOriginalRubberActor({bodyColor3d:color});
+  model.add(current.root);
+ };
+ applyColor("#f83e50");
  function resize(){
   const width=Math.max(150,stage.clientWidth),height=Math.max(250,stage.clientHeight),aspect=width/height;
   const vsize=3.5/zoom;
-  camera.left=-vsize*aspect/2;camera.right=vsize*aspect/2;camera.top=vsize/2;camera.bottom=-vsize/2;camera.updateProjectionMatrix();
+  camera.left=-vsize*aspect/2;camera.right=vsize*aspect/2;
+  camera.top=vsize/2;camera.bottom=-vsize/2;camera.updateProjectionMatrix();
   renderer.setSize(width,height,false);
  }
  const observer=new ResizeObserver(resize);observer.observe(stage);resize();
  function draw(t){
   raf=requestAnimationFrame(draw);
   if(document.hidden)return;
-  if(autoSpin&&t-prev<2000)rotY+=.01;
+  if(autoSpin&&t-prev<2000)rotY+=.012;
   prev=t;
-  model.rotation.y=rotY;
-  model.rotation.x=rotX;
+  model.rotation.y=rotY;model.rotation.x=rotX;
   renderer.render(scene,camera);
  }
  raf=requestAnimationFrame(draw);
- stage.classList.add("ready");feedback.textContent="✅ Modelo cargado. ¡Ya podés girarlo y elegir colores!";
- stage.addEventListener("pointerdown",e=>{e.preventDefault();stage.setPointerCapture(e.pointerId);pointers.set(e.pointerId,{x:e.clientX,y:e.clientY});});
- stage.addEventListener("pointermove",e=>{
-  if(!pointers.has(e.pointerId))return;e.preventDefault();
-  const old=pointers.get(e.pointerId);pointers.set(e.pointerId,{x:e.clientX,y:e.clientY});
-  if(pointers.size===1){rotY+=(e.clientX-old.x)*.012;rotX=Math.max(-.55,Math.min(.55,rotX+(e.clientY-old.y)*.005));}
+ stage.classList.add("ready");
+ feedback.textContent="✅ Es el archivo GLB real que enviaste, con su textura original. Arrastrá para girar.";
+ stage.addEventListener("pointerdown",e=>{
+  e.preventDefault();stage.setPointerCapture(e.pointerId);
+  pointers.set(e.pointerId,{x:e.clientX,y:e.clientY});
  });
- for(const type of ["pointerup","pointercancel","lostpointercapture"])stage.addEventListener(type,e=>pointers.delete(e.pointerId));
- stage.addEventListener("wheel",e=>{e.preventDefault();zoom=Math.max(.7,Math.min(1.6,zoom+(e.deltaY<0?.08:-.08)));document.getElementById("zoom").value=zoom;resize();},{passive:false});
+ stage.addEventListener("pointermove",e=>{
+  if(!pointers.has(e.pointerId))return;
+  e.preventDefault();const old=pointers.get(e.pointerId);
+  pointers.set(e.pointerId,{x:e.clientX,y:e.clientY});
+  if(pointers.size===1){
+   rotY+=(e.clientX-old.x)*.012;
+   rotX=Math.max(-.6,Math.min(.6,rotX+(e.clientY-old.y)*.006));
+  }
+ });
+ for(const type of ["pointerup","pointercancel","lostpointercapture"])
+  stage.addEventListener(type,e=>pointers.delete(e.pointerId));
+ stage.addEventListener("wheel",e=>{
+  e.preventDefault();zoom=Math.max(.7,Math.min(1.6,zoom+(e.deltaY<0?.08:-.08)));
+  document.getElementById("zoom").value=zoom;resize();
+ },{passive:false});
  document.getElementById("zoom").addEventListener("input",e=>{zoom=Number(e.target.value);resize();});
- document.getElementById("reset").addEventListener("click",()=>{rotY=0;rotX=0;zoom=1;document.getElementById("zoom").value="1";resize();});
- document.getElementById("spin").addEventListener("click",e=>{autoSpin=!autoSpin;e.target.classList.toggle("active",autoSpin);e.target.textContent=autoSpin?"⏸ Detener giro":"⟳ Girar solo";});
+ document.getElementById("reset").addEventListener("click",()=>{
+  rotY=.19;rotX=-.12;zoom=1;document.getElementById("zoom").value="1";resize();
+ });
+ document.getElementById("spin").addEventListener("click",e=>{
+  autoSpin=!autoSpin;e.target.classList.toggle("active",autoSpin);
+  e.target.textContent=autoSpin?"⏸ Detener giro":"⟳ Girar solo";
+ });
  document.querySelectorAll("[data-color]").forEach(b=>b.addEventListener("click",()=>{
-  bodyMat.color.set(b.dataset.color);
+  applyColor(b.dataset.color);
   document.querySelectorAll("[data-color]").forEach(c=>c.classList.toggle("active",c===b));
  }));
-}catch(err){wait.textContent="⚠️ "+err.message;feedback.textContent="Probá abrir en Chrome o seguí usando Bomba Mortal en 2D.";console.error(err);}
+}catch(err){
+ wait.textContent="⚠️ "+err.message;
+ feedback.textContent="Probá Chrome y volvé a cargar la página.";
+ console.error("JS GLB",err);
+}
 </script>
 </body>
 </html>
