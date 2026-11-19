@@ -1,0 +1,2 @@
+Three.js package license MIT; 3D GLB models: Quaternius Ultimate Modular Characters and Ultimate Modular Women, CC0 1.0. Assets were obtained from the public model directory in https://github.com/LuanDucate/Ducz.CharacterCreator. The JavaScript code of that creator is not redistributed here; the JS Family viewer is independently implemented.
+Sources: https://quaternius.com/packs/ultimatemodularcharacters.html and https://quaternius.com/packs/ultimatemodularwomen.html
