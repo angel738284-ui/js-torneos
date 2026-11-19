@@ -38,6 +38,7 @@ p{line-height:1.5}
 .player-status{font-size:10px;color:#aac6d6;min-height:14px;font-weight:750}
 .player.held .player-status{color:#ffae8d}
 .player:focus-visible{outline:3px solid #c5fff0}
+.player:disabled:not(.dead){opacity:1}
 .player.targetable{cursor:pointer;border-color:#61cab0}
 .player.targetable:active{transform:scale(.96)}
 .char{position:relative;width:78px;height:108px;flex:none;--skin:#eac49b;--hair:#262333;--shirt:#775de6;--pants:#273751}
@@ -130,7 +131,8 @@ select{width:100%;background:#25354d;border:1px solid #536a8f;border-radius:9px;
 <script>
 "use strict";
 const cfg=window.JS_CONFIG||{}, params=new URLSearchParams(location.search);
-const code=params.get("r")||"",storageKey="js-bomba-access:"+code;
+// If opened from the main website without a room code, show a read-only example with fictional players.
+const code=params.get("r")||"BE5BBA5D2FA4",storageKey="js-bomba-access:"+code;
 let personalToken=params.get("t")||sessionStorage.getItem(storageKey)||"";
 if(params.has("t")){
  sessionStorage.setItem(storageKey,personalToken);
@@ -225,7 +227,7 @@ async function pass(target){
 function drawRoster(){
  const all=room.jugadores||[],root=el("players");root.replaceChildren();
  for(const p of all){
-  const card=document.createElement("button");card.type="button";card.className="player";
+  const card=document.createElement("button");card.type="button";card.className="player";card.dataset.playerId=p.id;
   const isHolder=p.id===room.bomba_de;
   if(isHolder)card.classList.add("held");
   if(!p.vivo)card.classList.add("dead");
@@ -304,7 +306,7 @@ function updateHud(){
  }
  const old=document.querySelectorAll(".player");
  for(const card of old){
-  const target=room.jugadores?.find(p=>p.nombre===card.querySelector(".player-name")?.textContent);
+  const target=room.jugadores?.find(p=>p.id===card.dataset.playerId);
   const clickable=Boolean(target&&canPass()&&target.vivo&&target.id!==me.id);
   card.disabled=!clickable;
   card.classList.toggle("targetable",clickable);
