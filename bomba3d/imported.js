@@ -5,6 +5,7 @@
  */
 import * as THREE from "./vendor/three.module.js";
 import {GLTFLoader} from "./vendor/GLTFLoader.js";
+import {dressOriginalRubber} from "./wardrobe.js?v=1";
 
 let sourcePromise=null,loaded=null;
 const tintedTextures=new Map();
@@ -74,6 +75,9 @@ export function createOriginalRubberActor(options={}){
  if(!loaded)throw Error("El modelo original todavía no está cargado");
  const root=new THREE.Group();
  root.name="Uploaded-JS-Family-Rubber";
+ const animatedRig=new THREE.Group();
+ animatedRig.name="JS_3D_ANIMATED_BODY_AND_CLOTHING";
+ root.add(animatedRig);
  const original=loaded.gltf.scene.clone(true);
  const originalBounding=loaded.bounds;
  const size=originalBounding.max.y-originalBounding.min.y;
@@ -102,23 +106,31 @@ export function createOriginalRubberActor(options={}){
   };
   o.material=Array.isArray(o.material)?o.material.map(customize):customize(o.material);
  });
- root.add(original);
+ animatedRig.add(original);
+ let baseMesh=null;
+ loaded.gltf.scene.traverse(o=>{if(o.isMesh&&!baseMesh)baseMesh=o;});
+ if(!baseMesh)throw Error("El GLB no tiene una malla para diseñar ropa");
+ const wardrobe=dressOriginalRubber(animatedRig,options,baseMesh.geometry,originalBounding);
  let elapsed=0,deadAmount=0;
  const update=(delta,action="idle",reduced=false)=>{
   elapsed+=Math.min(.10,delta||0);
+  wardrobe.update(elapsed,reduced);
   if(action==="death"){
    deadAmount=Math.min(1,deadAmount+Math.max(.045,(delta||.03)*1.8));
-   original.rotation.z=-1.20*deadAmount;
-   original.position.y=-originalBounding.min.y*scale-.35*deadAmount;
+   animatedRig.rotation.z=-1.20*deadAmount;
+   animatedRig.position.y=-.35*deadAmount;
    return;
   }
   deadAmount=Math.max(0,deadAmount-.12);
   const dancing=action==="dance"||options.pose==="dance";
   const wave=action==="receive"||action==="wave"||options.pose==="wave";
-  original.rotation.z=reduced?0:Math.sin(elapsed*(dancing?7.0:2.1))*(dancing?.16:wave?.10:.045);
-  original.position.y=-originalBounding.min.y*scale+(reduced?0:Math.sin(elapsed*(dancing?7.0:2.5))*(dancing?.065:.035));
-  original.rotation.y=reduced?0:Math.sin(elapsed*1.6)*.06;
+  animatedRig.rotation.z=reduced?0:Math.sin(elapsed*(dancing?7.0:2.1))*(dancing?.16:wave?.10:.045);
+  animatedRig.position.y=(reduced?0:Math.sin(elapsed*(dancing?7.0:2.5))*(dancing?.065:.035));
+  animatedRig.rotation.y=reduced?0:Math.sin(elapsed*1.6)*.06;
  };
- const dispose=()=>{for(const m of materials)m.dispose();};
+ const dispose=()=>{
+  wardrobe.dispose();
+  for(const m of materials)m.dispose();
+ };
  return {root,update,dispose,costume:"plain",kind:"uploaded",alive:true};
 }

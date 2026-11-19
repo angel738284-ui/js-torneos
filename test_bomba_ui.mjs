@@ -12,9 +12,13 @@ test("Game page shows everyone, bomb holder, countdown and eliminations",()=>{
 });
 test("Character customization has independent permitted pieces and saved server state",()=>{
  for(const k of ["hair","hairColor","skin","shirt","pants","accessory"])assert.match(page,new RegExp('id="'+k+'"'));
- assert.match(page,/function buildAvatar\(value\)/);
+ assert.match(page,/function avatarSafe\(obj\)/);
  assert.match(page,/p_action:"avatar",p_avatar:value/);
- assert.match(page,/const a=avatarSafe\(value\)/);
+ assert.match(page,/id="wear3d"/);
+ assert.match(page,/id="topStyle"/);
+ assert.match(page,/id="accessory"/);
+ assert.match(page,/className="modelSpace"/);
+ assert.doesNotMatch(page,/function buildAvatar\(value\)/);
  assert.match(migration,/safe_hair not in/);
  assert.match(migration,/safe_shirt not in/);
  assert.match(migration,/safe_acc not in/);

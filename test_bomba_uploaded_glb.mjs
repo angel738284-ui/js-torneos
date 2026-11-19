@@ -78,13 +78,13 @@ test("Three.js GLTFLoader bundle and all local module dependencies import",()=>{
  assert.equal(typeof createOriginalRubberActor,"function");
  assert.ok(statSync(new URL("./bomba3d/utils/BufferGeometryUtils.js",import.meta.url)).size>10000);
 });
-test("Bomba Mortal game uses the uploaded GLB for every player and keeps the 2D fallback",()=>{
- assert.match(page,/bomba3d\/game\.js\?v=5/);
+test("Bomba Mortal game uses only the uploaded GLB with a 3D wardrobe",()=>{
+ assert.match(page,/bomba3d\/game\.js\?v=6/);
  assert.match(game,/preloadOriginalModel\(\)/);
- assert.match(game,/createOriginalRubberActor\(p\.avatar\|\|\{\}\)/);
  assert.match(game,/createOriginalRubberActor\(avatar\)/);
- assert.match(game,/wantsUploaded\?createOriginalRubberActor\(p\.avatar\|\|\{\}\):createJellyAvatar/);
- assert.match(game,/function ensureSeamless\(\)/);
+ assert.match(game,/studio\.actor=createOriginalRubberActor\(avatar\)/);
+ assert.doesNotMatch(game,/createJellyAvatar|ensureSeamless/);
+ assert.match(page,/id="wear3d"/);
  assert.match(page,/p_action:"pasar",p_target:target\.id/);
  assert.match(page,/id="passBomb"/);
 });

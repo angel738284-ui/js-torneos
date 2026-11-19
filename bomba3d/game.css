@@ -37,3 +37,22 @@
 @media(prefers-reduced-motion:reduce){
  .tableStage.is3d .player.held,.tableStage.is3d .player.selected{animation:none}
 }
+
+/* 3D-only Bomba Mortal: no old 2D character slots or model switcher. */
+.bomb3dToolbar{justify-content:center;min-height:44px}
+.bomb3dToolbar span{width:100%;text-align:center;font-size:12px;font-weight:800}
+.tableStage .player .char{display:none!important}
+.tableStage .player .modelSpace{display:block;flex:1;min-height:87px;min-width:40px;pointer-events:none}
+.tableStage.is3d .player .modelSpace{visibility:visible}
+.avatarEditor .preview{min-height:265px;overflow:hidden}
+.avatarEditor .preview .previewWaiting{position:absolute;inset:0;display:flex;align-items:center;
+ justify-content:center;text-align:center;color:#b9e9dd;font-size:13px;pointer-events:none}
+.avatarEditor .preview.is3d .previewWaiting{display:none}
+.avatarEditor .customSections .options{grid-template-columns:repeat(2,minmax(0,1fr))}
+.avatarEditor .customSections label{min-width:0}
+.avatarEditor .customSections label:has(#topStyle),
+.avatarEditor .customSections label:has(#bottomStyle),
+.avatarEditor .customSections label:has(#bodyColor3d){grid-column:1/-1}
+.avatarEditor .saveStatus{margin:2px 0 5px}
+.avatarEditor .preview:before{content:"VISTA PREVIA 3D";}
+@media(max-width:440px){.avatarEditor .customSections .options{grid-template-columns:1fr}}
