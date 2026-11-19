@@ -1,0 +1,339 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="referrer" content="no-referrer"><meta name="theme-color" content="#0a1328">
+<meta name="description" content="Bomba Mortal JS Family: minijuego en vivo para Free Fire. Editá tu personaje y pasá la bomba.">
+<title>💣 Bomba Mortal · JS FAMILY</title>
+<style>
+:root{color-scheme:dark;font-family:system-ui,-apple-system,"Segoe UI",sans-serif;color:#f5f7ff;background:#0a101d;--panel:#15243b;--edge:#3f5177}
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;background:radial-gradient(ellipse at 15% -10%,#553173 0%,transparent 40%),radial-gradient(ellipse at 100% 30%,#0b6877 0%,transparent 38%),#0a101d}
+header{max-width:1060px;margin:0 auto;display:flex;align-items:center;gap:12px;padding:19px 16px}
+.brandIcon{width:49px;height:49px;display:grid;place-items:center;background:linear-gradient(135deg,#db426f,#b266e5);border-radius:17px;font-size:24px;box-shadow:0 10px 28px #e2597265}
+header strong{font-size:16px;display:block}header small{font-size:11px;color:#b8d5df;letter-spacing:1.4px}
+main{max-width:1060px;margin:auto;padding:0 14px 44px}
+h1{font-size:clamp(25px,5vw,41px);margin:10px 0 5px;letter-spacing:-.8px}
+h2{font-size:16px;margin:0 0 14px}
+p{line-height:1.5}
+.hero{text-align:center;margin:2px auto 18px}
+.hero p{color:#a9bfd4;font-size:13px;margin:6px auto 13px;max-width:720px}
+.phase{padding:12px 16px;border-radius:14px;border:1px solid #4e6082;background:#1e2b44;font-size:13px;font-weight:800;line-height:1.5;max-width:850px;margin:auto}
+.phase.playing{border-color:#ff8c7f;background:#402034}.phase.finished{background:#173e3c;border-color:#63cbaa}
+.mainGrid{display:grid;grid-template-columns:minmax(0,1fr) 295px;gap:15px;align-items:start}
+.panel{border:1px solid #3a4b70;border-radius:19px;background:linear-gradient(145deg,#19263e,#101d30);padding:15px;box-shadow:0 14px 35px #0005}
+.arena{position:relative;overflow:hidden;min-height:390px}
+.arena:before{content:"";position:absolute;inset:35px -20px auto;min-height:335px;background:radial-gradient(ellipse,#265b6565,transparent 70%);pointer-events:none}
+.hud{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:9px;margin-bottom:14px;position:relative}
+.hud b{font-size:14px}.muted{color:#aac5d7}
+.pill{padding:6px 10px;border:1px solid #4e6884;border-radius:99px;background:#203349;font-size:12px;font-weight:850}
+.timer{font-variant-numeric:tabular-nums;font-size:18px;font-weight:1000;color:#fbcec6}
+.timer.urgent{color:#ff6565;animation:blink .45s infinite alternate}
+@keyframes blink{from{opacity:1}to{opacity:.4}}
+.field{position:relative;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;padding:6px 0 13px}
+.player{display:flex;flex-direction:column;align-items:center;justify-content:space-between;gap:4px;border:1px solid #384c72;background:linear-gradient(155deg,#263855,#17273c);border-radius:16px;padding:13px 5px 11px;position:relative;min-width:0;min-height:184px;transition:transform .2s,border-color .2s,box-shadow .2s}
+.player.held{border:2px solid #ff9d69;box-shadow:0 0 23px #e96e50a0;transform:translateY(-3px);background:linear-gradient(160deg,#522b43,#293a56)}
+.player.dead{opacity:.45;filter:grayscale(.9)}.player.me{outline:1px solid #7ae7dc;outline-offset:2px}
+.player-name{font-size:11px;font-weight:900;text-overflow:ellipsis;overflow:hidden;white-space:nowrap;max-width:100%;text-align:center}
+.player-status{font-size:10px;color:#aac6d6;min-height:14px;font-weight:750}
+.player.held .player-status{color:#ffae8d}
+.player:focus-visible{outline:3px solid #c5fff0}
+.player.targetable{cursor:pointer;border-color:#61cab0}
+.player.targetable:active{transform:scale(.96)}
+.char{position:relative;width:78px;height:108px;flex:none;--skin:#eac49b;--hair:#262333;--shirt:#775de6;--pants:#273751}
+.char i{position:absolute;display:block}
+.char .shadow{left:9px;bottom:0;width:60px;height:12px;background:#050b1b66;border-radius:50%}
+.char .legs{width:38px;height:35px;top:73px;left:20px;background:var(--pants);border-radius:4px 4px 12px 12px;clip-path:polygon(0 0,100% 0,100% 100%,54% 100%,50% 29%,46% 100%,0 100%)}
+.char .shoeL,.char .shoeR{bottom:2px;background:#e3ebff;width:19px;height:7px;border-radius:6px}
+.char .shoeL{left:19px}.char .shoeR{left:41px}
+.char .armL,.char .armR{top:45px;width:15px;height:35px;background:var(--shirt);border-radius:10px;transform-origin:top}
+.char .armL{left:9px;transform:rotate(15deg)}.char .armR{right:9px;transform:rotate(-15deg)}
+.char .handL,.char .handR{top:72px;width:13px;height:13px;border-radius:50%;background:var(--skin)}
+.char .handL{left:3px}.char .handR{right:3px}
+.char .torso{top:42px;left:18px;width:43px;height:40px;background:var(--shirt);border-radius:12px 12px 7px 7px;border:2px solid #0003}
+.char .neck{top:36px;left:32px;width:15px;height:11px;background:var(--skin)}
+.char .head{top:7px;left:18px;width:43px;height:39px;background:var(--skin);border-radius:16px 16px 18px 18px;border:2px solid #0002}
+.char .eyes{top:25px;left:29px;width:5px;height:5px;border-radius:50%;background:#202535;box-shadow:16px 0 #202535}
+.char .smile{top:34px;left:37px;width:9px;height:3px;border-radius:2px 2px 7px 7px;background:#ae605d}
+.char .hair{top:0;left:15px;width:49px;height:20px;background:var(--hair);border-radius:18px 18px 5px 5px}
+.char[data-hair="spiky"] .hair{clip-path:polygon(0 100%,5% 35%,20% 55%,28% 0,48% 49%,60% 5%,79% 46%,98% 24%,100% 100%)}
+.char[data-hair="short"] .hair{border-radius:30px 30px 6px 6px;height:17px}
+.char[data-hair="long"] .hair{height:39px;border-radius:25px 24px 8px 8px;clip-path:polygon(0 10%,90% 0,100% 95%,80% 85%,76% 45%,20% 45%,16% 98%,0 95%)}
+.char[data-hair="mohawk"] .hair{clip-path:polygon(0 95%,25% 95%,35% 0,56% 16%,75% 90%,100% 95%)}
+.char .glasses{display:none;top:24px;left:24px;width:31px;height:10px;border:2px solid #283353;border-radius:3px;background:#acc5e866;box-shadow:inset 11px 0 #20344d44}
+.char[data-accessory="glasses"] .glasses{display:block}
+.char .mask{display:none;top:29px;left:24px;width:31px;height:13px;background:#1d273a;border-radius:4px 4px 11px 11px}
+.char[data-accessory="mask"] .mask{display:block}
+.char .crown{display:none;top:-12px;left:19px;width:40px;height:19px;background:linear-gradient(120deg,#fff4ab,#e8af3e);clip-path:polygon(0 30%,24% 57%,32% 0,52% 54%,75% 0,80% 57%,100% 30%,91% 95%,8% 95%)}
+.char[data-accessory="crown"] .crown{display:block}
+.char .held-bomb{display:none;position:absolute;z-index:8;right:-8px;top:43px;font-size:30px;animation:bombHop .32s infinite alternate;filter:drop-shadow(0 0 9px #ff8e5d)}
+.player.held .char .held-bomb{display:block}
+@keyframes bombHop{to{transform:translateY(-5px) rotate(-15deg)}}
+.player.dead .char{transform:rotate(-19deg)}
+.spectator{margin-top:13px;color:#acc0ce;font-size:11px;text-align:center}
+.sidebar{display:grid;gap:14px}
+button,.btn{border:1px solid #56708f;border-radius:12px;background:#294b67;color:#fff;font-weight:800;padding:11px 13px;min-height:40px;cursor:pointer;font-size:12px}
+button:disabled{opacity:.55;cursor:not-allowed}
+button:focus-visible,select:focus-visible{outline:3px solid #81ead6}
+button.primary{background:linear-gradient(135deg,#e04876,#a250be);border:0}
+.small{font-size:11px;line-height:1.5}
+.controls{display:grid;gap:10px}
+.editorHeader{display:flex;justify-content:space-between;align-items:center;gap:6px}
+.preview{display:flex;align-items:center;justify-content:center;padding:9px;border-radius:14px;background:#21324b;border:1px dashed #55718f;min-height:150px}
+.preview .char{transform:scale(1.25)}
+.options{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+label{font-size:11px;color:#c3d6e5;font-weight:800;display:grid;gap:5px}
+select{width:100%;background:#25354d;border:1px solid #536a8f;border-radius:9px;color:#fff;padding:10px 5px;font-size:12px;min-height:40px}
+#notice{font-size:11px;line-height:1.5;min-height:32px;color:#b4dbd6}
+.events{list-style:none;margin:0;padding:0;display:grid;gap:7px;max-height:200px;overflow:auto}
+.events li{font-size:11px;background:#21314b;border:1px solid #344b67;padding:7px;border-radius:8px;line-height:1.4}
+.winner{border:1px solid #7ae0b4;background:linear-gradient(120deg,#184d4a,#244f6f);border-radius:14px;padding:15px;text-align:center;margin-bottom:13px;color:#ddfff6;font-weight:1000;font-size:19px}
+.error{border:1px solid #d17a88;background:#4b2836;border-radius:13px;padding:15px;margin:12px 0;color:#ffe7e8}
+.footer{text-align:center;color:#829db1;font-size:11px;padding:18px}
+[hidden]{display:none!important}
+@media(max-width:760px){.mainGrid{grid-template-columns:1fr}.sidebar{grid-template-columns:1fr 1fr}.field{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(max-width:510px){header{padding:15px 13px}.mainGrid{display:block}.sidebar{grid-template-columns:1fr;display:grid;margin-top:14px}.panel{padding:11px}.field{grid-template-columns:repeat(3,minmax(0,1fr));gap:7px}.player{min-height:170px;padding:9px 3px}.char{transform:scale(.86);margin:-8px 0}.player.held .char{transform:scale(.9)}.player.dead .char{transform:rotate(-15deg) scale(.85)}.hero p{font-size:12px}}
+@media(max-width:350px){.field{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(prefers-reduced-motion:reduce){.char .held-bomb,.timer.urgent{animation:none!important}}
+</style>
+<script src="./config.js"></script>
+</head>
+<body>
+<header><div class="brandIcon">💣</div><div><strong>JS FAMILY</strong><small>BOMBA MORTAL · MULTIJUGADOR</small></div></header>
+<main>
+<section class="hero"><h1>💥 Bomba Mortal</h1><p>Todos juegan en la misma sala. ¡Pasá la bomba antes de que explote! El último sobreviviente gana.</p><div class="phase" id="phase" role="status" aria-live="polite">Conectando con el juego…</div></section>
+<div id="error" class="error" role="alert" hidden></div>
+<div id="content" class="mainGrid" hidden>
+<section class="panel arena">
+<div id="winner" class="winner" hidden></div>
+<div class="hud"><b id="round">🎮 Sala JS Family</b><span id="alive" class="pill">— jugadores</span><span id="timer" class="timer">00:00</span></div>
+<div id="players" class="field" aria-label="Todos los jugadores de la sala"></div>
+<div id="actionHint" class="spectator" role="status">Preparando personajes…</div>
+</section>
+<aside class="sidebar">
+<section class="panel controls"><div class="editorHeader"><h2>🎭 Tu personaje</h2><span id="yourName" class="muted small">Espectador</span></div>
+<div class="preview" id="preview"></div>
+<div class="options">
+<label>Pelo<select id="hair"><option value="spiky">Pinchos</option><option value="short">Corto</option><option value="long">Largo</option><option value="mohawk">Cresta</option></select></label>
+<label>Color pelo<select id="hairColor"><option value="#262333">Negro</option><option value="#784c32">Castaño</option><option value="#f4d76b">Rubio</option><option value="#d84461">Rojo</option><option value="#d8ecf1">Blanco</option></select></label>
+<label>Piel<select id="skin"><option value="#f6d5b2">Clara</option><option value="#eac49b">Media</option><option value="#b87a5b">Morena</option><option value="#855036">Oscura</option></select></label>
+<label>Remera<select id="shirt"><option value="#775de6">Violeta</option><option value="#e7476f">Rosa</option><option value="#1eacc4">Turquesa</option><option value="#2eae77">Verde</option><option value="#ebba52">Amarilla</option></select></label>
+<label>Pantalón<select id="pants"><option value="#273751">Azul oscuro</option><option value="#181d29">Negro</option><option value="#a5acb8">Gris</option><option value="#824b62">Vino</option></select></label>
+<label>Accesorio<select id="accessory"><option value="none">Ninguno</option><option value="glasses">Anteojos</option><option value="crown">Corona</option><option value="mask">Máscara</option></select></label>
+</div><button id="save" class="primary" type="button" disabled>💾 Guardar mi personaje</button><div id="notice" role="status">Para editar, abrí tu enlace personal enviado por JS Guardian.</div>
+</section>
+<section class="panel"><h2>📣 Lo que está pasando</h2><ul id="events" class="events"></ul><button id="share" type="button" style="width:100%;margin-top:12px">🔗 Compartir sala pública</button></section>
+</aside>
+</div>
+<p class="footer">Juego organizado por JS Guardian · Los IDs y teléfonos de WhatsApp nunca aparecen en esta página · Solo tu enlace personal habilita controles</p>
+</main>
+<script>
+"use strict";
+const cfg=window.JS_CONFIG||{}, params=new URLSearchParams(location.search);
+const code=params.get("r")||"",storageKey="js-bomba-access:"+code;
+let personalToken=params.get("t")||sessionStorage.getItem(storageKey)||"";
+if(params.has("t")){
+ sessionStorage.setItem(storageKey,personalToken);
+ history.replaceState(null,"",location.pathname+"?r="+encodeURIComponent(code));
+}
+const api=(cfg.supabaseUrl||"")+"/rest/v1/rpc/",key=cfg.publishableKey||"";
+const el=id=>document.getElementById(id);
+const fields=["hair","hairColor","skin","shirt","pants","accessory"];
+const defaults={hair:"spiky",hairColor:"#262333",skin:"#eac49b",shirt:"#775de6",pants:"#273751",accessory:"none"};
+const allowed={
+ hair:["spiky","short","long","mohawk"],hairColor:["#262333","#784c32","#f4d76b","#d84461","#d8ecf1"],
+ skin:["#f6d5b2","#eac49b","#b87a5b","#855036"],
+ shirt:["#775de6","#e7476f","#1eacc4","#2eae77","#ebba52"],
+ pants:["#273751","#181d29","#a5acb8","#824b62"],
+ accessory:["none","glasses","crown","mask"]
+};
+let room=null,me=null,busy=false,offset=0,loading=false,seenEvents="",roomSignature="",lastHolder="",lastGameState="";
+function avatarSafe(obj){
+ const result={};
+ for(const k of fields)result[k]=allowed[k].includes(obj?.[k])?obj[k]:defaults[k];
+ return result;
+}
+function buildAvatar(value){
+ const a=avatarSafe(value),root=document.createElement("div");
+ root.className="char";root.dataset.hair=a.hair;root.dataset.accessory=a.accessory;
+ root.style.setProperty("--skin",a.skin);root.style.setProperty("--hair",a.hairColor);
+ root.style.setProperty("--shirt",a.shirt);root.style.setProperty("--pants",a.pants);
+ for(const name of ["shadow","legs","shoeL","shoeR","armL","armR","handL","handR",
+  "torso","neck","head","eyes","smile","hair","glasses","mask","crown"]){
+  const part=document.createElement("i");part.className=name;root.append(part);
+ }
+ const bomb=document.createElement("span");bomb.className="held-bomb";
+ bomb.textContent="💣";root.append(bomb);
+ return root;
+}
+function showError(message){el("error").hidden=false;el("error").textContent=message;}
+function notice(message,fail=false){el("notice").textContent=message;el("notice").style.color=fail?"#ffc4c4":"#b4dbd6";}
+async function rpc(name,data){
+ const response=await fetch(api+name,{method:"POST",
+  headers:{"apikey":key,"Content-Type":"application/json"},
+  body:JSON.stringify(data),cache:"no-store",signal:AbortSignal.timeout(12000)});
+ const result=await response.json().catch(()=>null);
+ if(!response.ok||result?.ok!==true){
+  throw Error(String(result?.message||"No se pudo conectar a Bomba Mortal").slice(0,210));
+ }
+ return result;
+}
+async function identity(){
+ if(!personalToken)return;
+ try{
+  const result=await rpc("js_bomba_jugar",{p_code:code,p_access:personalToken,p_action:"soy"});
+  me=result;el("yourName").textContent=result.nombre||"Jugador";
+  for(const k of fields)el(k).value=avatarSafe(result.avatar)[k];
+  el("save").disabled=false;preview();
+  notice("✅ Tu avatar es editable. Guardá tus cambios para que todos los vean.");
+ }catch(err){
+  me=null;personalToken="";sessionStorage.removeItem(storageKey);
+  el("save").disabled=true;notice("⚠️ "+err.message+" Pedí un enlace nuevo con .bomba jugar por privado.",true);
+ }
+}
+function preview(){el("preview").replaceChildren(buildAvatar(Object.fromEntries(fields.map(k=>[k,el(k).value]))));}
+for(const k of fields)el(k).addEventListener("change",preview);
+preview();
+async function save(){
+ if(!me||busy)return;
+ busy=true;el("save").disabled=true;
+ try{
+  const value=Object.fromEntries(fields.map(k=>[k,el(k).value]));
+  await rpc("js_bomba_jugar",{p_code:code,p_access:personalToken,p_action:"avatar",p_avatar:value});
+  notice("✅ Tu personaje quedó guardado y los demás lo verán.");
+  await refresh();
+ }catch(err){notice(err.message,true);}
+ finally{busy=false;el("save").disabled=!me;}
+}
+el("save").addEventListener("click",save);
+function remainingMs(){return Math.max(0,Date.parse(room?.vencimiento||0)-(Date.now()+offset));}
+function shieldMs(){return Math.max(0,Date.parse(room?.proteccion_hasta||0)-(Date.now()+offset));}
+function activeHolder(){return room?.jugadores?.find(p=>p.id===room.bomba_de);}
+function canPass(){
+ return Boolean(me?.vivo&&room?.estado==="playing"&&room.bomba_de===me.id&&
+ remainingMs()>0&&shieldMs()===0&&Date.now()+offset>=Date.parse(room.ronda_inicio));
+}
+async function pass(target){
+ if(!canPass()||busy)return;
+ busy=true;el("actionHint").textContent="💣 Pasando la bomba…";
+ try{
+  await rpc("js_bomba_jugar",{p_code:code,p_access:personalToken,p_action:"pasar",p_target:target});
+  await refresh();
+ }catch(err){el("actionHint").textContent="⚠️ "+err.message;}
+ finally{busy=false;}
+}
+function drawRoster(){
+ const all=room.jugadores||[],root=el("players");root.replaceChildren();
+ for(const p of all){
+  const card=document.createElement("button");card.type="button";card.className="player";
+  const isHolder=p.id===room.bomba_de;
+  if(isHolder)card.classList.add("held");
+  if(!p.vivo)card.classList.add("dead");
+  if(p.id===me?.id)card.classList.add("me");
+  const clickable=canPass()&&p.vivo&&p.id!==me.id;
+  if(clickable)card.classList.add("targetable");
+  card.disabled=!clickable;
+  const head=document.createElement("span");head.className="player-name";head.textContent=p.nombre;
+  const avatar=buildAvatar(p.avatar);
+  const status=document.createElement("span");status.className="player-status";
+  status.textContent=!p.vivo?"💥 Eliminado":isHolder?"💣 TIENE BOMBA":p.id===me?.id?"✨ VOS":"🎮 En juego";
+  card.append(head,avatar,status);
+  if(clickable)card.addEventListener("click",()=>void pass(p.id));
+  root.append(card);
+ }
+ roomSignature=JSON.stringify(all.map(p=>[p.id,p.vivo,p.avatar]))+"|"+room.bomba_de+"|"+(me?.id||"");
+}
+function renderEvents(){
+ const entries=room.eventos||[];
+ const signature=entries.map(e=>e.id).join(",");
+ if(signature===seenEvents)return;
+ seenEvents=signature;
+ const list=el("events");list.replaceChildren();
+ if(!entries.length){
+  const item=document.createElement("li");item.textContent="🎮 Todavía no hubo pases ni explosiones.";list.append(item);
+ }
+ for(const event of entries){
+  const item=document.createElement("li");
+  if(event.tipo==="pass")item.textContent="💣 "+event.nombre+" → "+event.objetivo;
+  else if(event.tipo==="explosion")item.textContent="💥 "+event.nombre+" fue eliminado";
+  else item.textContent="🏆 ¡Ganó "+event.nombre+"!";
+  list.append(item);
+ }
+}
+function render(){
+ if(!room)return;
+ el("content").hidden=false;el("error").hidden=true;
+ const total=room.jugadores?.length||0;
+ el("alive").textContent=room.vivos+" / "+total+" vivos";
+ el("round").textContent="🎮 "+room.titulo+" · Ronda "+room.ronda;
+ const status=room.estado;
+ const winner=room.jugadores?.find(p=>p.id===room.ganador);
+ el("winner").hidden=!(status==="finished"&&winner);
+ if(winner)el("winner").textContent="🏆 ¡"+winner.nombre+" ES EL ÚLTIMO SOBREVIVIENTE!";
+ const spectator=!me;
+ el("phase").className="phase"+(status==="playing"?" playing":status==="finished"?" finished":"");
+ if(status==="open")el("phase").textContent="🟢 Inscripciones abiertas · "+total+" / "+room.capacidad+" participantes";
+ else if(status==="ready")el("phase").textContent="🔒 Sala lista. Editá tu personaje y esperá a que JS mande .bomba iniciar";
+ else if(status==="playing")el("phase").textContent="💣 ¡La bomba está en juego! Tocá un personaje para pasarla si la tenés.";
+ else if(status==="finished")el("phase").textContent="🏆 ¡Partida terminada! El último que quedó ganó.";
+ else el("phase").textContent="Partida cancelada";
+ const signature=JSON.stringify((room.jugadores||[]).map(p=>[p.id,p.vivo,p.avatar]))+"|"+room.bomba_de+"|"+(me?.id||"");
+ if(signature!==roomSignature)drawRoster();
+ renderEvents();
+ updateHud();
+}
+function updateHud(){
+ if(!room)return;
+ const timer=el("timer"),hint=el("actionHint");
+ if(room.estado==="playing"){
+  const remain=remainingMs();
+  timer.textContent=(remain/1000).toFixed(1)+" s";
+  timer.classList.toggle("urgent",remain<4000);
+  const holder=activeHolder();
+  if(!me){hint.textContent="👀 Sos espectador. Para controlar tu personaje, abrí tu enlace personal.";}
+  else if(!me.vivo)hint.textContent="💥 Estás eliminado. Podés seguir mirando hasta el final.";
+  else if(room.bomba_de===me.id){
+   const shield=shieldMs();
+   hint.textContent=shield>0?"🛡️ Protección: "+(shield/1000).toFixed(1)+" s":
+    "💣 ¡LA TENÉS! Tocá el personaje de otro jugador para pasársela.";
+  }else hint.textContent="👀 "+(holder?.nombre||"Otro jugador")+" tiene la bomba. ¡Cuidado!";
+ }else{
+  timer.textContent="--:--";timer.classList.remove("urgent");
+  hint.textContent=room.estado==="finished"?"🏆 ¡Partida terminada!":
+   "🎭 Aprovechá para preparar y guardar tu avatar.";
+ }
+ const old=document.querySelectorAll(".player");
+ for(const card of old){
+  const target=room.jugadores?.find(p=>p.nombre===card.querySelector(".player-name")?.textContent);
+  const clickable=Boolean(target&&canPass()&&target.vivo&&target.id!==me.id);
+  card.disabled=!clickable;
+  card.classList.toggle("targetable",clickable);
+ }
+}
+async function refresh(){
+ if(loading)return;loading=true;
+ try{
+  const result=await rpc("js_bomba_publica",{p_code:code});
+  const server=Date.parse(result.servidor_ahora);if(Number.isFinite(server))offset=server-Date.now();
+  room=result;
+  if(me){
+   const current=result.jugadores?.find(p=>p.id===me.id);
+   if(current)me.vivo=current.vivo;
+  }
+  render();
+ }catch(err){
+  if(!room)showError("No pude cargar la partida: "+err.message);
+  else el("phase").textContent="⚠️ Conexión interrumpida. Reintentando…";
+ }finally{loading=false;}
+}
+el("share").addEventListener("click",async()=>{
+ const url=location.origin+location.pathname+"?r="+encodeURIComponent(code);
+ try{await navigator.clipboard.writeText(url);el("share").textContent="✅ Enlace copiado";}
+ catch{window.prompt("Copiá el enlace público:",url);}
+ setTimeout(()=>el("share").textContent="🔗 Compartir sala pública",2300);
+});
+if(!/^[A-F0-9]{12}$/.test(code))showError("El enlace no tiene un código válido. Abrí el enlace de sala que te mande JS Guardian.");
+else{void identity().then(refresh);setInterval(()=>void refresh(),1400);setInterval(updateHud,90);}
+</script>
+</body>
+</html>
