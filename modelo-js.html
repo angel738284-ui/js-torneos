@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#121b34">
+<title>Muñeco JS Family · Visor 3D</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;min-height:100dvh;background:linear-gradient(135deg,#111b35,#1c1840 55%,#122c39);color:#f8fbff;font:500 14px system-ui,-apple-system,Roboto,Arial,sans-serif}
+header{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:15px clamp(12px,4vw,36px);border-bottom:1px solid #ffffff24}
+header strong{font-size:16px;letter-spacing:.3px}header a{color:#a7ffe5;text-decoration:none;font-weight:700}
+main{max-width:850px;margin:auto;padding:18px clamp(12px,4vw,30px) 45px}
+h1{font-size:clamp(19px,4vw,29px);margin:0 0 8px}p{margin:7px 0;color:#c1d3e7;line-height:1.5}
+#stage{position:relative;height:min(66dvh,560px);min-height:350px;border:1px solid #49678f;border-radius:22px;overflow:hidden;margin-top:16px;background:radial-gradient(ellipse at 50% 36%,#415f8b 0%,#243957 43%,#111e35 100%);touch-action:none;box-shadow:0 18px 40px #071020a6}
+#stage canvas{display:block;width:100%;height:100%;touch-action:none}
+#wait{position:absolute;inset:0;display:grid;place-items:center;color:#bdf9e9;font-size:15px;text-align:center;padding:25px}
+#stage.ready #wait{display:none}
+#hint{position:absolute;bottom:12px;left:50%;transform:translateX(-50%);background:#111d37dc;border-radius:30px;padding:8px 13px;white-space:nowrap;font-size:12px;color:#e1f3fb;pointer-events:none}
+.panel{margin-top:14px;padding:14px;border:1px solid #3c5475;border-radius:17px;background:#162944bd}
+.row{display:flex;align-items:center;gap:9px;flex-wrap:wrap}
+button{font:700 13px system-ui,sans-serif;min-height:43px;color:#fff;background:#344965;border:1px solid #6480a1;border-radius:12px;padding:10px 14px;cursor:pointer}
+button.active{background:linear-gradient(120deg,#8c304c,#c94367);border-color:#ff96a9}
+button:focus-visible{outline:3px solid #b5fff0;outline-offset:3px}
+.label{font-weight:800;color:#e9fbff;margin:0 0 9px}
+#zoom{accent-color:#ee778d;width:min(200px,45vw)}
+#feedback{font-size:11px;color:#afd7eb;min-height:20px}
+a.link{display:inline-flex;min-height:42px;align-items:center;border-radius:11px;border:1px solid #7ab5a2;padding:9px 13px;background:#1d5957;color:#dbfff0;text-decoration:none;font-weight:800}
+.small{font-size:12px}
+</style>
+</head>
+<body>
+<header><strong>💣 JS FAMILY · MODELOS 3D</strong><a href="./bomba.html?r=BE5BBA5D2FA4">Volver al juego</a></header>
+<main>
+<h1>🧸 Nuestro muñeco rojo — Vista 3D</h1>
+<p>Este es el modelo de cuerpo continuo que creamos para Bomba Mortal. Podés girarlo con el dedo, acercarlo y cambiarle el color, directamente en Android.</p>
+<div id="stage" role="img" aria-label="Visor interactivo del muñeco rojo 3D. Arrastrá para girarlo.">
+ <div id="wait">Cargando muñeco 3D…</div>
+ <div id="hint">👆 Arrastrá para girar · Deslizá el zoom</div>
+</div>
+<section class="panel">
+ <div class="label">🎨 Color del muñeco</div>
+ <div class="row" id="palette">
+  <button class="active" type="button" data-color="#f83e50">🔴 Rojo</button>
+  <button type="button" data-color="#27b9e8">🔵 Azul</button>
+  <button type="button" data-color="#4acb75">🟢 Verde</button>
+  <button type="button" data-color="#ffcf45">🟡 Amarillo</button>
+  <button type="button" data-color="#8970e8">🟣 Violeta</button>
+ </div>
+</section>
+<section class="panel">
+ <div class="row"><label for="zoom"><strong>🔎 Zoom</strong></label><input id="zoom" type="range" min="0.7" max="1.6" step="0.05" value="1"><button id="reset" type="button">↺ Centrar</button><button id="spin" type="button">⟳ Girar solo</button></div>
+ <div id="feedback" role="status" aria-live="polite">Modelo de JS Family, diseñado para jugar desde el navegador.</div>
+</section>
+<section class="panel"><p class="small">Si no aparece el personaje, probá abrir esta página en Chrome. El juego sigue funcionando incluso si el navegador no admite gráficos 3D.</p><a class="link" href="./bomba.html?r=BE5BBA5D2FA4">💣 Abrir Bomba Mortal</a></section>
+</main>
+<script type="module">
+import * as THREE from "./bomba3d/vendor/three.module.js";
+const stage=document.getElementById("stage"),wait=document.getElementById("wait"),feedback=document.getElementById("feedback");
+let renderer,scene,camera,model,bodyMat,autoSpin=false,zoom=1,rotY=0,rotX=0,prev=0,raf=0;
+const pointers=new Map();
+try{
+ if(!window.WebGLRenderingContext)throw new Error("Este navegador no tiene WebGL.");
+ const res=await fetch("./bomba3d/seamless_body.bin",{cache:"force-cache"});
+ if(!res.ok)throw new Error("No se pudo cargar el modelo.");
+ const bytes=await res.arrayBuffer(),v=new DataView(bytes);
+ if(bytes.byteLength<20||String.fromCharCode(...new Uint8Array(bytes,0,4))!=="JSJB"||v.getUint32(4,true)!==1)throw new Error("Formato del modelo inválido.");
+ const n=v.getUint32(8,true),i=v.getUint32(12,true);
+ if(n<100||n>120000||i<100||i>1000000||16+n*24+i*4!==bytes.byteLength)throw new Error("Archivo del modelo incompleto.");
+ const geom=new THREE.BufferGeometry();
+ geom.setAttribute("position",new THREE.BufferAttribute(new Float32Array(bytes.slice(16,16+n*12)),3));
+ geom.setAttribute("normal",new THREE.BufferAttribute(new Float32Array(bytes.slice(16+n*12,16+n*24)),3));
+ geom.setIndex(new THREE.BufferAttribute(new Uint32Array(bytes.slice(16+n*24)),1));
+ geom.computeBoundingSphere();
+ scene=new THREE.Scene();
+ camera=new THREE.OrthographicCamera(-1.85,1.85,2,-2,.1,100);camera.position.set(0,1.38,6);camera.lookAt(0,1.38,0);
+ renderer=new THREE.WebGLRenderer({antialias:true,alpha:true,powerPreference:"low-power"});
+ renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,1.5));renderer.setClearColor(0x000000,0);renderer.outputColorSpace=THREE.SRGBColorSpace;
+ stage.insertBefore(renderer.domElement,stage.firstChild);
+ scene.add(new THREE.HemisphereLight(0xfafcff,0x56677b,2.5));
+ const light=new THREE.DirectionalLight(0xffefd9,2.7);light.position.set(-3,7,5);scene.add(light);
+ const rim=new THREE.DirectionalLight(0x97ccff,1.15);rim.position.set(4,2,-4);scene.add(rim);
+ model=new THREE.Group();scene.add(model);
+ bodyMat=new THREE.MeshStandardMaterial({color:"#f83e50",roughness:.27,metalness:0});
+ const body=new THREE.Mesh(geom,bodyMat);model.add(body);
+ const eyeMat=new THREE.MeshStandardMaterial({color:"#fffefb",roughness:.14,emissive:"#ffffff",emissiveIntensity:.26});
+ for(const x of [-.205,.205]){
+  const eye=new THREE.Mesh(new THREE.SphereGeometry(1,24,16),eyeMat);
+  eye.position.set(x,2.205,.553);eye.scale.set(.115,.13,.073);model.add(eye);
+ }
+ const base=new THREE.Mesh(new THREE.CylinderGeometry(.77,.9,.085,48),new THREE.MeshStandardMaterial({color:"#243e58",roughness:.52}));
+ base.position.y=-.085;model.add(base);
+ function resize(){
+  const width=Math.max(150,stage.clientWidth),height=Math.max(250,stage.clientHeight),aspect=width/height;
+  const vsize=3.5/zoom;
+  camera.left=-vsize*aspect/2;camera.right=vsize*aspect/2;camera.top=vsize/2;camera.bottom=-vsize/2;camera.updateProjectionMatrix();
+  renderer.setSize(width,height,false);
+ }
+ const observer=new ResizeObserver(resize);observer.observe(stage);resize();
+ function draw(t){
+  raf=requestAnimationFrame(draw);
+  if(document.hidden)return;
+  if(autoSpin&&t-prev<2000)rotY+=.01;
+  prev=t;
+  model.rotation.y=rotY;
+  model.rotation.x=rotX;
+  renderer.render(scene,camera);
+ }
+ raf=requestAnimationFrame(draw);
+ stage.classList.add("ready");feedback.textContent="✅ Modelo cargado. ¡Ya podés girarlo y elegir colores!";
+ stage.addEventListener("pointerdown",e=>{e.preventDefault();stage.setPointerCapture(e.pointerId);pointers.set(e.pointerId,{x:e.clientX,y:e.clientY});});
+ stage.addEventListener("pointermove",e=>{
+  if(!pointers.has(e.pointerId))return;e.preventDefault();
+  const old=pointers.get(e.pointerId);pointers.set(e.pointerId,{x:e.clientX,y:e.clientY});
+  if(pointers.size===1){rotY+=(e.clientX-old.x)*.012;rotX=Math.max(-.55,Math.min(.55,rotX+(e.clientY-old.y)*.005));}
+ });
+ for(const type of ["pointerup","pointercancel","lostpointercapture"])stage.addEventListener(type,e=>pointers.delete(e.pointerId));
+ stage.addEventListener("wheel",e=>{e.preventDefault();zoom=Math.max(.7,Math.min(1.6,zoom+(e.deltaY<0?.08:-.08)));document.getElementById("zoom").value=zoom;resize();},{passive:false});
+ document.getElementById("zoom").addEventListener("input",e=>{zoom=Number(e.target.value);resize();});
+ document.getElementById("reset").addEventListener("click",()=>{rotY=0;rotX=0;zoom=1;document.getElementById("zoom").value="1";resize();});
+ document.getElementById("spin").addEventListener("click",e=>{autoSpin=!autoSpin;e.target.classList.toggle("active",autoSpin);e.target.textContent=autoSpin?"⏸ Detener giro":"⟳ Girar solo";});
+ document.querySelectorAll("[data-color]").forEach(b=>b.addEventListener("click",()=>{
+  bodyMat.color.set(b.dataset.color);
+  document.querySelectorAll("[data-color]").forEach(c=>c.classList.toggle("active",c===b));
+ }));
+}catch(err){wait.textContent="⚠️ "+err.message;feedback.textContent="Probá abrir en Chrome o seguí usando Bomba Mortal en 2D.";console.error(err);}
+</script>
+</body>
+</html>
