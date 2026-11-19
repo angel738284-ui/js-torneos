@@ -34,3 +34,10 @@ El selector \`wear3d\` (yes/no) se guarda con la función de avatar existente en
 - La mecha conserva el avance al cambiar de dueño y también durante el vuelo. Se reinicia solo con una nueva ronda.
 - La explosión y las eliminaciones siguen siendo responsabilidad del servidor; la demo tiene un contador visual independiente que no altera partidas reales.
 - Con movimiento reducido, la mecha se acorta pero la luz no parpadea.
+
+## Sala DEMO con explosión y caída (noviembre de 2026)
+
+- La sala ficticia permite una prueba visual de 20 segundos con dos lanzamientos automáticos, mecha continua, explosión `💥` y caída completa del GLB; el personaje se levanta después de 4,6 segundos para poder repetir la DEMO.
+- Un segundo botón `💥 Explotar ahora` adelanta solo la explosión de la prueba. No modifica jugadores reales ni datos de Supabase.
+- Cuando la sala pasa a `playing`, el motor anula cualquier simulación y restaura los personajes al estado auténtico de servidor.
+- La duración real de cada ronda sigue en el backend (aprox. 17–26 segundos).

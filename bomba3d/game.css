@@ -62,3 +62,11 @@
 .bomb3dToolbar #bomb3dDemoThrow{width:100%;min-height:38px;
  background:linear-gradient(120deg,#304e66,#276f73);border:1px solid #58a9a1;
  color:#dffdf7;border-radius:10px;font-size:12px;font-weight:800}
+
+/* Safe, opt-in visual demonstration; no multiplayer actions. */
+.bomb3dToolbar #bomb3dDemoExplode{width:100%;min-height:38px;
+ background:linear-gradient(120deg,#8e3045,#c54336);
+ border:1px solid #f19b75;color:#fff7f4;border-radius:10px;font-weight:900}
+.bomb3dToolbar #bomb3dDemoExplode:disabled{opacity:.5}
+.bomb3dToolbar .demoStatus{display:block;width:100%;text-align:center;
+ color:#dbeef5;font-size:12px;line-height:1.6}

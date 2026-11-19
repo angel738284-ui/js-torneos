@@ -92,7 +92,8 @@ test("Held and flying bomb use the same synchronized percentage",()=>{
  const ctx=vm.createContext({
   roomData:room(),actors,projectile,flight:null,demoHolder:null,demoPending:null,
   demoEndsAt:0,demoFuseStartAt:0,demoFuseDeadlineAt:0,serverClockOffset:0,
-  roundFuseProgress,Math,Date
+  demoSecondPass:null,demoVictimId:null,demoExplodedAt:0,demoFinishedAt:0,DEMO_FALL_HOLD_MS:4600,
+  roundFuseProgress,Math,Date,el:()=>null,window:{}
  });
  const begin=game.indexOf("function animateHeldAndFlyingBomb(");
  const endIndex=game.indexOf("function animate(time){",begin);
@@ -116,10 +117,10 @@ test("Held and flying bomb use the same synchronized percentage",()=>{
 });
 test("Renderer uses HUD server offset and DEMO has its own countdown",()=>{
  assert.match(page,/window\.Bomb3D\?\.syncRoom\(room,offset\)/);
- assert.match(page,/bomba3d\/game\.js\?v=9/);
+ assert.match(page,/bomba3d\/game\.js\?v=10/);
  assert.match(game,/roundFuseProgress\(roomData,Date\.now\(\)\+serverClockOffset\)/);
  assert.match(game,/actor\.bomb\.update\(time,reduced,fuseProgress\)/);
  assert.match(game,/projectile\.update\(time,reduced,fuseProgress\)/);
- assert.match(game,/demoFuseDeadlineAt=demoEndsAt/);
+ assert.match(game,/demoFuseDeadlineAt=now\+DEMO_FULL_DURATION_MS/);
  assert.match(page,/p_action:"pasar",p_target:target\.id/);
 });

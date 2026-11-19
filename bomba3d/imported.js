@@ -148,8 +148,10 @@ export function createOriginalRubberActor(options={}){
   grippingHands.visible=gripPose>.14||gripping;
   if(action==="death"){
    deadAmount=Math.min(1,deadAmount+Math.max(.045,(delta||.03)*1.8));
-   animatedRig.rotation.z=-1.20*deadAmount;
-   animatedRig.position.y=-.35*deadAmount;
+   // Full tumble onto the floor, not just a slight lean.
+   animatedRig.rotation.z=-Math.PI*.5*deadAmount;
+   animatedRig.rotation.x=.12*deadAmount;
+   animatedRig.position.y=-.12*deadAmount;
    return;
   }
   deadAmount=Math.max(0,deadAmount-.12);

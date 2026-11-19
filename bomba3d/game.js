@@ -4,7 +4,7 @@
  * The Supabase multiplayer game and WhatsApp registration are unchanged.
  */
 import * as THREE from "./vendor/three.module.js";
-import {preloadOriginalModel,hasOriginalModel,createOriginalRubberActor} from "./imported.js?v=4";
+import {preloadOriginalModel,hasOriginalModel,createOriginalRubberActor} from "./imported.js?v=5";
 import {
  createBombProp,handWorldPosition,makePassAnimation,HAND_OFFSET,roundFuseProgress
 } from "./bomb-effects.js?v=3";
@@ -16,6 +16,8 @@ let ready=false,frameId=0,lastTime=0,failureLogged=false,loading=null;
 let projectile=null,flight=null;
 let demoHolder=null,demoPending=null,demoEndsAt=0;
 let demoFuseStartAt=0,demoFuseDeadlineAt=0,serverClockOffset=0;
+let demoSecondPass=null,demoVictimId=null,demoExplodedAt=0,demoFinishedAt=0;
+const DEMO_FULL_DURATION_MS=20000,DEMO_FALL_HOLD_MS=4600;
 const reducedMotion=()=>Boolean(window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches);
 const status=text=>{const node=el("bomb3dStatus");if(node)node.textContent=text;};
 const supported=()=>typeof window.WebGLRenderingContext!=="undefined";
@@ -77,6 +79,7 @@ function disposeStages(){
  studio=null;arena=null;ready=false;previewStamp="";
  projectile=null;flight=null;demoHolder=null;demoPending=null;demoEndsAt=0;
  demoFuseStartAt=0;demoFuseDeadlineAt=0;
+ demoSecondPass=null;demoVictimId=null;demoExplodedAt=0;demoFinishedAt=0;
 }
 function setPosition(actor,card,total,w,h){
  const x=parseFloat(card.style.left),y=parseFloat(card.style.top);
@@ -99,10 +102,21 @@ export function syncRoom(data,clockOffsetMs){
   if(Number.isFinite(remote))serverClockOffset=remote-Date.now();
  }
  if(data?.estado==="playing"){
-  // A real round always takes precedence over a visual-only DEMO preview.
-  if(demoHolder)flight=null;
+  // If the DEMO finished with a fake elimination, undo that pose before
+  // using authoritative server state. The DEMO never touches Supabase.
+  if(demoHolder||demoExplodedAt){
+   flight=null;
+   for(const p of data.jugadores||[]){
+    const actor=actors.get(p.id);
+    if(actor){
+     actor.alive=Boolean(p.vivo);
+     actor.action=actor.alive?"idle":"death";
+    }
+   }
+  }
   demoHolder=null;demoPending=null;demoEndsAt=0;
   demoFuseStartAt=0;demoFuseDeadlineAt=0;
+  demoSecondPass=null;demoVictimId=null;demoExplodedAt=0;demoFinishedAt=0;
  }
  if(!ready||!arena||!hasOriginalModel()||!data?.jugadores)return;
  const stage=el("tableStage");
@@ -154,15 +168,29 @@ export function syncPreview(avatar){
 export function demoThrow(){
  if(!ready||!roomData||roomData.estado!=="ready"||
     !String(roomData.titulo||"").startsWith("DEMO")||
-    flight||demoPending)return false;
+    flight||demoPending||demoHolder||demoExplodedAt)return false;
  const living=(roomData.jugadores||[]).filter(p=>p.vivo&&actors.has(p.id));
  if(living.length<2)return false;
  const now=performance.now();
- const from=living[0],to=living[1];
- demoHolder=from.id;
- demoPending={fromId:from.id,toId:to.id,when:now+1150};
- demoEndsAt=now+4300;
- demoFuseStartAt=now;demoFuseDeadlineAt=demoEndsAt;
+ const first=living[0],second=living[1],third=living[2]||second;
+ demoHolder=first.id;
+ demoPending={fromId:first.id,toId:second.id,when:now+4600};
+ demoSecondPass=third.id!==second.id
+  ?{fromId:second.id,toId:third.id,when:now+12000}:null;
+ demoVictimId=third.id;
+ demoFuseStartAt=now;
+ demoFuseDeadlineAt=now+DEMO_FULL_DURATION_MS;
+ demoEndsAt=demoFuseDeadlineAt;
+ demoExplodedAt=0;demoFinishedAt=0;
+ return true;
+}
+/** Manual explosion in the DEMO only. Never changes the server's player data. */
+export function demoExplodeNow(){
+ if(!ready||roomData?.estado!=="ready"||!demoHolder||
+    !demoFuseStartAt||demoExplodedAt)return false;
+ demoFuseDeadlineAt=performance.now();
+ demoEndsAt=demoFuseDeadlineAt;
+ demoPending=null;demoSecondPass=null;flight=null;
  return true;
 }
 export function onGameTransition(before,after){
@@ -195,47 +223,77 @@ export function onGameTransition(before,after){
  receiver.action="catch";receiver.until=now+flight.duration+450;
 }
 function animateHeldAndFlyingBomb(time,reduced){
- if(demoPending&&time>=demoPending.when){
+ // Fictional demo: 20 real seconds, two passes, one explosion and fall.
+ if(demoSecondPass&&time>=demoSecondPass.when&&!flight&&!demoPending&&!demoExplodedAt){
+  demoPending=demoSecondPass;demoSecondPass=null;
+ }
+ if(demoPending&&time>=demoPending.when&&!demoExplodedAt){
   const sender=actors.get(demoPending.fromId),recipient=actors.get(demoPending.toId);
-  if(sender&&recipient){
+  if(sender?.alive&&recipient?.alive){
    flight=makePassAnimation({
     fromId:demoPending.fromId,toId:demoPending.toId,
     start:handWorldPosition(sender),end:handWorldPosition(recipient),
     startTime:time
    });
    demoHolder=recipient.playerId;
-   demoEndsAt=time+flight.duration+1250;
-   demoFuseDeadlineAt=demoEndsAt;
    sender.action="throw";sender.until=time+420;
-   recipient.action="catch";recipient.until=demoEndsAt;
+   recipient.action="catch";recipient.until=time+flight.duration+450;
   }
   demoPending=null;
  }
- if(!flight&&!demoPending&&demoHolder&&time>=demoEndsAt){
-  demoHolder=null;demoFuseStartAt=0;demoFuseDeadlineAt=0;
+ if(demoHolder&&demoFuseStartAt&&!demoExplodedAt&&time>=demoFuseDeadlineAt){
+  // End of the fake round. Do not send a single RPC to Supabase.
+  flight=null;demoPending=null;demoSecondPass=null;
+  demoVictimId=demoHolder;
+  const victim=actors.get(demoVictimId);
+  if(victim){victim.alive=false;victim.action="death";}
+  demoHolder=null;
+  demoExplodedAt=time;
+  demoFinishedAt=time+DEMO_FALL_HOLD_MS;
+  window.JSBombDemoExplosion?.(demoVictimId);
+ }
+ if(demoExplodedAt&&time>=demoFinishedAt){
+  const victim=actors.get(demoVictimId);
+  if(victim){
+   victim.alive=Boolean(roomData?.jugadores?.find(p=>p.id===demoVictimId)?.vivo);
+   victim.action=victim.alive?"idle":"death";
+  }
+  demoExplodedAt=0;demoFinishedAt=0;demoVictimId=null;
+  demoFuseStartAt=0;demoFuseDeadlineAt=0;demoEndsAt=0;
  }
  const fuseProgress=demoFuseStartAt&&demoFuseDeadlineAt>demoFuseStartAt
   ?Math.max(0,Math.min(1,(demoFuseDeadlineAt-time)/(demoFuseDeadlineAt-demoFuseStartAt)))
   :roundFuseProgress(roomData,Date.now()+serverClockOffset);
  const current=demoHolder||(roomData?.estado==="playing"?roomData.bomba_de:null);
- // A single holder is visible only while the projectile is not in flight.
  for(const [id,actor] of actors){
   if(actor.bomb){
    actor.bomb.root.visible=Boolean(current===id&&actor.alive&&!flight);
    if(actor.bomb.root.visible)actor.bomb.update(time,reduced,fuseProgress);
   }
  }
- if(!projectile)return;
- if(!flight){
-  projectile.root.visible=false;
-  return;
+ const demoExplodeButton=el("bomb3dDemoExplode");
+ if(demoExplodeButton)demoExplodeButton.disabled=!(demoHolder&&demoFuseStartAt&&!demoExplodedAt);
+ const demoStatus=el("bomb3dDemoStatus");
+ if(demoStatus){
+  demoStatus.textContent=demoExplodedAt
+   ?"💥 ¡BOOM! El muñeco se cayó. Se recuperará en unos segundos."
+   :demoHolder&&demoFuseDeadlineAt>0
+    ?"🔥 Prueba completa · quedan "+Math.max(0,Math.ceil((demoFuseDeadlineAt-time)/1000))+
+      " segundos · mecha consumiéndose"
+    :"🎮 Probá una secuencia de 20 segundos con lanzamientos, explosión y caída.";
  }
+ if(!projectile)return;
+ if(!flight){projectile.root.visible=false;return;}
  if(reduced||flight.finished(time)){
   const recipient=actors.get(flight.toId);
   if(recipient?.alive){recipient.action="catch";recipient.until=time+350;}
   flight=null;
   projectile.root.visible=false;
-  if(recipient?.bomb&&current===recipient.playerId)recipient.bomb.root.visible=true;
+  if(recipient?.bomb&&current===recipient.playerId){
+   recipient.bomb.root.visible=true;
+   // Keep the same consumed length on the exact frame of the catch.
+   recipient.bomb.update(time,reduced,fuseProgress);
+  }
   return;
  }
  projectile.root.visible=true;
@@ -319,7 +377,7 @@ export function set3DEnabled(){
  }
 }
 export function initBomb3D(){
- window.Bomb3D={syncRoom,syncPreview,onGameTransition,demoThrow,set3DEnabled,isEnabled:()=>ready};
+ window.Bomb3D={syncRoom,syncPreview,onGameTransition,demoThrow,demoExplodeNow,set3DEnabled,isEnabled:()=>ready};
  previewData=Object.fromEntries([...document.querySelectorAll(".avatarEditor select")].map(x=>[x.id,x.value]));
  set3DEnabled();
 }
