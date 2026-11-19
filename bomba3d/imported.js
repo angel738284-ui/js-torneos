@@ -123,14 +123,21 @@ export function createOriginalRubberActor(options={}){
   }
   deadAmount=Math.max(0,deadAmount-.12);
   const dancing=action==="dance"||options.pose==="dance";
-  const wave=action==="receive"||action==="wave"||options.pose==="wave";
-  animatedRig.rotation.z=reduced?0:Math.sin(elapsed*(dancing?7.0:2.1))*(dancing?.16:wave?.10:.045);
-  animatedRig.position.y=(reduced?0:Math.sin(elapsed*(dancing?7.0:2.5))*(dancing?.065:.035));
-  animatedRig.rotation.y=reduced?0:Math.sin(elapsed*1.6)*.06;
+  const throwing=action==="throw",catching=action==="catch";
+  const idleSway=Math.sin(elapsed*1.9)*(dancing?.18:.085);
+  // The GLB is unrigged, so throwing and catching use exaggerated
+  // upper-body lean, not fabricated separate arm-bone animations.
+  animatedRig.rotation.z=reduced?0:
+   throwing?-.25+Math.sin(elapsed*10)*.065:
+   catching?.22+Math.sin(elapsed*8)*.045:idleSway;
+  animatedRig.rotation.x=reduced?0:throwing?-.14:catching?.12:0;
+  animatedRig.position.y=reduced?0:Math.sin(elapsed*(dancing?7:2.55))*(dancing?.07:.045);
+  animatedRig.position.x=reduced?0:Math.sin(elapsed*1.55)*(dancing?.09:.055);
+  animatedRig.rotation.y=reduced?0:Math.sin(elapsed*1.6)*.09;
  };
  const dispose=()=>{
   wardrobe.dispose();
   for(const m of materials)m.dispose();
  };
- return {root,update,dispose,costume:"plain",kind:"uploaded",alive:true};
+ return {root,handAnchor:animatedRig,update,dispose,costume:"plain",kind:"uploaded",alive:true};
 }

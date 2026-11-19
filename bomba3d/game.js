@@ -4,12 +4,17 @@
  * The Supabase multiplayer game and WhatsApp registration are unchanged.
  */
 import * as THREE from "./vendor/three.module.js";
-import {preloadOriginalModel,hasOriginalModel,createOriginalRubberActor} from "./imported.js?v=2";
+import {preloadOriginalModel,hasOriginalModel,createOriginalRubberActor} from "./imported.js?v=3";
+import {
+ createBombProp,handWorldPosition,makePassAnimation,HAND_OFFSET
+} from "./bomb-effects.js?v=1";
 
 const el=id=>document.getElementById(id);
 const actors=new Map();
 let arena=null,studio=null,roomData=null,previewData=null,previewStamp="";
 let ready=false,frameId=0,lastTime=0,failureLogged=false,loading=null;
+let projectile=null,flight=null;
+let demoHolder=null,demoPending=null,demoEndsAt=0;
 const reducedMotion=()=>Boolean(window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches);
 const status=text=>{const node=el("bomb3dStatus");if(node)node.textContent=text;};
 const supported=()=>typeof window.WebGLRenderingContext!=="undefined";
@@ -35,7 +40,14 @@ function makeStage(parent,preview=false){
  front.position.set(-3,7,8);scene.add(front);
  const back=new THREE.DirectionalLight(0xbedaff,.72);
  back.position.set(4,3,-5);scene.add(back);
- return {scene,camera,renderer,parent,actor:null,width:0,height:0};
+ const stage={scene,camera,renderer,parent,actor:null,width:0,height:0};
+ if(!preview){
+  projectile=createBombProp();
+  projectile.root.name="JS_3D_FLYING_BOMB";
+  projectile.root.visible=false;
+  scene.add(projectile.root);
+ }
+ return stage;
 }
 function resize(stage,width,height,zoom){
  const w=Math.max(1,Math.floor(width)),h=Math.max(1,Math.floor(height));
@@ -62,6 +74,7 @@ function disposeStages(){
   view.renderer.domElement.remove();
  }
  studio=null;arena=null;ready=false;previewStamp="";
+ projectile=null;flight=null;demoHolder=null;demoPending=null;demoEndsAt=0;
 }
 function setPosition(actor,card,total,w,h){
  const x=parseFloat(card.style.left),y=parseFloat(card.style.top);
@@ -77,6 +90,11 @@ function cardsByPlayer(){
 }
 export function syncRoom(data){
  roomData=data;
+ if(data?.estado==="playing"){
+  // A real round always takes precedence over a visual-only DEMO preview.
+  if(demoHolder)flight=null;
+  demoHolder=null;demoPending=null;demoEndsAt=0;
+ }
  if(!ready||!arena||!hasOriginalModel()||!data?.jugadores)return;
  const stage=el("tableStage");
  const w=stage?.clientWidth||360,h=stage?.clientHeight||630;
@@ -92,6 +110,10 @@ export function syncRoom(data){
   if(!actor||actor.stamp!==signature){
    if(actor)removeActor(actor,arena.scene);
    actor=createOriginalRubberActor(avatar);
+   actor.bomb=createBombProp();
+   actor.bomb.root.position.set(...HAND_OFFSET);
+   (actor.handAnchor||actor.root).add(actor.bomb.root);
+   actor.bomb.root.visible=false;
    actor.stamp=signature;actor.playerId=p.id;
    actor.action=p.vivo?"idle":"death";
    actor.alive=Boolean(p.vivo);actor.until=0;
@@ -116,22 +138,94 @@ export function syncPreview(avatar){
  studio.actor.root.position.set(0,-1.42*.84,0);
  el("preview")?.classList.add("is3d");
 }
+/**
+ * Visual-only pass in the fictional demo room. No RPC calls, no scores,
+ * and never available during an actual game.
+ */
+export function demoThrow(){
+ if(!ready||!roomData||roomData.estado!=="ready"||
+    !String(roomData.titulo||"").startsWith("DEMO")||
+    flight||demoPending)return false;
+ const living=(roomData.jugadores||[]).filter(p=>p.vivo&&actors.has(p.id));
+ if(living.length<2)return false;
+ const now=performance.now();
+ const from=living[0],to=living[1];
+ demoHolder=from.id;
+ demoPending={fromId:from.id,toId:to.id,when:now+650};
+ demoEndsAt=now+3000;
+ return true;
+}
 export function onGameTransition(before,after){
  if(!ready||!before||!after)return;
  const old=new Map((before.jugadores||[]).map(p=>[p.id,p]));
- for(const p of after.jugadores||[]){
+ const newDeaths=(after.jugadores||[]).filter(p=>old.get(p.id)?.vivo&&!p.vivo);
+ for(const p of newDeaths){
   const actor=actors.get(p.id);
-  if(actor&&old.get(p.id)?.vivo&&!p.vivo){
-   actor.alive=false;actor.action="death";
+  if(actor){actor.alive=false;actor.action="death";}
+ }
+ // The game server is authoritative: ONLY a confirmed holder change starts
+ // a flight. Clicking the button cannot launch a bomb on an API error.
+ if(before.estado!=="playing"||after.estado!=="playing"||
+    newDeaths.length||!before.bomba_de||!after.bomba_de||
+    before.bomba_de===after.bomba_de||before.ronda!==after.ronda){
+  if(after.estado!=="playing"||newDeaths.length)flight=null;
+  return;
+ }
+ const sender=actors.get(before.bomba_de);
+ const receiver=actors.get(after.bomba_de);
+ if(!sender||!receiver||!receiver.alive)return;
+ const origin=handWorldPosition(sender),destination=handWorldPosition(receiver);
+ if(!origin||!destination)return;
+ const now=performance.now();
+ flight=makePassAnimation({
+  fromId:before.bomba_de,toId:after.bomba_de,
+  start:origin,end:destination,startTime:now
+ });
+ sender.action="throw";sender.until=now+Math.min(450,flight.duration*.58);
+ receiver.action="catch";receiver.until=now+flight.duration+450;
+}
+function animateHeldAndFlyingBomb(time,reduced){
+ if(demoPending&&time>=demoPending.when){
+  const sender=actors.get(demoPending.fromId),recipient=actors.get(demoPending.toId);
+  if(sender&&recipient){
+   flight=makePassAnimation({
+    fromId:demoPending.fromId,toId:demoPending.toId,
+    start:handWorldPosition(sender),end:handWorldPosition(recipient),
+    startTime:time
+   });
+   demoHolder=recipient.playerId;
+   demoEndsAt=time+flight.duration+1250;
+   sender.action="throw";sender.until=time+420;
+   recipient.action="catch";recipient.until=demoEndsAt;
+  }
+  demoPending=null;
+ }
+ if(!flight&&!demoPending&&demoHolder&&time>=demoEndsAt)demoHolder=null;
+ const current=demoHolder||(roomData?.estado==="playing"?roomData.bomba_de:null);
+ // A single holder is visible only while the projectile is not in flight.
+ for(const [id,actor] of actors){
+  if(actor.bomb){
+   actor.bomb.root.visible=Boolean(current===id&&actor.alive&&!flight);
+   if(actor.bomb.root.visible)actor.bomb.update(time,reduced);
   }
  }
- if(before.bomba_de&&after.bomba_de&&before.bomba_de!==after.bomba_de){
-  const now=performance.now();
-  for(const id of [before.bomba_de,after.bomba_de]){
-   const actor=actors.get(id);
-   if(actor?.alive){actor.action="receive";actor.until=now+1300;}
-  }
+ if(!projectile)return;
+ if(!flight){
+  projectile.root.visible=false;
+  return;
  }
+ if(reduced||flight.finished(time)){
+  const recipient=actors.get(flight.toId);
+  if(recipient?.alive){recipient.action="catch";recipient.until=time+350;}
+  flight=null;
+  projectile.root.visible=false;
+  if(recipient?.bomb&&current===recipient.playerId)recipient.bomb.root.visible=true;
+  return;
+ }
+ projectile.root.visible=true;
+ projectile.root.position.copy(flight.point(time));
+ projectile.root.rotation.set(time*.002,time*.003,time*.004);
+ projectile.update(time,reduced);
 }
 function animate(time){
  frameId=requestAnimationFrame(animate);
@@ -151,9 +245,10 @@ function animate(time){
    for(const [id,a] of actors){
     const card=cards.get(id);
     if(card)setPosition(a,card,actors.size,w,h);
-    if(a.action==="receive"&&time>a.until)a.action="idle";
+    if(["throw","catch","receive"].includes(a.action)&&time>a.until)a.action="idle";
     a.update(seconds,a.action,reduced);
    }
+   animateHeldAndFlyingBomb(time,reduced);
    arena.renderer.render(arena.scene,arena.camera);
   }
   if(studio){
@@ -205,7 +300,7 @@ export function set3DEnabled(){
  }
 }
 export function initBomb3D(){
- window.Bomb3D={syncRoom,syncPreview,onGameTransition,set3DEnabled,isEnabled:()=>ready};
+ window.Bomb3D={syncRoom,syncPreview,onGameTransition,demoThrow,set3DEnabled,isEnabled:()=>ready};
  previewData=Object.fromEntries([...document.querySelectorAll(".avatarEditor select")].map(x=>[x.id,x.value]));
  set3DEnabled();
 }

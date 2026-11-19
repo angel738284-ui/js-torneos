@@ -56,3 +56,9 @@
 .avatarEditor .saveStatus{margin:2px 0 5px}
 .avatarEditor .preview:before{content:"VISTA PREVIA 3D";}
 @media(max-width:440px){.avatarEditor .customSections .options{grid-template-columns:1fr}}
+
+/* Demo flight previews never touch multiplayer RPC. */
+.bomb3dToolbar{flex-wrap:wrap;gap:8px}
+.bomb3dToolbar #bomb3dDemoThrow{width:100%;min-height:38px;
+ background:linear-gradient(120deg,#304e66,#276f73);border:1px solid #58a9a1;
+ color:#dffdf7;border-radius:10px;font-size:12px;font-weight:800}

@@ -217,7 +217,7 @@ select{width:100%;background:#25354d;border:1px solid #536a8f;border-radius:9px;
 </style>
 <link rel="stylesheet" href="./bomba3d/game.css?v=3">
 
-<script type="module" src="./bomba3d/game.js?v=6"></script>
+<script type="module" src="./bomba3d/game.js?v=7"></script>
 <script src="./config.js"></script>
 </head>
 <body>
@@ -230,7 +230,7 @@ select{width:100%;background:#25354d;border:1px solid #536a8f;border-radius:9px;
 <div id="winner" class="winner" hidden></div>
 <div class="hud"><b id="round">🎮 Sala JS Family</b><span id="alive" class="pill">— jugadores</span><span id="timer" class="timer">00:00</span></div>
 <div class="bomb3dToolbar">
- <span id="bomb3dStatus" role="status" aria-live="polite">⏳ Cargando personajes GLB y ropa 3D…</span>
+ <span id="bomb3dStatus" role="status" aria-live="polite">⏳ Cargando personajes GLB y ropa 3D…</span>\n <button type="button" id="bomb3dDemoThrow" hidden>🎬 Ver pase de prueba · Solo animación</button>
 </div>
 <div id="tableStage" class="tableStage" aria-label="Mesa redonda con todos los jugadores">
  <div class="tableFloor" aria-hidden="true"></div>
@@ -416,6 +416,10 @@ async function passSelected(){
  }finally{busy=false;updateHud();}
 }
 el("passBomb").addEventListener("click",()=>void passSelected());
+el("bomb3dDemoThrow").addEventListener("click",()=>{
+ const ok=window.Bomb3D?.demoThrow?.();
+ if(!ok)el("bomb3dStatus").textContent="⏳ Esperá que cargue el 3D para probar el lanzamiento.";
+});
 // Place seats at EQUAL ARC LENGTH along an ellipse: avoids crowding near the ends.
 function seatPositions(total,width,height,cardWidth=78){
  const centerX=width/2,centerY=height/2;
@@ -500,7 +504,7 @@ function animateGameChanges(before,after){
  if(newlyDead.length){
   for(const p of newlyDead)animateExplosion(p.id);
  }else if(before.bomba_de&&after.bomba_de&&before.bomba_de!==after.bomba_de){
-  animateTransfer(before.bomba_de,after.bomba_de);
+  if(!window.Bomb3D?.isEnabled())animateTransfer(before.bomba_de,after.bomba_de);
  }
 }
 function drawRoster(){
@@ -549,6 +553,10 @@ function render(){
  if(!room)return;
  el("content").hidden=false;el("error").hidden=true;
  const total=room.jugadores?.length||0;
+ const demoThrowButton=el("bomb3dDemoThrow");
+ if(demoThrowButton)demoThrowButton.hidden=!(
+  code==="BE5BBA5D2FA4"&&room.estado==="ready"
+ );
  el("alive").textContent=room.vivos+" / "+total+" vivos";
  el("round").textContent="🎮 "+room.titulo+" · Ronda "+room.ronda;
  const status=room.estado;
