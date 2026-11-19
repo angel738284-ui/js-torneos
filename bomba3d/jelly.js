@@ -17,6 +17,11 @@ export function normalizeJelly(a={}){
  };
 }
 
+let seamlessGeometry=null;
+export function setSeamlessGeometry(geometry){
+ seamlessGeometry=geometry;
+}
+export function hasSeamlessGeometry(){return Boolean(seamlessGeometry);}
 const sph=new THREE.SphereGeometry(1,16,12);
 const cone=new THREE.ConeGeometry(1,1,8);
 const box=new THREE.BoxGeometry(1,1,1);
@@ -59,7 +64,7 @@ export function createJellyAvatar(config={}){
  const inner=new THREE.Group();inner.name="jellyBody";root.add(inner);
  const torso=oval(inner,base,"torso",[0,.99,0],[.47,.64,.345]);
  parts.torso=torso;
- oval(inner,accent,"frontSheen",[-.10,1.10,.334],[.21,.4,.015]);
+ const frontSheen=oval(inner,accent,"frontSheen",[-.10,1.10,.334],[.21,.4,.015]);
  const legL=oval(inner,base,"thickLeftLeg",[-.23,.31,.015],[.205,.365,.225]);
  const legR=oval(inner,base,"thickRightLeg",[.23,.31,.015],[.205,.365,.225]);
  parts.legs=[legL,legR];
@@ -211,6 +216,17 @@ export function createJellyAvatar(config={}){
  };
  hoodFeatures();
 
+ // This higher-quality version is one continuous watertight body surface.
+ // Reuse a single BufferGeometry for all player avatars: color/eyes stay editable.
+ if(c.costume3d==="plain" && seamlessGeometry){
+  const seamless=mesh(inner,seamlessGeometry,base,"JS_Seamless_Rubber_Body",[0,0,0],[1,1,1]);
+  parts.seamless=seamless;
+  for(const oldPart of [torso,frontSheen,legL,legR,mainHead,face])oldPart.visible=false;
+  leftArm.visible=false;rightArm.visible=false;
+  eyeL.position.set(-.205,2.205,.538);eyeR.position.set(.205,2.205,.538);
+  eyeL.scale.set(.107,.125,.064);eyeR.scale.set(.107,.125,.064);
+ }
+
  // Optional accessories from the previous edit screen become genuine 3D objects.
  const accessory=config.accessory||"none";
  if(accessory==="glasses"||accessory==="headphones"){
@@ -264,7 +280,8 @@ export function createJellyAvatar(config={}){
   }
   burst=Math.max(0,burst-.06);
   inner.position.y=reduced?0:Math.sin(t*(dance?8:2.5))*(dance?.07:.035);
-  inner.rotation.z=reduced?0:Math.sin(t*(dance?7:2.0))*(dance?.13:.045);
+  inner.rotation.z=reduced?0:Math.sin(t*(dance?7:2.0))*(dance?.13:.045) +
+   (parts.seamless&&action==="receive"?.15*Math.sin(t*11):0);
   headRig.rotation.z=reduced?0:Math.sin(t*1.9)*.05;
   leftArm.rotation.z=reduced?0:Math.sin(t*2.8)*.08;
   rightArm.rotation.z=wave?(reduced?-.55:-.7+Math.sin(t*11)*.24):

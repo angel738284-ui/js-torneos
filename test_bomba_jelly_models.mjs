@@ -42,10 +42,11 @@ test("Costumes are visually distinct, including animals, hero, robot and astrona
 });
 test("The core 3D characters do not require network calls or GLBs",()=>{
  assert.doesNotMatch(controller,/GLTFLoader|\\.glb|loadAsync/);
- assert.doesNotMatch(controller,/fetch\s*\(/);
+ assert.match(controller,/fetch\(url.href/);
+ assert.match(controller,/seamless_body\.bin/);
  assert.match(controller,/createJellyAvatar/);
  assert.match(controller,/one low-cost WebGL canvas|one low-cost WebGL canvas/i);
- assert.match(html,/bomba3d\/game\.js\?v=2/);
+ assert.match(html,/bomba3d\/game\.js\?v=3/);
  assert.match(html,/bomba3d\/game\.css\?v=2/);
  assert.ok(statSync(new URL("./bomba3d/vendor/three.module.js",import.meta.url)).size>100000);
 });
