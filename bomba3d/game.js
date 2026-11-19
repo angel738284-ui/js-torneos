@@ -7,7 +7,7 @@ import * as THREE from "./vendor/three.module.js";
 import {preloadOriginalModel,hasOriginalModel,createOriginalRubberActor} from "./imported.js?v=3";
 import {
  createBombProp,handWorldPosition,makePassAnimation,HAND_OFFSET
-} from "./bomb-effects.js?v=1";
+} from "./bomb-effects.js?v=2";
 
 const el=id=>document.getElementById(id);
 const actors=new Map();
@@ -151,8 +151,8 @@ export function demoThrow(){
  const now=performance.now();
  const from=living[0],to=living[1];
  demoHolder=from.id;
- demoPending={fromId:from.id,toId:to.id,when:now+650};
- demoEndsAt=now+3000;
+ demoPending={fromId:from.id,toId:to.id,when:now+1150};
+ demoEndsAt=now+4300;
  return true;
 }
 export function onGameTransition(before,after){
@@ -246,7 +246,10 @@ function animate(time){
     const card=cards.get(id);
     if(card)setPosition(a,card,actors.size,w,h);
     if(["throw","catch","receive"].includes(a.action)&&time>a.until)a.action="idle";
-    a.update(seconds,a.action,reduced);
+    const holderId=demoHolder||(roomData?.estado==="playing"?roomData.bomba_de:null);
+    const isHolder=holderId===id&&a.alive&&!flight;
+    const playingAction=isHolder&&a.action==="idle"?"hold":a.action;
+    a.update(seconds,playingAction,reduced);
    }
    animateHeldAndFlyingBomb(time,reduced);
    arena.renderer.render(arena.scene,arena.camera);

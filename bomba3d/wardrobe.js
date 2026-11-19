@@ -5,6 +5,7 @@
  * Models remain unrigged; accessories/garments move with the body.
  */
 import * as THREE from "./vendor/three.module.js";
+import {installTwoHandMorph} from "./two-hand-pose.js";
 
 const shellCache=new WeakMap();
 const iconTextures=new Map();
@@ -74,6 +75,8 @@ function makeShellGeometry(source,kind,bounds){
  g.setAttribute("position",new THREE.Float32BufferAttribute(coords,3));
  g.setAttribute("normal",new THREE.Float32BufferAttribute(norm,3));
  g.computeBoundingSphere();
+ // Sleeves deform with the original GLB arms, avoiding stiff clothing.
+ if(kind==="sleeves"||kind==="shortSleeves")installTwoHandMorph(g,null,true);
  shapes.set(kind,g);
  return g;
 }

@@ -63,7 +63,7 @@ test("Server-confirmed pass launches from one hand in a parabolic arc and lands 
  setRoom(after);onGameTransition(before,after);
  const f=getFlight();
  assert.equal(f.fromId,"p1");assert.equal(f.toId,"p2");
- assert.ok(f.duration>=700&&f.duration<=1180);
+ assert.ok(f.duration>=920&&f.duration<=1500);
  assert.ok(f.start.distanceTo(handWorldPosition(actors.get("p1")))<1e-6);
  assert.ok(f.end.distanceTo(handWorldPosition(actors.get("p2")))<1e-6);
  animateHeldAndFlyingBomb(1000,false);
@@ -107,7 +107,7 @@ test("The old 2D projectile is suppressed while the GLB viewer is working",()=>{
  assert.match(page,/if\(!window\.Bomb3D\?\.isEnabled\(\)\)animateTransfer/);
  assert.match(page,/p_action:"pasar",p_target:target\.id/);
  assert.match(page,/id="passBomb"/);
- assert.match(page,/bomba3d\/game\.js\?v=7/);
+ assert.match(page,/bomba3d\/game\.js\?v=8/);
  assert.match(game,/actor\.bomb=createBombProp\(\)/);
  assert.match(game,/animateHeldAndFlyingBomb\(time,reduced\)/);
 });

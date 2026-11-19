@@ -39,16 +39,16 @@ test("Demo preview shows bomb in first hand, throws it and catches in second han
  assert.equal(t.actors.get("a").bomb.root.visible,true);
  assert.equal(t.actors.get("b").bomb.root.visible,false);
  assert.equal(t.context.projectile.root.visible,false);
- t.functions.animateHeldAndFlyingBomb(1650,false);
+ t.functions.animateHeldAndFlyingBomb(2150,false);
  assert.equal(t.functions.getDemoHolder(),"b");
  assert.ok(t.functions.getFlight());
  assert.equal(t.context.projectile.root.visible,true);
  assert.equal(t.actors.get("a").bomb.root.visible,false);
  assert.equal(t.actors.get("b").bomb.root.visible,false);
- t.functions.animateHeldAndFlyingBomb(1700+t.functions.getFlight().duration,false);
+ t.functions.animateHeldAndFlyingBomb(2200+t.functions.getFlight().duration,false);
  assert.equal(t.context.projectile.root.visible,false);
  assert.equal(t.actors.get("b").bomb.root.visible,true);
- t.functions.animateHeldAndFlyingBomb(4500,false);
+ t.functions.animateHeldAndFlyingBomb(5600,false);
  assert.equal(t.functions.getDemoHolder(),null);
  assert.equal(t.actors.get("b").bomb.root.visible,false);
  assert.equal(t.room.bomba_de,null,"demo must not modify authoritative room holder");
@@ -64,7 +64,7 @@ test("Demo is only for the identified fictional room, never private player rooms
 });
 test("The demo button is visibly labeled and only shown for the specific waiting demo",()=>{
  assert.match(page,/id="bomb3dDemoThrow" hidden/);
- assert.match(page,/Ver pase de prueba · Solo animación/);
+ assert.match(page,/Ver bomba gigante · Agarrar y lanzar/);
  assert.match(page,/code==="BE5BBA5D2FA4"&&room.estado==="ready"/);
  assert.match(page,/window.Bomb3D\?\.demoThrow\?\.\(\)/);
  assert.match(game,/if\(demoHolder\)flight=null;/);

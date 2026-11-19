@@ -5,7 +5,8 @@
  */
 import * as THREE from "./vendor/three.module.js";
 import {GLTFLoader} from "./vendor/GLTFLoader.js";
-import {dressOriginalRubber} from "./wardrobe.js?v=1";
+import {dressOriginalRubber} from "./wardrobe.js?v=2";
+import {installTwoHandMorph,setTwoHandPose} from "./two-hand-pose.js";
 
 let sourcePromise=null,loaded=null;
 const tintedTextures=new Map();
@@ -22,6 +23,13 @@ export function preloadOriginalModel(){
    gltf.scene.updateMatrixWorld(true);
    const bounds=new THREE.Box3().setFromObject(gltf.scene);
    if(!Number.isFinite(bounds.min.y)||bounds.isEmpty())throw Error("Geometría 3D inválida");
+   // Prepare a shared GPU morph target; each user's copy has its own pose.
+   gltf.scene.traverse(o=>{
+    if(o.isMesh){
+     installTwoHandMorph(o.geometry,bounds);
+     o.updateMorphTargets();
+    }
+   });
    loaded={gltf,bounds};
    return loaded;
   }).catch(error=>{sourcePromise=null;throw error;});
@@ -111,10 +119,33 @@ export function createOriginalRubberActor(options={}){
  loaded.gltf.scene.traverse(o=>{if(o.isMesh&&!baseMesh)baseMesh=o;});
  if(!baseMesh)throw Error("El GLB no tiene una malla para diseñar ropa");
  const wardrobe=dressOriginalRubber(animatedRig,options,baseMesh.geometry,originalBounding);
+ const palmMat=new THREE.MeshStandardMaterial({
+  color:options.bodyColor3d||defaultRed,roughness:.4,metalness:.02
+ });
+ const palmGeometry=new THREE.SphereGeometry(1,14,10);
+ const grippingHands=new THREE.Group();
+ grippingHands.name="JS_BOTH_HANDS_GRIPPING_HUGE_BOMB";
+ // The source GLB arms are morphed forward, and the small rounded
+ // fingertip/mitten tips make contact with both sides of the bomb.
+ for(const side of [-1,1]){
+  const palm=new THREE.Mesh(palmGeometry,palmMat);
+  palm.name=side<0?"left_hand_gripping_bomb":"right_hand_gripping_bomb";
+  palm.position.set(side*.51,1.12,.91);
+  palm.scale.set(.14,.17,.14);
+  grippingHands.add(palm);
+ }
+ grippingHands.visible=false;
+ animatedRig.add(grippingHands);
+ let gripPose=0;
  let elapsed=0,deadAmount=0;
  const update=(delta,action="idle",reduced=false)=>{
   elapsed+=Math.min(.10,delta||0);
   wardrobe.update(elapsed,reduced);
+  const gripping=action==="hold"||action==="catch";
+  const target=gripping?1:action==="throw"?.02:0;
+  gripPose+=(target-gripPose)*Math.min(1,Math.max(0,delta||0)*8);
+  setTwoHandPose(animatedRig,gripPose);
+  grippingHands.visible=gripPose>.14||gripping;
   if(action==="death"){
    deadAmount=Math.min(1,deadAmount+Math.max(.045,(delta||.03)*1.8));
    animatedRig.rotation.z=-1.20*deadAmount;
@@ -128,8 +159,8 @@ export function createOriginalRubberActor(options={}){
   // The GLB is unrigged, so throwing and catching use exaggerated
   // upper-body lean, not fabricated separate arm-bone animations.
   animatedRig.rotation.z=reduced?0:
-   throwing?-.25+Math.sin(elapsed*10)*.065:
-   catching?.22+Math.sin(elapsed*8)*.045:idleSway;
+   throwing?-.32+Math.sin(elapsed*10)*.07:
+   catching?.19+Math.sin(elapsed*8)*.04:gripping?.045:idleSway;
   animatedRig.rotation.x=reduced?0:throwing?-.14:catching?.12:0;
   animatedRig.position.y=reduced?0:Math.sin(elapsed*(dancing?7:2.55))*(dancing?.07:.045);
   animatedRig.position.x=reduced?0:Math.sin(elapsed*1.55)*(dancing?.09:.055);
@@ -137,6 +168,9 @@ export function createOriginalRubberActor(options={}){
  };
  const dispose=()=>{
   wardrobe.dispose();
+  palmMat.dispose();
+  // Palm geometry remains shared with this actor only.
+  palmGeometry.dispose();
   for(const m of materials)m.dispose();
  };
  return {root,handAnchor:animatedRig,update,dispose,costume:"plain",kind:"uploaded",alive:true};

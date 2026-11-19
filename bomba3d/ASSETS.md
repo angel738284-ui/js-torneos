@@ -18,3 +18,11 @@ El selector \`wear3d\` (yes/no) se guarda con la función de avatar existente en
 
 - Three.js, GLTFLoader y utilidades: MIT. Licencia incluida en \`vendor/THREE_LICENSE.txt\`.
 - El GLB suministrado no tiene esqueleto ni animaciones internas. Los movimientos actuales son de cuerpo completo, y la ropa sigue esos mismos movimientos. Para articular brazos o piernas habrá que añadir un rig posteriormente.
+
+## Bomba gigante con las dos manos (noviembre 2026)
+
+- `bomb-effects.js` crea una bomba 3D enorme (radio 0,54), con mecha, chispa e iluminación, compartiendo geometrías entre 24 jugadores.
+- `two-hand-pose.js` agrega un *morph target* en GPU a la malla original: deforma ambos brazos para abrazar la bomba mientras la sostienen, y revierte la pose al lanzarla. No requiere un esqueleto externo.
+- `wardrobe.js` adapta también las mangas al morph. `imported.js` añade dos puntas de manos del mismo color de cada muñeco y sincroniza la pose de abrazo, lanzamiento y recepción.
+- El lanzamiento solo ocurre cuando la partida confirma el pase; la demo tiene una prueba visual que no modifica la partida.
+- Son poses procedurales y no animaciones esqueléticas separadas para los dedos.
