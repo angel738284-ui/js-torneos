@@ -6,8 +6,8 @@
 import * as THREE from "./vendor/three.module.js";
 import {preloadOriginalModel,hasOriginalModel,createOriginalRubberActor} from "./imported.js?v=4";
 import {
- createBombProp,handWorldPosition,makePassAnimation,HAND_OFFSET
-} from "./bomb-effects.js?v=2";
+ createBombProp,handWorldPosition,makePassAnimation,HAND_OFFSET,roundFuseProgress
+} from "./bomb-effects.js?v=3";
 
 const el=id=>document.getElementById(id);
 const actors=new Map();
@@ -15,6 +15,7 @@ let arena=null,studio=null,roomData=null,previewData=null,previewStamp="";
 let ready=false,frameId=0,lastTime=0,failureLogged=false,loading=null;
 let projectile=null,flight=null;
 let demoHolder=null,demoPending=null,demoEndsAt=0;
+let demoFuseStartAt=0,demoFuseDeadlineAt=0,serverClockOffset=0;
 const reducedMotion=()=>Boolean(window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches);
 const status=text=>{const node=el("bomb3dStatus");if(node)node.textContent=text;};
 const supported=()=>typeof window.WebGLRenderingContext!=="undefined";
@@ -75,6 +76,7 @@ function disposeStages(){
  }
  studio=null;arena=null;ready=false;previewStamp="";
  projectile=null;flight=null;demoHolder=null;demoPending=null;demoEndsAt=0;
+ demoFuseStartAt=0;demoFuseDeadlineAt=0;
 }
 function setPosition(actor,card,total,w,h){
  const x=parseFloat(card.style.left),y=parseFloat(card.style.top);
@@ -88,12 +90,19 @@ function setPosition(actor,card,total,w,h){
 function cardsByPlayer(){
  return new Map(Array.from(el("players")?.children||[]).map(card=>[card.dataset.playerId,card]));
 }
-export function syncRoom(data){
+export function syncRoom(data,clockOffsetMs){
  roomData=data;
+ // Reuse the same synchronized server clock used by the HUD countdown.
+ if(Number.isFinite(clockOffsetMs))serverClockOffset=clockOffsetMs;
+ else if(data?.servidor_ahora){
+  const remote=Date.parse(data.servidor_ahora);
+  if(Number.isFinite(remote))serverClockOffset=remote-Date.now();
+ }
  if(data?.estado==="playing"){
   // A real round always takes precedence over a visual-only DEMO preview.
   if(demoHolder)flight=null;
   demoHolder=null;demoPending=null;demoEndsAt=0;
+  demoFuseStartAt=0;demoFuseDeadlineAt=0;
  }
  if(!ready||!arena||!hasOriginalModel()||!data?.jugadores)return;
  const stage=el("tableStage");
@@ -153,6 +162,7 @@ export function demoThrow(){
  demoHolder=from.id;
  demoPending={fromId:from.id,toId:to.id,when:now+1150};
  demoEndsAt=now+4300;
+ demoFuseStartAt=now;demoFuseDeadlineAt=demoEndsAt;
  return true;
 }
 export function onGameTransition(before,after){
@@ -195,18 +205,24 @@ function animateHeldAndFlyingBomb(time,reduced){
    });
    demoHolder=recipient.playerId;
    demoEndsAt=time+flight.duration+1250;
+   demoFuseDeadlineAt=demoEndsAt;
    sender.action="throw";sender.until=time+420;
    recipient.action="catch";recipient.until=demoEndsAt;
   }
   demoPending=null;
  }
- if(!flight&&!demoPending&&demoHolder&&time>=demoEndsAt)demoHolder=null;
+ if(!flight&&!demoPending&&demoHolder&&time>=demoEndsAt){
+  demoHolder=null;demoFuseStartAt=0;demoFuseDeadlineAt=0;
+ }
+ const fuseProgress=demoFuseStartAt&&demoFuseDeadlineAt>demoFuseStartAt
+  ?Math.max(0,Math.min(1,(demoFuseDeadlineAt-time)/(demoFuseDeadlineAt-demoFuseStartAt)))
+  :roundFuseProgress(roomData,Date.now()+serverClockOffset);
  const current=demoHolder||(roomData?.estado==="playing"?roomData.bomba_de:null);
  // A single holder is visible only while the projectile is not in flight.
  for(const [id,actor] of actors){
   if(actor.bomb){
    actor.bomb.root.visible=Boolean(current===id&&actor.alive&&!flight);
-   if(actor.bomb.root.visible)actor.bomb.update(time,reduced);
+   if(actor.bomb.root.visible)actor.bomb.update(time,reduced,fuseProgress);
   }
  }
  if(!projectile)return;
@@ -225,7 +241,7 @@ function animateHeldAndFlyingBomb(time,reduced){
  projectile.root.visible=true;
  projectile.root.position.copy(flight.point(time));
  projectile.root.rotation.set(time*.002,time*.003,time*.004);
- projectile.update(time,reduced);
+ projectile.update(time,reduced,fuseProgress);
 }
 function animate(time){
  frameId=requestAnimationFrame(animate);

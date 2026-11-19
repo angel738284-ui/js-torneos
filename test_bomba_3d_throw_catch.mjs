@@ -22,7 +22,7 @@ const actors=new Map([["p1",makeActor("p1",-3,0)],["p2",makeActor("p2",3,0)]]);
 const projectile=createBombProp();
 let clock=1000;
 const ctx=vm.createContext({
- actors,projectile,ready:true,roomData:null,flight:null,demoHolder:null,demoPending:null,demoEndsAt:0,Math,Map,
+ actors,projectile,ready:true,roomData:null,flight:null,demoHolder:null,demoPending:null,demoEndsAt:0,demoFuseStartAt:0,demoFuseDeadlineAt:0,serverClockOffset:0,roundFuseProgress:()=>1,Math,Map,
  performance:{now:()=>clock},
  handWorldPosition,makePassAnimation
 });
@@ -107,7 +107,7 @@ test("The old 2D projectile is suppressed while the GLB viewer is working",()=>{
  assert.match(page,/if\(!window\.Bomb3D\?\.isEnabled\(\)\)animateTransfer/);
  assert.match(page,/p_action:"pasar",p_target:target\.id/);
  assert.match(page,/id="passBomb"/);
- assert.match(page,/bomba3d\/game\.js\?v=8/);
+ assert.match(page,/bomba3d\/game\.js\?v=9/);
  assert.match(game,/actor\.bomb=createBombProp\(\)/);
  assert.match(game,/animateHeldAndFlyingBomb\(time,reduced\)/);
 });

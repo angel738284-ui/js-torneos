@@ -24,7 +24,7 @@ function simulate(title="DEMO · Bomba Mortal JS Family",estado="ready"){
  }
  const context=vm.createContext({
   ready:true,roomData:room,actors,flight:null,
-  demoHolder:null,demoPending:null,demoEndsAt:0,
+  demoHolder:null,demoPending:null,demoEndsAt:0,demoFuseStartAt:0,demoFuseDeadlineAt:0,serverClockOffset:0,roundFuseProgress:()=>1,
   projectile:createBombProp(),performance:{now:()=>now},
   handWorldPosition,makePassAnimation,Map,Math,String
  });

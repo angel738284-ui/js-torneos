@@ -18,6 +18,20 @@ export const HAND_OFFSET=Object.freeze([0,1.12,.70]);
 export const PASS_MIN_MS=920;
 export const PASS_MAX_MS=1500;
 const smoothstep=t=>t*t*(3-2*t);
+const clamp01=x=>Math.max(0,Math.min(1,x));
+const FUSE_FULL=.30,FUSE_BASE_Y=.585,FUSE_MIN=.024;
+/**
+ * Ronda autoritativa de Supabase. Conserva la misma mecha durante cada pase,
+ * y arranca una mecha nueva al cambiar ronda_inicio/vencimiento.
+ */
+export function roundFuseProgress(room,serverNowMs){
+ if(room?.estado!=="playing")return 1;
+ const begin=Date.parse(room.ronda_inicio);
+ const end=Date.parse(room.vencimiento);
+ if(!Number.isFinite(begin)||!Number.isFinite(end)||end<=begin||
+    !Number.isFinite(serverNowMs))return 1;
+ return clamp01((end-serverNowMs)/(end-begin));
+}
 export function flightDuration(start,end){
  const d=start.distanceTo(end);
  return Math.max(PASS_MIN_MS,Math.min(PASS_MAX_MS,780+d*110));
@@ -53,14 +67,36 @@ export function createBombProp(){
  ember.name="bomb_lit_fuse";ember.position.set(.090,.918,.025);root.add(ember);
  const sparkle=new THREE.PointLight(0xff9b3a,.45,2.4);
  sparkle.position.copy(ember.position);root.add(sparkle);
- // Tiny pink highlights in the hands while holding a hot potato.
+ let fuseRatio=1;
+ function setFuseProgress(value=1){
+  fuseRatio=clamp01(Number.isFinite(value)?value:1);
+  // Shrink from the TOP of the wick; its lower end stays in the cap.
+  const length=Math.max(FUSE_MIN,FUSE_FULL*fuseRatio);
+  wick.scale.y=length/FUSE_FULL;
+  wick.position.set(.03,FUSE_BASE_Y+length/2,0);
+  // Chase the burning tip as the wick becomes shorter (including its tilt).
+  ember.position.set(.04+length*.165,FUSE_BASE_Y+length*.945+.045,.025);
+  sparkle.position.copy(ember.position);
+  return fuseRatio;
+ }
+ setFuseProgress(1);
  return {
-  root,
-  update(time,reduced=false){
-   if(reduced){ember.scale.setScalar(1);sparkle.intensity=.19;return;}
-   const beat=Math.sin(time*.011),twinkle=Math.sin(time*.038);
-   ember.scale.setScalar(1.05+.23*beat);
-   sparkle.intensity=.26+.16*Math.abs(twinkle);
+  root,setFuseProgress,
+  getFuseProgress:()=>fuseRatio,
+  update(time,reduced=false,progress=1){
+   const ratio=setFuseProgress(progress);
+   const panic=1-ratio;
+   if(reduced){
+    ember.scale.setScalar(.92+panic*.30);
+    sparkle.intensity=.20+panic*.40;
+    return;
+   }
+   // Approaching zero: sparks flash faster and stronger, without faking
+   // an explosion. The authoritative server still decides who is eliminated.
+   const speed=.016+panic*panic*.082;
+   const shimmer=Math.abs(Math.sin(time*speed));
+   ember.scale.setScalar(.87+panic*.29+.18*shimmer);
+   sparkle.intensity=.23+.24*shimmer+.46*panic;
   }
  };
 }

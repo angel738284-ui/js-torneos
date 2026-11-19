@@ -26,3 +26,11 @@ El selector \`wear3d\` (yes/no) se guarda con la función de avatar existente en
 - `wardrobe.js` adapta también las mangas al morph. `imported.js` añade dos puntas de manos del mismo color de cada muñeco y sincroniza la pose de abrazo, lanzamiento y recepción.
 - El lanzamiento solo ocurre cuando la partida confirma el pase; la demo tiene una prueba visual que no modifica la partida.
 - Son poses procedurales y no animaciones esqueléticas separadas para los dedos.
+
+## Mecha que se consume en tiempo real (19/11/2026)
+
+- `bomb-effects.js` reduce la longitud de la mecha desde la punta y mueve la brasa y su luz progresivamente hacia el capuchón; el destello se acelera a medida que se agota.
+- La duración es la **ronda real** (`ronda_inicio` y `vencimiento`) recibida de Supabase y ajustada con el desplazamiento del reloj (`servidor_ahora`); no hay un límite fijo ficticio.
+- La mecha conserva el avance al cambiar de dueño y también durante el vuelo. Se reinicia solo con una nueva ronda.
+- La explosión y las eliminaciones siguen siendo responsabilidad del servidor; la demo tiene un contador visual independiente que no altera partidas reales.
+- Con movimiento reducido, la mecha se acorta pero la luz no parpadea.

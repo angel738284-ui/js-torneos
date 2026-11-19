@@ -217,7 +217,7 @@ select{width:100%;background:#25354d;border:1px solid #536a8f;border-radius:9px;
 </style>
 <link rel="stylesheet" href="./bomba3d/game.css?v=3">
 
-<script type="module" src="./bomba3d/game.js?v=8"></script>
+<script type="module" src="./bomba3d/game.js?v=9"></script>
 <script src="./config.js"></script>
 </head>
 <body>
@@ -573,7 +573,7 @@ function render(){
  const signature=JSON.stringify((room.jugadores||[]).map(p=>[p.id,p.vivo,p.avatar]))+"|"+room.bomba_de+"|"+(me?.id||"");
  if(signature!==roomSignature)drawRoster();
  renderEvents();
- window.Bomb3D?.syncRoom(room);
+ window.Bomb3D?.syncRoom(room,offset);
  const center=el("tableCenterName");
  const mark=el("centerMark");if(mark)mark.textContent=status==="finished"?"🏆":"💣";
  if(center)center.textContent=status==="playing"?(room.jugadores?.find(p=>p.id===room.bomba_de)?.nombre||"¡La bomba!") :
