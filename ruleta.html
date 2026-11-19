@@ -1,0 +1,186 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0a1020">
+<meta name="description" content="Ruleta JS Family: seguí en vivo los sorteos de tu grupo de Free Fire.">
+<title>Ruleta JS Family · Sorteo en vivo</title>
+<style>
+:root{color-scheme:dark;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;background:#090e1c;color:#f5f8ff}
+*{box-sizing:border-box}body{margin:0;min-height:100vh;background:radial-gradient(ellipse at 50% -10%,#30365b 0%,transparent 50%),linear-gradient(180deg,#090e1c,#121e2a)}
+a{color:#85dddf}header{margin:auto;max-width:960px;padding:22px 18px 6px;display:flex;align-items:center;gap:12px}
+.logo{background:linear-gradient(135deg,#eb477b,#7854ce);border-radius:14px;padding:12px;font-size:22px;box-shadow:0 8px 27px #7c2c7b66}
+.brand b{font-size:16px;display:block;letter-spacing:.4px}.brand small{font-size:11px;color:#b9c7d9}
+main{max-width:950px;margin:0 auto;padding:12px 18px 45px}
+.hero{text-align:center;margin:0 0 16px}.hero small{font-size:11px;color:#f3a8cc;letter-spacing:2px;font-weight:800}
+h1{font-size:clamp(23px,6vw,35px);margin:8px 0 6px;line-height:1.15}
+.subtitle{color:#bdc7db;font-size:13px;line-height:1.5;margin:0 0 12px}
+.status{margin:auto;max-width:620px;border:1px solid #4d5975;background:#16243a;padding:11px 15px;border-radius:12px;font-weight:700;font-size:13px;line-height:1.5}
+.status.waiting{border-color:#ba7d61;background:#36252c}.status.spin{border-color:#a359d3;background:#332341}.status.done{border-color:#47a895;background:#1b3a3d}
+.layout{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(230px,.65fr);gap:17px;align-items:start}
+.wheel-panel{border:1px solid #3b4b6a;border-radius:22px;background:linear-gradient(160deg,#19253d,#0e1929);padding:17px 12px 20px;box-shadow:0 12px 38px #0007}
+.wheel-box{width:min(100%,550px);margin:auto;position:relative;aspect-ratio:1}
+canvas{width:100%;height:100%;display:block}
+.pointer{position:absolute;top:-8px;left:50%;transform:translateX(-50%);width:0;height:0;border-left:18px solid transparent;border-right:18px solid transparent;border-top:37px solid #f6f1cf;filter:drop-shadow(0 5px 4px #0009);z-index:4}
+.center-dot{pointer-events:none;position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:64px;aspect-ratio:1;background:radial-gradient(circle at 30% 25%,#fff,#a5f2e4 35%,#17758a 100%);border:5px solid #182639;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:1000;color:#172238;box-shadow:0 0 20px #80f9e977}
+.winner{margin:12px auto 0;max-width:560px;padding:17px 12px;border:1px solid #5ab5a4;border-radius:15px;background:linear-gradient(125deg,#123c47,#263651);text-align:center;display:none}
+.winner.show{display:block}.winner strong{color:#d9fff5;font-size:22px;overflow-wrap:anywhere}.winner span{display:block;color:#a5edcc;font-size:11px;font-weight:850;margin-bottom:7px;letter-spacing:1px}
+.board{border:1px solid #3b4b6a;border-radius:18px;background:#121e32;padding:17px;min-height:210px}
+.board h2{font-size:15px;margin:0 0 9px}.counter{font-size:11px;color:#a9bdcb;margin-bottom:14px}
+.names{padding:0;margin:0;list-style:none;max-height:430px;overflow:auto;display:grid;gap:7px}
+.names li{padding:8px 10px;border:1px solid #344763;border-radius:10px;background:#202e45;font-size:12px;overflow-wrap:anywhere;display:flex;gap:9px;align-items:center}
+.names li b{color:#b9e1ec;font-variant-numeric:tabular-nums}.names li.chosen{border-color:#76ecca;background:#24505c;font-weight:800}
+.controls{margin-top:14px;display:flex;gap:8px;flex-wrap:wrap}
+button,.link{border:1px solid #50768c;border-radius:11px;background:#25415c;color:white;min-height:45px;padding:11px 14px;font-weight:800;cursor:pointer;text-decoration:none;font-size:12px;text-align:center;flex:1}
+button:focus-visible,.link:focus-visible{outline:3px solid #aafce0}
+.note{font-size:11px;line-height:1.5;color:#9fb4c7;margin:16px 0 0;text-align:center}
+.error{border:1px solid #c08083;border-radius:12px;padding:15px;background:#3f2936;color:#ffe3e5;margin:20px auto;max-width:640px}
+[hidden]{display:none!important}
+@media(max-width:710px){.layout{grid-template-columns:1fr}.wheel-panel{padding:13px 6px 17px}.board{padding:14px}.names{max-height:240px;grid-template-columns:repeat(2,minmax(0,1fr))}.names li{font-size:11px}.wheel-box{width:min(100%,490px)}}
+@media(max-width:375px){.names{grid-template-columns:1fr}.center-dot{width:50px;font-size:11px}}
+</style>
+<script src="./config.js"></script>
+</head>
+<body>
+<header><div class="logo" aria-hidden="true">🎡</div><div class="brand"><b>JS FAMILY</b><small>RULETA EN VIVO · FREE FIRE</small></div></header>
+<main>
+<section class="hero"><small>EL SORTEO ES PARA TODOS</small><h1 id="title">Ruleta JS Family</h1><p class="subtitle">Todos ven los mismos nombres y el mismo ganador. Solo JS Guardian puede iniciar el giro desde WhatsApp.</p><div id="status" class="status waiting" role="status" aria-live="polite">Consultando la ruleta…</div></section>
+<section id="error" class="error" hidden role="alert"></section>
+<section class="layout" id="content" hidden>
+<div class="wheel-panel">
+<div class="wheel-box"><div class="pointer" aria-hidden="true"></div><canvas id="wheel" width="630" height="630" aria-label="Ruleta con nombres de los participantes" role="img"></canvas><div class="center-dot">JS</div></div>
+<div id="winner" class="winner" aria-live="polite"><span>🏆 GANADOR DEL SORTEO</span><strong id="winnerName"></strong></div>
+</div>
+<aside class="board"><h2>👥 Participantes</h2><div id="count" class="counter">Cargando nombres…</div><ol id="names" class="names"></ol><div class="controls"><button id="share" type="button">🔗 Copiar enlace</button><a class="link" href="./">🏠 JS Torneos</a></div></aside>
+</section>
+<p class="note">🔐 Sorteo único controlado desde JS Guardian. Este enlace no permite agregar nombres, girar ni modificar al ganador. Solo se muestran apodos públicos, nunca teléfonos.</p>
+</main>
+<script>
+"use strict";
+const config=window.JS_CONFIG||{};
+const code=new URLSearchParams(location.search).get("r")||"";
+const api=(config.supabaseUrl||"")+"/rest/v1/rpc/js_ruleta_publica";
+const canvas=document.getElementById("wheel"),c=canvas.getContext("2d");
+const statusEl=document.getElementById("status"),errorEl=document.getElementById("error"),content=document.getElementById("content");
+const namesEl=document.getElementById("names"),countEl=document.getElementById("count"),winEl=document.getElementById("winner"),winName=document.getElementById("winnerName");
+const pointerStart=-Math.PI/2;
+const palette=["#ed4c88","#965bda","#288ab7","#49b3a3","#f0a64d","#7766cc","#e95d65","#2f90a4","#9e5fd7","#47a18a"];
+let data=null,serverOffset=0,rotation=0,spinId="",lastState="",settle=null,lastPoll=0;
+const reduced=window.matchMedia&&window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+const p2=Math.PI*2;
+function setMessage(text,kind){
+ statusEl.textContent=text;statusEl.className="status "+kind;
+}
+function showError(text){errorEl.hidden=false;errorEl.textContent=text;content.hidden=true;}
+function draw(angle=0){
+ if(!data?.participantes?.length)return;
+ const items=data.participantes,n=items.length,sz=canvas.width,mid=sz/2,r=sz*.465,arc=p2/n;
+ c.clearRect(0,0,sz,sz);
+ c.save();c.translate(mid,mid);c.rotate(angle);
+ for(let i=0;i<n;i++){
+  const a=pointerStart-arc/2+i*arc, b=a+arc;
+  c.beginPath();c.moveTo(0,0);c.arc(0,0,r,a,b);c.closePath();
+  c.fillStyle=palette[i%palette.length];c.fill();
+  c.strokeStyle="#101b31";c.lineWidth=n>40?1.3:2.6;c.stroke();
+  c.save();c.rotate(a+arc/2);c.translate(r*.62,0);
+  c.rotate(Math.PI/2);c.fillStyle="#fff";c.textAlign="center";c.textBaseline="middle";
+  c.font="800 "+(n>55?11:n>28?13:n>15?15:19)+"px system-ui";
+  const name=String(items[i].nombre||"");
+  const txt=n>28?"#"+(i+1):(name.length>13?name.slice(0,12)+"…":name);
+  c.shadowColor="#08101f";c.shadowBlur=4;c.fillText(txt,0,0,r*.65);
+  c.restore();
+ }
+ c.beginPath();c.arc(0,0,r,0,p2);c.lineWidth=10;c.strokeStyle="#e9e3ec";c.stroke();
+ c.restore();
+}
+function fillNames(items,winner){
+ namesEl.replaceChildren();
+ const frag=document.createDocumentFragment();
+ items.forEach((p,i)=>{
+  const li=document.createElement("li");
+  if(i===winner)li.className="chosen";
+  const n=document.createElement("b");n.textContent="#"+(i+1);
+  const name=document.createElement("span");name.textContent=p.nombre;
+  li.append(n,name);frag.append(li);
+ });
+ namesEl.append(frag);
+ countEl.textContent=items.length+" participantes · lista cerrada";
+}
+function clock(){return Date.now()+serverOffset;}
+function alignedTarget(index,n,from){
+ const base=-index*p2/n;
+ const loops=Math.ceil((from-base)/p2);
+ return base+(loops+1)*p2;
+}
+function currentSpinRotation(){
+ if(!data?.inicio)return rotation;
+ const t=Math.max(0,Math.min(1,(clock()-Date.parse(data.inicio))/Number(data.duracion_ms||9000)));
+ return p2*9*(1-Math.pow(1-t,3));
+}
+function frame(){
+ if(data?.estado==="spinning"&&data.inicio){
+  rotation=reduced?0:currentSpinRotation();
+  draw(rotation);
+ }else if(settle){
+  const t=Math.min(1,(performance.now()-settle.since)/1400);
+  const e=1-Math.pow(1-t,3);
+  rotation=settle.from+(settle.to-settle.from)*(reduced?1:e);
+  draw(rotation);
+  if(t>=1)settle=null;
+ }
+ requestAnimationFrame(frame);
+}
+function render(next){
+ const previous=data,oldState=data?.estado||"";
+ data=next;
+ document.getElementById("title").textContent=next.titulo||"Ruleta JS Family";
+ content.hidden=false;errorEl.hidden=true;
+ const names=next.participantes||[];
+ const winning=next.estado==="finished"?Number(next.ganador_indice):-1;
+ fillNames(names,winning);
+ if(next.estado==="closed"){
+  setMessage("🔒 Lista cerrada · esperando que JS gire la ruleta","waiting");
+  if(!previous)draw(0);
+  winEl.classList.remove("show");
+ }
+ if(next.estado==="spinning"){
+  const toStart=Date.parse(next.inicio)-clock();
+  if(toStart>0)setMessage("⏳ El giro empieza en "+Math.max(1,Math.ceil(toStart/1000))+" segundos","spin");
+  else setMessage("🎡 ¡La ruleta está girando! Todos están viendo el mismo sorteo.","spin");
+  winEl.classList.remove("show");
+  if(!previous)draw(0);
+ }
+ if(next.estado==="finished"){
+  const index=Number(next.ganador_indice);
+  const name=names[index]?.nombre||"Ganador registrado";
+  setMessage("🏆 Sorteo finalizado · resultado oficial","done");
+  winName.textContent=name;winEl.classList.add("show");
+  if(oldState==="spinning"&&!reduced&&!settle){
+   settle={since:performance.now(),from:rotation,to:alignedTarget(index,names.length,rotation)};
+  }else if(!settle){rotation=-index*p2/names.length;draw(rotation);}
+ }
+}
+async function update(){
+ if(!code.match(/^[A-F0-9]{12}$/)){
+  showError("Este enlace no tiene un código de ruleta válido.");return;
+ }
+ try{
+  const r=await fetch(api,{method:"POST",headers:{"Content-Type":"application/json","apikey":config.publishableKey},body:JSON.stringify({p_codigo:code}),cache:"no-store",signal:AbortSignal.timeout(8500)});
+  if(!r.ok)throw Error("La consulta falló ("+r.status+")");
+  const info=await r.json();
+  if(!info?.ok){showError(info?.mensaje||"Ruleta no disponible.");return;}
+  const remote=Date.parse(info.servidor_ahora);
+  if(Number.isFinite(remote))serverOffset=remote-Date.now();
+  render(info);
+ }catch(err){if(!data)showError("No pude cargar el sorteo. Revisá tu conexión e intentá actualizar.");else setMessage("⚠️ Sin conexión temporal. Reintentando…","waiting");}
+}
+document.getElementById("share").addEventListener("click",async()=>{
+ try{await navigator.clipboard.writeText(location.href);document.getElementById("share").textContent="✅ Enlace copiado";}
+ catch{window.prompt("Copiá el enlace:",location.href);}
+ setTimeout(()=>document.getElementById("share").textContent="🔗 Copiar enlace",2500);
+});
+update();setInterval(update,2100);requestAnimationFrame(frame);
+</script>
+</body>
+</html>
