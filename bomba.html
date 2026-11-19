@@ -41,6 +41,23 @@ p{line-height:1.5}
 .player:disabled:not(.dead){opacity:1}
 .player.targetable{cursor:pointer;border-color:#61cab0}
 .player.targetable:active{transform:scale(.96)}
+.player.selected{border:3px solid #8cfed8!important;background:linear-gradient(155deg,#28555a,#20344c);
+ box-shadow:0 0 0 2px #225950,0 0 19px #69ffd177}
+.player.selected:after{content:"✓ ELEGIDO";position:absolute;top:-9px;right:2px;background:#8cfed8;
+ color:#102b35;font-size:9px;font-weight:1000;border-radius:7px;padding:3px 6px}
+.passControls{position:relative;border:1px solid #456c80;background:#142c40;border-radius:16px;
+ padding:13px;margin-top:6px;display:grid;gap:9px}
+.passControls strong{font-size:13px;color:#b5ffea}
+.passControls .passHelp{font-size:12px;color:#c2d5e8;line-height:1.5}
+button.passBomb{min-height:58px;width:100%;font-size:18px;letter-spacing:.5px;
+ border:1px solid #f7a17e;background:linear-gradient(135deg,#ed4765,#b72e67);
+ box-shadow:0 7px 22px #f0446855;transition:transform .15s,filter .15s}
+button.passBomb:not(:disabled):active{transform:scale(.98)}
+button.passBomb:disabled{background:#33465b;border-color:#4b5d73;box-shadow:none;opacity:.75}
+.passControls.ready{border-color:#ff8b70;box-shadow:0 0 20px #ff775033}
+.passControls.ready button.passBomb:not(:disabled){animation:passPulse .7s infinite alternate}
+@keyframes passPulse{from{filter:brightness(1)}to{filter:brightness(1.2)}}
+@media(prefers-reduced-motion:reduce){.passControls.ready button.passBomb{animation:none!important}}
 .char{position:relative;width:78px;height:108px;flex:none;--skin:#eac49b;--hair:#262333;--shirt:#775de6;--pants:#273751}
 .char i{position:absolute;display:block}
 .char .shadow{left:9px;bottom:0;width:60px;height:12px;background:#050b1b66;border-radius:50%}
@@ -109,6 +126,11 @@ select{width:100%;background:#25354d;border:1px solid #536a8f;border-radius:9px;
 <div id="winner" class="winner" hidden></div>
 <div class="hud"><b id="round">🎮 Sala JS Family</b><span id="alive" class="pill">— jugadores</span><span id="timer" class="timer">00:00</span></div>
 <div id="players" class="field" aria-label="Todos los jugadores de la sala"></div>
+<div class="passControls" id="passControls">
+ <strong>💣 Pasá la bomba antes de que explote</strong>
+ <div class="passHelp" id="selectedTargetLabel" role="status" aria-live="polite">Elegí el personaje de otro jugador para pasarle la bomba.</div>
+ <button type="button" id="passBomb" class="passBomb" disabled>💣 PASAR BOMBA</button>
+</div>
 <div id="actionHint" class="spectator" role="status">Preparando personajes…</div>
 </section>
 <aside class="sidebar">
@@ -149,7 +171,7 @@ const allowed={
  pants:["#273751","#181d29","#a5acb8","#824b62"],
  accessory:["none","glasses","crown","mask"]
 };
-let room=null,me=null,busy=false,offset=0,loading=false,seenEvents="",roomSignature="",lastHolder="",lastGameState="";
+let room=null,me=null,busy=false,offset=0,loading=false,seenEvents="",roomSignature="",selectedTargetId=null,actionMessage="",actionMessageUntil=0;
 function avatarSafe(obj){
  const result={};
  for(const k of fields)result[k]=allowed[k].includes(obj?.[k])?obj[k]:defaults[k];
@@ -215,15 +237,32 @@ function canPass(){
  return Boolean(me?.vivo&&room?.estado==="playing"&&room.bomba_de===me.id&&
  remainingMs()>0&&shieldMs()===0&&Date.now()+offset>=Date.parse(room.ronda_inicio));
 }
-async function pass(target){
- if(!canPass()||busy)return;
- busy=true;el("actionHint").textContent="💣 Pasando la bomba…";
- try{
-  await rpc("js_bomba_jugar",{p_code:code,p_access:personalToken,p_action:"pasar",p_target:target});
-  await refresh();
- }catch(err){el("actionHint").textContent="⚠️ "+err.message;}
- finally{busy=false;}
+function canChooseTarget(target){
+ return Boolean(me?.vivo&&room?.estado==="playing"&&room.bomba_de===me.id&&
+  target?.vivo&&target.id!==me.id);
 }
+function selectTarget(id){
+ const player=room?.jugadores?.find(p=>p.id===id);
+ if(!canChooseTarget(player)||busy)return;
+ selectedTargetId=id===selectedTargetId?null:id;
+ actionMessage="";updateHud();
+}
+async function passSelected(){
+ const target=room?.jugadores?.find(p=>p.id===selectedTargetId);
+ if(!target||!canChooseTarget(target)||!canPass()||busy)return;
+ busy=true;updateHud();
+ try{
+  await rpc("js_bomba_jugar",{p_code:code,p_access:personalToken,p_action:"pasar",p_target:target.id});
+  selectedTargetId=null;
+  actionMessage="✅ ¡Bomba enviada a "+target.nombre+"!";
+  actionMessageUntil=Date.now()+3500;
+  await refresh();
+ }catch(err){
+  actionMessage="⚠️ "+err.message;
+  actionMessageUntil=Date.now()+3500;
+ }finally{busy=false;updateHud();}
+}
+el("passBomb").addEventListener("click",()=>void passSelected());
 function drawRoster(){
  const all=room.jugadores||[],root=el("players");root.replaceChildren();
  for(const p of all){
@@ -232,15 +271,17 @@ function drawRoster(){
   if(isHolder)card.classList.add("held");
   if(!p.vivo)card.classList.add("dead");
   if(p.id===me?.id)card.classList.add("me");
-  const clickable=canPass()&&p.vivo&&p.id!==me.id;
+  const clickable=canChooseTarget(p);
   if(clickable)card.classList.add("targetable");
+  if(p.id===selectedTargetId)card.classList.add("selected");
   card.disabled=!clickable;
+  card.setAttribute("aria-pressed",String(p.id===selectedTargetId));
   const head=document.createElement("span");head.className="player-name";head.textContent=p.nombre;
   const avatar=buildAvatar(p.avatar);
   const status=document.createElement("span");status.className="player-status";
   status.textContent=!p.vivo?"💥 Eliminado":isHolder?"💣 TIENE BOMBA":p.id===me?.id?"✨ VOS":"🎮 En juego";
   card.append(head,avatar,status);
-  if(clickable)card.addEventListener("click",()=>void pass(p.id));
+  if(clickable)card.addEventListener("click",()=>selectTarget(p.id));
   root.append(card);
  }
  roomSignature=JSON.stringify(all.map(p=>[p.id,p.vivo,p.avatar]))+"|"+room.bomba_de+"|"+(me?.id||"");
@@ -276,7 +317,7 @@ function render(){
  el("phase").className="phase"+(status==="playing"?" playing":status==="finished"?" finished":"");
  if(status==="open")el("phase").textContent="🟢 Inscripciones abiertas · "+total+" / "+room.capacidad+" participantes";
  else if(status==="ready")el("phase").textContent="🔒 Sala lista. Editá tu personaje y esperá a que JS mande .bomba iniciar";
- else if(status==="playing")el("phase").textContent="💣 ¡La bomba está en juego! Tocá un personaje para pasarla si la tenés.";
+ else if(status==="playing")el("phase").textContent="💣 ¡La bomba está en juego! Elegí a quién pasarla y tocá 💣 PASAR BOMBA.";
  else if(status==="finished")el("phase").textContent="🏆 ¡Partida terminada! El último que quedó ganó.";
  else el("phase").textContent="Partida cancelada";
  const signature=JSON.stringify((room.jugadores||[]).map(p=>[p.id,p.vivo,p.avatar]))+"|"+room.bomba_de+"|"+(me?.id||"");
@@ -297,19 +338,38 @@ function updateHud(){
   else if(room.bomba_de===me.id){
    const shield=shieldMs();
    hint.textContent=shield>0?"🛡️ Protección: "+(shield/1000).toFixed(1)+" s":
-    "💣 ¡LA TENÉS! Tocá el personaje de otro jugador para pasársela.";
+    "💣 ¡LA TENÉS! Elegí otro personaje y pulsá PASAR BOMBA." ;
   }else hint.textContent="👀 "+(holder?.nombre||"Otro jugador")+" tiene la bomba. ¡Cuidado!";
  }else{
   timer.textContent="--:--";timer.classList.remove("urgent");
   hint.textContent=room.estado==="finished"?"🏆 ¡Partida terminada!":
    "🎭 Aprovechá para preparar y guardar tu avatar.";
  }
- const old=document.querySelectorAll(".player");
- for(const card of old){
+ // A lost turn or eliminated target cancels any old choice.
+ const selected=room.jugadores?.find(p=>p.id===selectedTargetId);
+ if(selectedTargetId&&!canChooseTarget(selected))selectedTargetId=null;
+ const passButton=el("passBomb"),passPanel=el("passControls");
+ const chosen=room.jugadores?.find(p=>p.id===selectedTargetId);
+ const ready=Boolean(chosen&&canPass()&&!busy);
+ passButton.disabled=!ready;
+ passButton.textContent=busy?"⏳ PASANDO…":"💣 PASAR BOMBA";
+ passPanel.classList.toggle("ready",ready);
+ const statusText=el("selectedTargetLabel");
+ if(!me){statusText.textContent="👀 Estás mirando como espectador. Para jugar, abrí tu enlace privado de Guardian.";}
+ else if(!me.vivo){statusText.textContent="💥 Quedaste eliminado; ahora podés mirar la partida.";}
+ else if(room.estado!=="playing"){statusText.textContent="🎮 Prepará tu personaje. El botón se activará cuando empiece el juego.";}
+ else if(room.bomba_de!==me.id){statusText.textContent="👀 Esperá: la bomba la tiene "+(activeHolder()?.nombre||"otro jugador")+".";}
+ else if(chosen&&shieldMs()>0){statusText.textContent="🎯 Elegiste a "+chosen.nombre+". 🛡️ Protección: "+(shieldMs()/1000).toFixed(1)+" s";}
+ else if(chosen){statusText.textContent="🎯 Elegiste a "+chosen.nombre+". ¡Ahora pulsá el botón para pasársela!";}
+ else statusText.textContent="👇 Tocá el personaje de otro jugador y después apretá PASAR BOMBA.";
+ if(Date.now()<actionMessageUntil)hint.textContent=actionMessage;
+ for(const card of document.querySelectorAll(".player")){
   const target=room.jugadores?.find(p=>p.id===card.dataset.playerId);
-  const clickable=Boolean(target&&canPass()&&target.vivo&&target.id!==me.id);
-  card.disabled=!clickable;
-  card.classList.toggle("targetable",clickable);
+  const clickable=Boolean(target&&canChooseTarget(target)&&!busy);
+  const isSelected=Boolean(target?.id===selectedTargetId);
+  card.disabled=!clickable;card.classList.toggle("targetable",clickable);
+  card.classList.toggle("selected",isSelected);
+  card.setAttribute("aria-pressed",String(isSelected));
  }
 }
 async function refresh(){

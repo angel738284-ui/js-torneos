@@ -24,7 +24,10 @@ test("Private access stays separate from public spectating",()=>{
  assert.match(page,/history\.replaceState/);
  assert.match(page,/p_action:"soy"/);
  assert.match(page,/!personalToken/);
- assert.match(page,/const clickable=canPass\(\)&&p\.vivo/);
+ assert.match(page,/const clickable=canChooseTarget\(p\)/);
+ assert.match(page,/if\(!target\|\|!canChooseTarget\(target\)\|\|!canPass\(\)\|\|busy\)return/);
+ assert.match(page,/id="passBomb"/);
+ assert.match(page,/p_action:"pasar",p_target:target.id/);
  assert.doesNotMatch(page,/JS_WHEEL_BOT_TOKEN|p_sender|sender_jid/);
 });
 test("Server owns validation, timing and whose turn it is",()=>{
