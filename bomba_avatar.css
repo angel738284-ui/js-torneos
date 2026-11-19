@@ -1,0 +1,155 @@
+/* JS FAMILY / Bomba Mortal — Chibi character creator v2 */
+.avatarEditor{position:relative;overflow:hidden}
+.avatarHero{display:flex;justify-content:space-between;align-items:center;gap:10px;margin:0 0 12px}
+.avatarHero h2{margin:0;font-size:17px}.avatarHero small{font-size:10px;color:#a6d4dc}
+.avatarHero .edition{color:#e2feff;font-size:10px;font-weight:900;background:#225a66;border:1px solid #398e9f;padding:5px 8px;border-radius:9px}
+.avatarGender{display:grid;grid-template-columns:repeat(2,1fr);gap:7px;margin:12px 0}
+.avatarGender button{min-height:44px;background:#263850;border:1px solid #4f6984;border-radius:12px;font-size:12px;transition:background .2s}
+.avatarGender button[aria-pressed="true"]{background:linear-gradient(120deg,#6046a8,#306b99);border-color:#a9cff5;box-shadow:inset 0 0 0 1px #ccebf344,0 5px 14px #19365380}
+.avatarEditor .preview{position:relative;isolation:isolate;background:
+ radial-gradient(circle at 50% 15%,#7081e288,transparent 38%),
+ radial-gradient(ellipse at 50% 100%,#25a29a50,transparent 70%),
+ linear-gradient(155deg,#293356,#102d3c);border:1px solid #7189aa80;min-height:220px;overflow:hidden;border-radius:19px}
+.avatarEditor .preview:before{content:"";position:absolute;z-index:-1;width:170px;height:42px;left:50%;bottom:12px;transform:translateX(-50%);background:#78c8d14d;border:2px solid #6cabc7;border-radius:50%;box-shadow:0 0 30px #38c6c74d}
+.avatarEditor .preview:after{content:"VISTA PREVIA EN VIVO";position:absolute;top:12px;left:12px;font-size:9px;letter-spacing:1.2px;font-weight:900;color:#d8fbff9a}
+.avatarEditor .preview .char{transform:translateY(8px) scale(1.57);transform-origin:50% 50%;filter:drop-shadow(0 5px 9px #050a1d55)}
+.avatarEditor .preview .char[data-pose="wave"]{animation:previewWave 1.5s ease-in-out infinite}
+.avatarEditor .preview .char[data-pose="dance"]{animation:previewDance 1.4s ease-in-out infinite}
+.avatarEditor .saveStatus{border:1px solid #345b69;background:#123449;border-radius:9px;padding:8px 10px;margin:7px 0 13px;color:#c3e5e7;font-size:11px}
+.avatarEditor .customSections{display:grid;gap:9px;margin:12px 0}
+.avatarEditor details{border:1px solid #405775;background:#152741;border-radius:13px;overflow:hidden}
+.avatarEditor summary{list-style:none;cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:10px;
+ padding:12px 13px;font-size:12px;font-weight:900;color:#ddf7ff;user-select:none}
+.avatarEditor summary::-webkit-details-marker{display:none}
+.avatarEditor summary:after{content:"+";font-size:19px;color:#84c8d2;line-height:1}
+.avatarEditor details[open] summary:after{content:"−"}
+.avatarEditor details[open] summary{background:#223a53;border-bottom:1px solid #4a6c87}
+.avatarEditor details .options{padding:12px 11px}
+.avatarEditor .options label{font-size:10px;letter-spacing:.2px;color:#bdd5e7}
+.avatarEditor .options select{border:1px solid #4e6589;background:#223650;border-radius:10px;font-weight:700;padding:9px 7px}
+.avatarEditor .options select:focus-visible{outline:3px solid #8df9d4}
+.avatarEditor #save{width:100%;margin-top:7px;min-height:49px;border-radius:12px;font-size:13px}
+.avatarEditor #notice{margin-top:8px;padding:3px 2px;min-height:23px;font-size:11px}
+.avatarEditor .editorNote{font-size:10px;color:#a0bbce;line-height:1.5;margin:7px 0 4px}
+@keyframes previewWave{0%,100%{transform:translateY(8px) scale(1.57)}50%{transform:translateY(4px) scale(1.57) rotate(-3deg)}}
+@keyframes previewDance{0%,100%{transform:translateY(8px) scale(1.57) rotate(-4deg)}50%{transform:translateY(1px) scale(1.6) rotate(4deg)}}
+
+/* The character is built from CSS layers: no image downloads, no sprite assets. */
+.char{isolation:isolate}
+.char .auraRing{position:absolute;z-index:-1;inset:-12px -14px 0;border-radius:50%;opacity:0;pointer-events:none}
+.char[data-aura="cyan"] .auraRing{opacity:.95;border:3px solid #51ebddbb;box-shadow:0 0 13px #31e2e0c4,inset 0 0 13px #51e7e75e}
+.char[data-aura="purple"] .auraRing{opacity:.95;border:3px solid #c18affbb;box-shadow:0 0 15px #ad70ffad}
+.char[data-aura="gold"] .auraRing{opacity:.95;border:3px solid #fce084cc;box-shadow:0 0 14px #eeb951b5}
+.char[data-aura="fire"] .auraRing{opacity:.95;border:3px dashed #ff8a53de;box-shadow:0 0 16px #fa663ecc}
+.char[data-aura="pink"] .auraRing{opacity:.95;border:3px solid #fd8fc4d9;box-shadow:0 0 15px #f76bacb2}
+.char[data-aura]:not([data-aura="none"]) .auraRing{animation:auraBreath 2.8s ease-in-out infinite}
+@keyframes auraBreath{50%{transform:scale(1.075);opacity:.55}}
+
+/* Gender is an optional avatar style; people can mix clothing/hairstyles freely. */
+.char[data-gender="woman"] .torso{border-radius:18px 18px 11px 11px;clip-path:polygon(7% 0,93% 0,100% 75%,87% 100%,13% 100%,0 75%)}
+.char[data-gender="woman"] .head{border-radius:19px 19px 22px 22px}
+.char[data-gender="woman"] .eyes:before{content:"";position:absolute;top:-3px;left:-4px;width:12px;height:3px;background:#2a2636;transform:rotate(-21deg);border-radius:70%}
+.char[data-body="slim"] .torso{width:36px;left:21px}.char[data-body="slim"] .armL{left:12px}.char[data-body="slim"] .armR{right:12px}
+.char[data-body="athletic"] .torso{width:49px;left:15px}.char[data-body="athletic"] .armL{left:6px}.char[data-body="athletic"] .armR{right:6px}
+.char[data-face="round"] .head{border-radius:48% 48% 48% 48%;height:42px}
+.char[data-face="sharp"] .head{clip-path:polygon(12% 0%,88% 0%,100% 40%,79% 91%,50% 100%,20% 91%,0% 40%);height:40px}
+
+/* Better face geometry, brows, eye color, nose and tiny highlights. */
+.char .earL,.char .earR{position:absolute;z-index:8;top:25px;width:11px;height:16px;background:var(--skin);border-radius:8px;box-shadow:inset 1px -2px #aa73523b}
+.char .earL{left:13px}.char .earR{right:13px}
+.char .head{z-index:10;background:linear-gradient(125deg,var(--skin),color-mix(in srgb,var(--skin) 86%,#8e563a));box-shadow:inset -4px -4px #5d352b19,0 2px 1px #15121e1c}
+.char .neck{z-index:6}
+.char .brows{position:absolute;z-index:14;top:20px;left:28px;width:9px;height:2px;border-radius:4px;background:var(--hair);box-shadow:17px 0 var(--hair)}
+.char .eyes{z-index:15;top:25px;left:29px;width:7px;height:7px;border:1px solid #241f30;background:var(--iris,#503d3c);box-shadow:15px 0 0 -1px var(--iris,#503d3c),15px 0 0 0 #241f30}
+.char .eyeSparkle{position:absolute;z-index:16;top:25px;left:31px;width:3px;height:3px;border-radius:50%;background:#fff9ee;box-shadow:15px 0 #fff9ee}
+.char .nose{position:absolute;z-index:15;top:32px;left:40px;width:3px;height:4px;border-radius:50%;background:#a96c5836}
+.char .smile{z-index:16;top:36px;background:#9e5362}
+.char[data-expression="serious"] .smile{width:12px;left:34px;height:2px;border-radius:2px}
+.char[data-expression="confident"] .smile{left:35px;width:13px;height:4px;transform:rotate(-9deg)}
+.char[data-expression="happy"] .smile{left:36px;width:12px;height:7px;border-radius:2px 2px 10px 10px;background:#863e4f}
+.char[data-expression="wink"] .eyes{box-shadow:15px 0 0 -1px var(--iris,#503d3c),15px 0 0 0 #241f30;transform:scaleX(.9)}
+.char[data-expression="wink"] .eyes:after{content:"";position:absolute;width:9px;height:2px;left:-1px;top:2px;background:#2b2736;border-radius:5px}
+.char .cheeks{position:absolute;z-index:14;top:35px;left:21px;width:11px;height:5px;background:#ee799144;border-radius:50%;box-shadow:29px 0 #ee799144}
+.char .beard{position:absolute;z-index:15;display:none;top:37px;left:27px;width:28px;height:10px;background:var(--hair);opacity:.86;border-radius:0 0 18px 18px}
+.char[data-beard="stubble"] .beard{display:block;opacity:.25;height:5px;top:38px}
+.char[data-beard="mustache"] .beard{display:block;width:15px;height:3px;top:34px;left:34px;border-radius:6px}
+.char[data-beard="full"] .beard{display:block;height:15px;top:33px;clip-path:polygon(0 0,100% 0,90% 65%,50% 100%,10% 65%)}
+
+/* Full hairstyle collection; back locks are independent of the chosen style/gender. */
+.char .hairBack,.char .hairTail{position:absolute;z-index:9;display:none;background:var(--hair);box-shadow:inset -3px -5px #12111a33}
+.char .hair{z-index:19;background:linear-gradient(110deg,color-mix(in srgb,var(--hair) 80%,white),var(--hair) 65%);box-shadow:inset -3px -2px #11122219}
+.char[data-hair="long"] .hairBack{display:block;left:12px;top:7px;width:56px;height:71px;border-radius:23px 23px 18px 18px;clip-path:polygon(0 5%,90% 0,100% 95%,80% 88%,19% 88%,0 95%)}
+.char[data-hair="bob"] .hairBack{display:block;left:12px;top:6px;width:56px;height:45px;border-radius:20px 20px 11px 11px}
+.char[data-hair="bob"] .hair{top:2px;height:20px;clip-path:polygon(0 0,100% 0,100% 100%,74% 83%,55% 100%,25% 72%,0 100%)}
+.char[data-hair="curly"] .hair{top:0;left:13px;width:52px;height:27px;border-radius:48% 52% 40% 30%;box-shadow:inset -4px -3px #1715292c,-8px 4px 0 -1px var(--hair),7px 2px 0 var(--hair),0 -3px 0 var(--hair)}
+.char[data-hair="curly"] .hairBack{display:block;left:14px;top:9px;width:49px;height:35px;border-radius:40% 40% 35% 45%}
+.char[data-hair="ponytail"] .hair{top:0;left:14px;width:50px;height:19px;border-radius:23px 26px 10px 4px}
+.char[data-hair="ponytail"] .hairTail{display:block;right:-2px;top:7px;width:20px;height:58px;border-radius:18px 9px 14px 15px;transform:rotate(-16deg)}
+.char[data-hair="braids"] .hair{top:1px;left:13px;width:53px;height:20px;border-radius:25px 25px 7px 8px}
+.char[data-hair="braids"] .hairBack{display:block;left:10px;top:14px;width:13px;height:58px;border-radius:9px;background:repeating-linear-gradient(160deg,var(--hair) 0 8px,#11121f44 8px 11px)}
+.char[data-hair="braids"] .hairTail{display:block;right:7px;top:14px;width:13px;height:58px;border-radius:9px;background:repeating-linear-gradient(20deg,var(--hair) 0 8px,#11121f44 8px 11px)}
+.char[data-hair="fade"] .hair{top:3px;left:21px;width:38px;height:11px;clip-path:polygon(0 100%,8% 0,90% 0,100% 100%)}
+.char[data-hair="waves"] .hair{top:0;left:12px;width:53px;height:22px;border-radius:30px 20px 12px 13px;clip-path:polygon(0 37%,15% 15%,30% 35%,50% 0,70% 23%,90% 4%,100% 100%,0 100%)}
+.char[data-hair="bun"] .hair{top:2px;left:15px;width:49px;height:17px;border-radius:24px 20px 4px 6px}
+.char[data-hair="bun"] .hairTail{display:block;right:13px;top:-10px;width:22px;height:22px;border-radius:50%}
+.char[data-hair="bangs"] .hair{top:0;left:13px;width:53px;height:27px;clip-path:polygon(0 0,100% 0,100% 70%,85% 60%,70% 100%,55% 60%,35% 100%,22% 65%,0 100%)}
+.char[data-hair="bangs"] .hairBack{display:block;left:12px;top:6px;width:55px;height:44px;border-radius:18px 18px 9px 9px}
+.char[data-hair="spiky"] .hair{filter:drop-shadow(0 -2px 0 var(--hair))}
+
+/* Outfit silhouettes with real garment details. */
+.char .torso{z-index:5;background:linear-gradient(115deg,color-mix(in srgb,var(--shirt) 78%,white),var(--shirt) 52%,color-mix(in srgb,var(--shirt) 85%,black));box-shadow:inset -3px -2px #17203727}
+.char .armL,.char .armR{z-index:4;background:linear-gradient(90deg,var(--shirt),color-mix(in srgb,var(--shirt) 82%,black))}
+.char .handL,.char .handR{z-index:7;background:var(--skin)}
+.char .legs{z-index:3;background:linear-gradient(90deg,var(--pants),color-mix(in srgb,var(--pants) 75%,black))}
+.char .shoeL,.char .shoeR{z-index:4;background:var(--shoe,#f5f5ff);box-shadow:inset 0 -2px #111c2c44,0 1px 2px #0f203388}
+.char .topDetail{position:absolute;z-index:7;left:23px;top:47px;width:33px;height:25px;pointer-events:none}
+.char[data-top-style="hoodie"] .torso{border-radius:14px 14px 12px 12px}
+.char[data-top-style="hoodie"] .topDetail{border-top:5px solid #ffffff5b;border-radius:50%;background:linear-gradient(90deg,transparent 43%,#fff7 43% 48%,transparent 48% 52%,#fff7 52% 57%,transparent 57%)}
+.char[data-top-style="jacket"] .topDetail{border-left:3px solid #fff5;background:linear-gradient(90deg,transparent 45%,#f6f7e8 47% 53%,transparent 55%)}
+.char[data-top-style="jersey"] .topDetail:before{content:"JS";font-size:14px;font-weight:1000;position:absolute;left:6px;top:2px;color:#f5f4e9}
+.char[data-top-style="dress"] .torso{border-radius:13px 13px 20px 20px;clip-path:polygon(22% 0,78% 0,92% 43%,100% 100%,0% 100%,8% 43%);height:45px}
+.char[data-top-style="crop"] .torso{height:29px}
+.char[data-top-style="crop"] .topDetail{border-bottom:3px solid #fff8;height:16px}
+.char[data-pattern="stripes"] .topDetail{background:repeating-linear-gradient(90deg,transparent 0 7px,#ffffff75 7px 9px,transparent 9px 13px)}
+.char[data-pattern="star"] .topDetail:after{content:"★";font-size:25px;color:#ffef98;position:absolute;left:7px;top:-3px}
+.char[data-pattern="number"] .topDetail:after{content:"456";font-size:14px;color:#fff3dd;font-weight:1000;position:absolute;left:3px;top:4px}
+.char[data-pattern="bolt"] .topDetail:after{content:"⚡";font-size:17px;position:absolute;left:7px;top:2px}
+.char[data-pattern="heart"] .topDetail:after{content:"♥";font-size:19px;color:#ffa8cc;position:absolute;left:7px;top:2px}
+.char .bottomOverlay{position:absolute;z-index:4;display:none;top:73px;left:18px;width:43px;height:30px;background:var(--pants);border-radius:3px 3px 13px 13px}
+.char[data-bottom-style="skirt"] .bottomOverlay{display:block;clip-path:polygon(23% 0,77% 0,100% 100%,0 100%)}
+.char[data-bottom-style="shorts"] .legs{height:20px;clip-path:polygon(0 0,100% 0,100% 100%,55% 100%,50% 28%,45% 100%,0 100%)}
+.char[data-bottom-style="cargo"] .bottomOverlay{display:block;width:38px;left:20px;height:17px;border-left:7px solid #fff3;border-right:7px solid #fff3;background:transparent;border-radius:2px}
+.char[data-bottom-style="jeans"] .legs{background:linear-gradient(90deg,var(--pants),color-mix(in srgb,var(--pants) 82%,white));box-shadow:inset -3px 0 #ffffff22}
+.char[data-top-style="dress"] .bottomOverlay{display:block;top:71px;left:13px;width:52px;height:28px;background:var(--shirt);clip-path:polygon(19% 0,81% 0,100% 100%,0 100%)}
+
+/* Accessories as independent layers rather than hardcoded image sets. */
+.char .glasses,.char .mask,.char .crown{z-index:21}
+.char .earrings{display:none;position:absolute;z-index:21;left:12px;top:36px;width:7px;height:12px;border:2px solid #ffe16f;border-radius:50%;box-shadow:51px 0 0 -1px #ffe16f}
+.char[data-accessory="earrings"] .earrings{display:block}
+.char .cap{display:none;position:absolute;z-index:23;top:0;left:12px;width:54px;height:21px;background:#e6578d;border-radius:35px 25px 6px 5px;box-shadow:inset -8px -3px #3a255144}
+.char .cap:after{content:"";position:absolute;top:13px;left:26px;width:35px;height:8px;border-radius:7px;background:#cf3c6d}
+.char[data-accessory="cap"] .cap{display:block}
+.char .headphones{display:none;position:absolute;z-index:22;top:6px;left:12px;width:53px;height:41px;border:5px solid #3f475d;border-bottom:0;border-radius:29px 29px 0 0}
+.char .headphones:after{content:"";position:absolute;top:17px;left:-10px;width:11px;height:20px;border-radius:7px;background:#45d5db;box-shadow:53px 0 #45d5db}
+.char[data-accessory="headphones"] .headphones{display:block}
+.char .bandana{display:none;position:absolute;z-index:24;top:12px;left:14px;width:51px;height:8px;background:#e8b34b;border-radius:3px}
+.char[data-accessory="bandana"] .bandana{display:block}
+.char .horns{display:none;position:absolute;z-index:23;top:-13px;left:17px;width:16px;height:20px;background:#ff7ba6;clip-path:polygon(0 100%,40% 0,100% 100%)}
+.char .horns:after{content:"";position:absolute;left:28px;top:0;width:16px;height:20px;background:#ff7ba6;clip-path:polygon(0 100%,60% 0,100% 100%)}
+.char[data-accessory="horns"] .horns{display:block;width:50px;clip-path:none;background:transparent}
+.char[data-accessory="horns"] .horns:before{content:"";position:absolute;top:0;left:0;width:16px;height:20px;background:#ff7ba6;clip-path:polygon(0 100%,40% 0,100% 100%)}
+
+/* Pose variation, without modifying actual gameplay permissions. */
+.char[data-pose="wave"] .armR{animation:waveArm .78s ease-in-out infinite alternate;transform-origin:top}
+.char[data-pose="confident"] .armL{transform:rotate(39deg)}.char[data-pose="confident"] .armR{transform:rotate(-39deg)}
+.tableStage .player .char[data-pose="dance"]{animation:tableDance 1.1s ease-in-out infinite}
+@keyframes waveArm{to{transform:rotate(-65deg)}}
+@keyframes tableDance{0%,100%{transform:scale(.74) rotate(-9deg)}50%{transform:scale(.76) translateY(-5px) rotate(9deg)}}
+@media(prefers-reduced-motion:reduce){
+ .char[data-aura]:not([data-aura="none"]) .auraRing,.char[data-pose="wave"] .armR,.avatarEditor .preview .char,
+ .tableStage .player .char[data-pose="dance"]{animation:none!important}
+}
+
+.avatarEditor .avatarTools{display:flex;gap:7px;margin-top:8px}
+.avatarEditor .avatarTools button{flex:1;min-height:38px;font-size:11px;border-color:#64819f;background:#233e56}
+.avatarEditor .avatarTools button:active{transform:scale(.98)}
