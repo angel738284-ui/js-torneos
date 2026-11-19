@@ -63,7 +63,7 @@ test("3D classic avatar uses the merged body but keeps custom eye colors and oth
  dino.dispose();
 });
 test("Website asynchronously loads seamless geometry and keeps WhatsApp controls untouched",()=>{
- assert.match(page,/bomba3d\/game\.js\?v=4/);
+ assert.match(page,/bomba3d\/game\.js\?v=5/);
  assert.match(controller,/seamless_body\.bin/);
  assert.match(controller,/setSeamlessGeometry\(geometry\)/);
  assert.match(controller,/catch\(err=>\{/);

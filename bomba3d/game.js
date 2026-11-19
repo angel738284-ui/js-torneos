@@ -17,11 +17,10 @@ async function ensureUploaded(){
  if(loadingUploaded)return loadingUploaded;
  loadingUploaded=preloadOriginalModel().then(()=>{
   if(!active||!arena)return;
-  // Swap the default/classic characters to the EXACT GLB supplied by JS.
-  // Existing animal costumes stay unchanged, and game state is unaffected.
-  for(const [id,actor] of actors){
-   if(actor.costume==="plain"){removeActor(actor,arena.scene);actors.delete(id);}
-  }
+  // Rebuild every seat with the same original GLB, preserving each player's
+  // own color and the entire multiplayer room state.
+  for(const actor of actors.values())removeActor(actor,arena.scene);
+  actors.clear();
   syncRoom(roomData);
   previewStamp="";
   syncPreview(previewData);
@@ -187,7 +186,7 @@ export function syncRoom(data){
   if(!card)continue;
   const stamp=JSON.stringify(p.avatar||{});
   let actor=actors.get(p.id);
-  const wantsUploaded=(p.avatar?.costume3d||"plain")==="plain"&&hasOriginalModel();
+  const wantsUploaded=hasOriginalModel();
   if(!actor||actor.stamp!==stamp||(wantsUploaded&&actor.kind!=="uploaded")){
    if(actor)removeActor(actor,arena.scene);
    actor=wantsUploaded?createOriginalRubberActor(p.avatar||{}):createJellyAvatar(p.avatar||{});
@@ -201,8 +200,10 @@ export function syncRoom(data){
   setPosition(actor,card,data.jugadores.length,width,height);
  }
  el("tableStage")?.classList.add("is3d");
- announce("💣 "+actors.size+" personajes en la mesa · "+
-  [...actors.values()].filter(a=>a.kind==="uploaded").length+" con el modelo original GLB");
+ const originalCount=[...actors.values()].filter(a=>a.kind==="uploaded").length;
+ announce(originalCount===actors.size
+  ?"💣 "+actors.size+" personajes en la mesa · todos con el modelo original GLB"
+  :"💣 "+actors.size+" personajes en la mesa · "+originalCount+" con el modelo original GLB");
 }
 export function syncPreview(avatar){
  previewData=avatar;
@@ -211,7 +212,7 @@ export function syncPreview(avatar){
  if(previewStamp===stamp)return;
  previewStamp=stamp;
  removeActor(studio.actor,studio.scene);
- studio.actor=(avatar.costume3d||"plain")==="plain"&&hasOriginalModel()
+ studio.actor=hasOriginalModel()
   ?createOriginalRubberActor(avatar):createJellyAvatar(avatar);
  studio.scene.add(studio.actor.root);
  studio.actor.root.scale.setScalar(.84);

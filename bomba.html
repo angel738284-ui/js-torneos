@@ -218,7 +218,7 @@ select{width:100%;background:#25354d;border:1px solid #536a8f;border-radius:9px;
 <link rel="stylesheet" href="./bomba_avatar.css?v=2">
 <link rel="stylesheet" href="./bomba3d/game.css?v=2">
 
-<script type="module" src="./bomba3d/game.js?v=4"></script>
+<script type="module" src="./bomba3d/game.js?v=5"></script>
 <script src="./config.js"></script>
 </head>
 <body>
@@ -255,7 +255,7 @@ select{width:100%;background:#25354d;border:1px solid #536a8f;border-radius:9px;
 <aside class="sidebar">
 <section class="panel controls avatarEditor">
 <div class="avatarHero"><div><h2>🎨 Creador de personajes</h2>
-<small>Diseñá tu look · 12 disfraces 3D originales</small></div><span class="edition">MUÑECOS 3D</span></div>
+<small>Todos con el mismo modelo GLB · elegí tu color</small></div><span class="edition">MUÑECOS 3D</span></div>
 <div class="editorHeader"><strong>Elegí tu personaje</strong><span id="yourName" class="muted small">Espectador</span></div>
 <div class="avatarGender" aria-label="Estilo del personaje">
  <button type="button" data-avatar-gender="man" aria-pressed="true">🧑 Hombre</button>
@@ -266,11 +266,11 @@ select{width:100%;background:#25354d;border:1px solid #536a8f;border-radius:9px;
 <div class="avatarTools"><button type="button" id="avatarRandom">🎲 Look aleatorio</button><button type="button" id="avatarReset">↺ Reiniciar</button></div>
 <p class="saveStatus">✨ Tus cambios se muestran en la vista previa. Guardalos para que aparezcan en la mesa.</p>
 <div class="customSections">
- <details open class="real3dOptions"><summary>🧸 Muñequitos 3D · Disfraces</summary><div class="options">
- <label class="modelChoice">Elegí tu disfraz<select id="costume3d"><option value="plain">🔴 Clásico</option><option value="dino">🦖 Dinosaurio</option><option value="cat">🐱 Gatito</option><option value="frog">🐸 Ranita</option><option value="chicken">🐥 Pollito</option><option value="bear">🐻 Osito</option><option value="bunny">🐰 Conejito</option><option value="hero">🦸 Héroe</option><option value="office">👔 Oficinista</option><option value="ninja">🥷 Ninja</option><option value="robot">🤖 Robot</option><option value="astronaut">🧑‍🚀 Astronauta</option></select></label>
+ <details open class="real3dOptions"><summary>🎨 Color del muñeco 3D</summary><div class="options">
+ <label class="modelChoice" hidden>Disfraz anterior (guardado)<select id="costume3d"><option value="plain">🔴 Clásico</option><option value="dino">🦖 Dinosaurio</option><option value="cat">🐱 Gatito</option><option value="frog">🐸 Ranita</option><option value="chicken">🐥 Pollito</option><option value="bear">🐻 Osito</option><option value="bunny">🐰 Conejito</option><option value="hero">🦸 Héroe</option><option value="office">👔 Oficinista</option><option value="ninja">🥷 Ninja</option><option value="robot">🤖 Robot</option><option value="astronaut">🧑‍🚀 Astronauta</option></select></label>
  <label>Color del muñeco<select id="bodyColor3d"><option value="#f83e50">Rojo</option><option value="#27b9e8">Azul</option><option value="#4acb75">Verde</option><option value="#ffcf45">Amarillo</option><option value="#ff84b6">Rosa</option><option value="#8970e8">Morado</option><option value="#ef8f43">Naranja</option><option value="#2c344e">Negro</option><option value="#eff0e8">Blanco</option><option value="#54d7ca">Turquesa</option></select></label>
- <label>Color de la capucha<select id="hoodColor3d"><option value="#f6c843">Amarillo</option><option value="#f83e50">Rojo</option><option value="#27b9e8">Azul</option><option value="#4acb75">Verde</option><option value="#ff84b6">Rosa</option><option value="#8970e8">Morado</option><option value="#ef8f43">Naranja</option><option value="#2c344e">Negro</option><option value="#eff0e8">Blanco</option><option value="#54d7ca">Turquesa</option></select></label>
- <p class="modelNote">Muñequitos 3D originales de JS Family: ojos blancos, cuerpo de gelatina y disfraces animados. Elegí un jugador y tocá PASAR BOMBA para jugar.</p>
+ <label hidden>Color de capucha anterior (guardado)<select id="hoodColor3d"><option value="#f6c843">Amarillo</option><option value="#f83e50">Rojo</option><option value="#27b9e8">Azul</option><option value="#4acb75">Verde</option><option value="#ff84b6">Rosa</option><option value="#8970e8">Morado</option><option value="#ef8f43">Naranja</option><option value="#2c344e">Negro</option><option value="#eff0e8">Blanco</option><option value="#54d7ca">Turquesa</option></select></label>
+ <p class="modelNote">Todos los jugadores usan el GLB original. Cada uno conserva su propio color. Los disfraces anteriores quedan guardados para cuando volvamos a habilitarlos.</p>
  </div></details>
  <details open><summary>🧍 Rostro y cuerpo</summary><div class="options">
   <label>Complexión<select id="body"><option value="regular">Normal</option><option value="slim">Delgado</option><option value="athletic">Atlético</option></select></label>
@@ -300,7 +300,7 @@ select{width:100%;background:#25354d;border:1px solid #536a8f;border-radius:9px;
 </div>
 <button id="save" class="primary" type="button" disabled>💾 Guardar mi personaje</button>
 <div id="notice" role="status">Para editar, abrí tu enlace personal enviado por JS Guardian.</div>
-<div class="editorNote">Los disfraces, colores, complexión, expresiones, accesorios y poses funcionan en 3D. Los peinados y algunas prendas del editor anterior siguen disponibles únicamente en modo ligero 2D.</div>
+<div class="editorNote">En 3D se usa el mismo cuerpo GLB para todos, con su color personal. Los disfraces, prendas y accesorios anteriores permanecen guardados, pero no se muestran en este modelo por ahora.</div>
 </section>
 <section class="panel"><h2>📣 Lo que está pasando</h2><ul id="events" class="events"></ul><button id="share" type="button" style="width:100%;margin-top:12px">🔗 Compartir sala pública</button></section>
 </aside>
