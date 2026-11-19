@@ -5,7 +5,7 @@ import vm from "node:vm";
 
 const html=readFileSync(new URL("./bomba.html",import.meta.url),"utf8");
 const css=readFileSync(new URL("./bomba_avatar.css",import.meta.url),"utf8");
-const migration=readFileSync(new URL("./js_bomba_avatar_upgrade.sql",import.meta.url),"utf8")+readFileSync(new URL("./bomba3d/model_upgrade.sql",import.meta.url),"utf8");
+const migration=readFileSync(new URL("./js_bomba_avatar_upgrade.sql",import.meta.url),"utf8")+readFileSync(new URL("./bomba3d/jelly_avatar_upgrade.sql",import.meta.url),"utf8");
 const js=[...html.matchAll(/<script(?:\s[^>]*)?>([\s\S]*?)<\/script>/g)].map(x=>x[1]).find(x=>x.includes('function avatarSafe(obj)'));
 assert.ok(js,"Avatar source exists");
 const start=js.indexOf("const fields="),end=js.indexOf("function showError(",start);
@@ -19,9 +19,9 @@ const env=vm.createContext({document:{createElement:makeNode},window:{},Map,Math
 vm.runInContext(factoryCode+"\nthis.av={fields,defaults,allowed,avatarSafe,buildAvatar}",env);
 const {fields,defaults,allowed,avatarSafe,buildAvatar}=env.av;
 
-test("19 editable controls map to a declared SQL avatar property",()=>{
- assert.equal(fields.length,19);
- assert.equal(new Set(fields).size,19);
+test("21 editable controls map to a declared SQL avatar property",()=>{
+ assert.equal(fields.length,21);
+ assert.equal(new Set(fields).size,21);
  for(const k of fields){
   assert.ok(html.includes('id="'+k+'"'),"Missing control "+k);
   assert.ok(allowed[k].includes(defaults[k]),"Missing default "+k);

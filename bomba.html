@@ -216,9 +216,9 @@ select{width:100%;background:#25354d;border:1px solid #536a8f;border-radius:9px;
 
 </style>
 <link rel="stylesheet" href="./bomba_avatar.css?v=2">
-<link rel="stylesheet" href="./bomba3d/game.css?v=1">
-<script type="importmap">{"imports":{"three":"./bomba3d/vendor/three.module.js"}}</script>
-<script type="module" src="./bomba3d/game.js?v=1"></script>
+<link rel="stylesheet" href="./bomba3d/game.css?v=2">
+
+<script type="module" src="./bomba3d/game.js?v=2"></script>
 <script src="./config.js"></script>
 </head>
 <body>
@@ -255,7 +255,7 @@ select{width:100%;background:#25354d;border:1px solid #536a8f;border-radius:9px;
 <aside class="sidebar">
 <section class="panel controls avatarEditor">
 <div class="avatarHero"><div><h2>🎨 Creador de personajes</h2>
-<small>Diseñá tu look · ropa y modelos 3D</small></div><span class="edition">AVATAR 3D</span></div>
+<small>Diseñá tu look · 12 disfraces 3D originales</small></div><span class="edition">MUÑECOS 3D</span></div>
 <div class="editorHeader"><strong>Elegí tu personaje</strong><span id="yourName" class="muted small">Espectador</span></div>
 <div class="avatarGender" aria-label="Estilo del personaje">
  <button type="button" data-avatar-gender="man" aria-pressed="true">🧑 Hombre</button>
@@ -266,31 +266,11 @@ select{width:100%;background:#25354d;border:1px solid #536a8f;border-radius:9px;
 <div class="avatarTools"><button type="button" id="avatarRandom">🎲 Look aleatorio</button><button type="button" id="avatarReset">↺ Reiniciar</button></div>
 <p class="saveStatus">✨ Tus cambios se muestran en la vista previa. Guardalos para que aparezcan en la mesa.</p>
 <div class="customSections">
- <details open class="real3dOptions"><summary>🧍 Atuendo 3D de Quaternius</summary><div class="options">
-  <label class="modelChoice">Modelo 3D completo
-   <select id="outfit3d"> <optgroup label="Hombre"><option value="Male/Adventurer">Aventurero</option>
-<option value="Male/Beach">Playa</option>
-<option value="Male/Casual_2">Casual</option>
-<option value="Male/Casual_Hoodie">Buzo deportivo</option>
-<option value="Male/Farmer">Granjero</option>
-<option value="Male/King">Rey</option>
-<option value="Male/Punk">Punk</option>
-<option value="Male/Spacesuit">Astronauta</option>
-<option value="Male/Suit">Traje elegante</option>
-<option value="Male/Swat">SWAT</option>
-<option value="Male/Worker">Trabajador</option></optgroup>
- <optgroup label="Mujer"><option value="Female/Adventurer">Aventurero</option>
-<option value="Female/Casual">Casual</option>
-<option value="Female/Formal">Formal</option>
-<option value="Female/Medieval">Medieval</option>
-<option value="Female/Punk">Punk</option>
-<option value="Female/SciFi">Ciencia ficción</option>
-<option value="Female/Soldier">Soldado</option>
-<option value="Female/Suit">Traje elegante</option>
-<option value="Female/Witch">Bruja</option>
-<option value="Female/Worker">Trabajador</option></optgroup></select>
-  </label>
-  <p class="modelNote">Los 21 atuendos son modelos 3D reales, con animaciones. Los colores de piel, pelo y algunas prendas se aplican al 3D. Los peinados y accesorios CSS anteriores siguen disponibles en modo ligero 2D.</p>
+ <details open class="real3dOptions"><summary>🧸 Muñequitos 3D · Disfraces</summary><div class="options">
+ <label class="modelChoice">Elegí tu disfraz<select id="costume3d"><option value="plain">🔴 Clásico</option><option value="dino">🦖 Dinosaurio</option><option value="cat">🐱 Gatito</option><option value="frog">🐸 Ranita</option><option value="chicken">🐥 Pollito</option><option value="bear">🐻 Osito</option><option value="bunny">🐰 Conejito</option><option value="hero">🦸 Héroe</option><option value="office">👔 Oficinista</option><option value="ninja">🥷 Ninja</option><option value="robot">🤖 Robot</option><option value="astronaut">🧑‍🚀 Astronauta</option></select></label>
+ <label>Color del muñeco<select id="bodyColor3d"><option value="#f83e50">Rojo</option><option value="#27b9e8">Azul</option><option value="#4acb75">Verde</option><option value="#ffcf45">Amarillo</option><option value="#ff84b6">Rosa</option><option value="#8970e8">Morado</option><option value="#ef8f43">Naranja</option><option value="#2c344e">Negro</option><option value="#eff0e8">Blanco</option><option value="#54d7ca">Turquesa</option></select></label>
+ <label>Color de la capucha<select id="hoodColor3d"><option value="#f6c843">Amarillo</option><option value="#f83e50">Rojo</option><option value="#27b9e8">Azul</option><option value="#4acb75">Verde</option><option value="#ff84b6">Rosa</option><option value="#8970e8">Morado</option><option value="#ef8f43">Naranja</option><option value="#2c344e">Negro</option><option value="#eff0e8">Blanco</option><option value="#54d7ca">Turquesa</option></select></label>
+ <p class="modelNote">Muñequitos 3D originales de JS Family: ojos blancos, cuerpo de gelatina y disfraces animados. Elegí un jugador y tocá PASAR BOMBA para jugar.</p>
  </div></details>
  <details open><summary>🧍 Rostro y cuerpo</summary><div class="options">
   <label>Complexión<select id="body"><option value="regular">Normal</option><option value="slim">Delgado</option><option value="athletic">Atlético</option></select></label>
@@ -320,7 +300,7 @@ select{width:100%;background:#25354d;border:1px solid #536a8f;border-radius:9px;
 </div>
 <button id="save" class="primary" type="button" disabled>💾 Guardar mi personaje</button>
 <div id="notice" role="status">Para editar, abrí tu enlace personal enviado por JS Guardian.</div>
-<div class="editorNote">El 3D utiliza atuendos completos de Quaternius. El editor 2D conserva el resto de las opciones para quienes elijan el modo ligero. Ambos usan el mismo perfil guardado.</div>
+<div class="editorNote">Los disfraces, colores, complexión, expresiones, accesorios y poses funcionan en 3D. Los peinados y algunas prendas del editor anterior siguen disponibles únicamente en modo ligero 2D.</div>
 </section>
 <section class="panel"><h2>📣 Lo que está pasando</h2><ul id="events" class="events"></ul><button id="share" type="button" style="width:100%;margin-top:12px">🔗 Compartir sala pública</button></section>
 </aside>
@@ -339,11 +319,11 @@ if(params.has("t")){
 }
 const api=(cfg.supabaseUrl||"")+"/rest/v1/rpc/",key=cfg.publishableKey||"";
 const el=id=>document.getElementById(id);
-const fields=["gender","body","face","skin","eyes","expression","beard","hair","hairColor","topStyle","shirt","pattern","bottomStyle","pants","shoes","accessory","aura","pose","outfit3d"];
+const fields=["gender","body","face","skin","eyes","expression","beard","hair","hairColor","topStyle","shirt","pattern","bottomStyle","pants","shoes","accessory","aura","pose","costume3d","bodyColor3d","hoodColor3d"];
 const defaults={gender:"man",body:"regular",face:"soft",skin:"#eac49b",
  eyes:"brown",expression:"smile",beard:"none",hair:"spiky",hairColor:"#262333",
  topStyle:"tee",shirt:"#775de6",pattern:"plain",bottomStyle:"pants",pants:"#273751",
- shoes:"white",accessory:"none",aura:"none",pose:"idle",outfit3d:"Male/Casual_Hoodie"};
+ shoes:"white",accessory:"none",aura:"none",pose:"idle",costume3d:"plain",bodyColor3d:"#f83e50",hoodColor3d:"#f6c843"};
 const allowed={
  gender:["man","woman"],body:["regular","slim","athletic"],face:["soft","round","sharp"],
  skin:["#f6d5b2","#eac49b","#b87a5b","#855036","#ffe0c6","#cd916f"],
@@ -360,7 +340,9 @@ const allowed={
  shoes:["white","black","red","gold","neon","pink"],
  accessory:["none","glasses","crown","mask","cap","headphones","earrings","bandana","horns"],
  aura:["none","cyan","purple","gold","fire","pink"],pose:["idle","wave","confident","dance"],
- outfit3d:["Male/Adventurer", "Male/Beach", "Male/Casual_2", "Male/Casual_Hoodie", "Male/Farmer", "Male/King", "Male/Punk", "Male/Spacesuit", "Male/Suit", "Male/Swat", "Male/Worker", "Female/Adventurer", "Female/Casual", "Female/Formal", "Female/Medieval", "Female/Punk", "Female/SciFi", "Female/Soldier", "Female/Suit", "Female/Witch", "Female/Worker"]
+ costume3d:["plain","dino","cat","frog","chicken","bear","bunny","hero","office","ninja","robot","astronaut"],
+ bodyColor3d:["#f83e50","#27b9e8","#4acb75","#ffcf45","#ff84b6","#8970e8","#ef8f43","#2c344e","#eff0e8","#54d7ca"],
+ hoodColor3d:["#f6c843","#f83e50","#27b9e8","#4acb75","#ff84b6","#8970e8","#ef8f43","#2c344e","#eff0e8","#54d7ca"]
 };
 const shoeColor={white:"#f5f5ff",black:"#252b3f",red:"#ff6275",gold:"#f4d57a",neon:"#75f8d5",pink:"#ffa6db"};
 const eyeColor={brown:"#674a3d",blue:"#42a0e5",green:"#56ac80",violet:"#a278db",grey:"#8996ab"};
@@ -407,8 +389,6 @@ async function identity(){
   const result=await rpc("js_bomba_jugar",{p_code:code,p_access:personalToken,p_action:"soy"});
   me=result;el("yourName").textContent=result.nombre||"Jugador";
   for(const k of fields)el(k).value=avatarSafe(result.avatar)[k];
-  if(!el("outfit3d").value.startsWith(el("gender").value==="woman"?"Female/":"Male/"))
-   el("outfit3d").value=el("gender").value==="woman"?"Female/Casual":"Male/Casual_Hoodie";
   el("save").disabled=false;updateGenderButtons();preview();
   notice("✅ Tu avatar es editable. Guardá tus cambios para que todos los vean.");
  }catch(err){
@@ -427,7 +407,6 @@ for(const choice of document.querySelectorAll("[data-avatar-gender]")){
   if(!allowed.gender.includes(after))return;
   el("gender").value=after;
   if(before!==after){
-   el("outfit3d").value=after==="woman"?"Female/Casual":"Male/Casual_Hoodie";
    if(after==="woman"&&el("hair").value==="spiky")el("hair").value="ponytail";
    if(after==="man"&&el("hair").value==="ponytail")el("hair").value="short";
   }
@@ -442,18 +421,15 @@ function preview(){
 for(const k of fields)el(k).addEventListener("change",preview);
 el("avatarRandom").addEventListener("click",()=>{
  for(const k of fields){
-  if(k==="gender"||k==="outfit3d")continue;
+  if(k==="gender")continue;
   el(k).value=allowed[k][Math.floor(Math.random()*allowed[k].length)];
  }
- const opts=allowed.outfit3d.filter(id=>id.startsWith(el("gender").value==="woman"?"Female/":"Male/"));
- el("outfit3d").value=opts[Math.floor(Math.random()*opts.length)];
  updateGenderButtons();preview();notice("🎲 ¡Look generado! Apretá Guardar para conservarlo.");
 });
 el("avatarReset").addEventListener("click",()=>{
  const previousGender=el("gender").value;
  for(const k of fields)el(k).value=defaults[k];
  el("gender").value=previousGender;
- el("outfit3d").value=previousGender==="woman"?"Female/Casual":"Male/Casual_Hoodie";
  updateGenderButtons();preview();notice("↺ Personaje reiniciado. Apretá Guardar para aplicar los cambios.");
 });
 preview();
