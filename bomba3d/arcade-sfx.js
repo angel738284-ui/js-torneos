@@ -5,10 +5,10 @@ export function createArcadeSFX(){
  const STORE="js-bomba-mix-v1";
  const defaults={effects:100,music:100,voices:100};
  let mix={...defaults},ctx=null,master=null,fx=null,bgm=null,voice=null;
- let ambient=null,ambientGain=null,lastSecond=null,lastCountdown=null;
+ let lastSecond=null,lastCountdown=null;
  let lastRound=null,lastWinner=null,lastFall=0,roundStarted=false,lastBeat=-1;
  let musicEnabled=true,audioEnabled=true,nextMelodyAt=0,melodyStep=0;
- const melody=[392,440,523.25,440,349.23,392,329.63,392,440,523.25,587.33,523.25,440,392,349.23,329.63];
+ const melody=[523.25,659.25,783.99,659.25,587.33,698.46,880,698.46,659.25,783.99,987.77,783.99,587.33,659.25,523.25,392];
  // Fixed full in-game mix; ignore previously saved slider settings.
  const safe=()=>Boolean(audioEnabled&&ctx&&ctx.state==="running"&&!document.hidden);
  const vol=k=>mix[k]/100;
@@ -49,7 +49,7 @@ export function createArcadeSFX(){
  }
  function grunt(){ // small synthesized 'hup' accent, not a voice recording
   if(vol("voices")===0)return;
-  osc(245,170,.12,.13,"sawtooth","voices");
+  osc(245,170,.12,.055,"sine","voices");
   osc(175,110,.13,.08,"triangle","voices",.03);
  }
  function plof(delay=0){
@@ -74,12 +74,6 @@ export function createArcadeSFX(){
   if(!safe())return;
   [0,1,2].forEach((n)=>osc(500+n*130,520+n*130,.12,.14,"square","effects",n*.18));
   osc(900,1500,.4,.18,"triangle","effects",.55);
-  // Music begins under the gameplay and gets quieter near detonation.
-  if(!ambient){
-   ambient=ctx.createOscillator();ambient.type="triangle";ambient.frequency.value=96;
-   ambientGain=ctx.createGain();ambientGain.gain.value=0;
-   ambient.connect(ambientGain);ambientGain.connect(bgm);ambient.start();
-  }
   roundStarted=true;
  }
  function updateMusic(active,remaining){
@@ -87,14 +81,14 @@ export function createArcadeSFX(){
   // Gentle original chiptune melody, no samples or copyrighted tune.
   // Audio starts only after a tap, as required by mobile browsers.
   if(!nextMelodyAt)nextMelodyAt=ctx.currentTime+.12;
-  const spacing=active?.43:.66;
+  const spacing=active?.26:.34;
   if(nextMelodyAt<ctx.currentTime-.7)nextMelodyAt=ctx.currentTime+.08;
   let scheduled=0;
   while(nextMelodyAt<ctx.currentTime+.22&&scheduled++<2){
    const note=melody[melodyStep%melody.length];
    const delay=Math.max(0,nextMelodyAt-ctx.currentTime);
-   osc(note,note*.995,.27,active?.037:.029,"sine","music",delay);
-   if(melodyStep%4===0)osc(note/2,note/2,.48,.018,"triangle","music",delay);
+   osc(note,note,.19,active?.085:.070,"triangle","music",delay);
+   if(melodyStep%4===0)osc(note/2,note/2,.20,.035,"sine","music",delay);
    melodyStep++;nextMelodyAt+=spacing;
   }
  }

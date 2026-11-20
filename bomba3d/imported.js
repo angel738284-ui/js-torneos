@@ -136,29 +136,11 @@ export function createOriginalRubberActor(options={}){
  }
  grippingHands.visible=false;
  animatedRig.add(grippingHands);
- // Short, independent eyelid blinks; the original model has painted eyes.
- const eyelidMaterial=new THREE.MeshStandardMaterial({color:options.bodyColor3d||defaultRed,roughness:.49,metalness:.04,side:THREE.DoubleSide});
- const eyelidGeometry=new THREE.SphereGeometry(1,18,12);
- const eyelids=[];
- for(const side of [-1,1]){
-  const lid=new THREE.Mesh(eyelidGeometry,eyelidMaterial);
-  lid.name=side<0?'JS_LEFT_BLINK':'JS_RIGHT_BLINK';
-  lid.position.set(side*.215,2.155,.493);
-  lid.scale.set(.145,.01,.028);
-  lid.visible=false;
-  animatedRig.add(lid);eyelids.push(lid);
- }
- const blinkOffset=Math.random()*4.2;
  let gripPose=0;
  let elapsed=0,deadAmount=0;
  const update=(delta,action="idle",reduced=false)=>{
   elapsed+=Math.min(.10,delta||0);
   wardrobe.update(elapsed,reduced);
-  // A blink lasts ~160 ms every 3–6 seconds; no permanent facial movement.
-  const cycle=(elapsed+blinkOffset)%4.7;
-  const blink=cycle<.18?Math.sin(Math.PI*cycle/.18):0;
-  for(const lid of eyelids){lid.visible=blink>.035;lid.scale.y=Math.max(.01,.205*blink);}
-
   const gripping=action==="hold"||action==="catch";
   const target=gripping?1:action==="throw"?.02:0;
   gripPose+=(target-gripPose)*Math.min(1,Math.max(0,delta||0)*8);
@@ -188,7 +170,6 @@ export function createOriginalRubberActor(options={}){
  };
  const dispose=()=>{
   wardrobe.dispose();
-  eyelidMaterial.dispose();eyelidGeometry.dispose();
   palmMat.dispose();
   // Palm geometry remains shared with this actor only.
   palmGeometry.dispose();

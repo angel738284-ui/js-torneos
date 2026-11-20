@@ -116,7 +116,7 @@ export function createBombSFX(){
   if(!active&&!fuseWasActive)return;
   if(active)ensureHiss();
   if(!hissGain)return;
-  const activeGain=active ? .075+(.16*(1-clamp(progress))) : 0;
+  const activeGain=active ? .018+(.025*(1-clamp(progress))) : 0;
   // Throttled automation: doesn't create nodes each frame.
   if(!active||now-lastHiss>.11){
    hissGain.gain.setTargetAtTime(activeGain,now,.045);
