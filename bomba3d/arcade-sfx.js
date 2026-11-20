@@ -7,6 +7,8 @@ export function createArcadeSFX(){
  let mix={...defaults},ctx=null,master=null,fx=null,bgm=null,voice=null;
  let ambient=null,ambientGain=null,lastSecond=null,lastCountdown=null;
  let lastRound=null,lastWinner=null,lastFall=0,roundStarted=false,lastBeat=-1;
+ let musicEnabled=true,nextMelodyAt=0,melodyStep=0;
+ const melody=[392,440,523.25,440,349.23,392,329.63,392,440,523.25,587.33,523.25,440,392,349.23,329.63];
  try{const saved=JSON.parse(localStorage.getItem(STORE)||"{}");for(const k of Object.keys(defaults))if(Number.isFinite(saved[k]))mix[k]=Math.max(0,Math.min(100,saved[k]));}catch{}
  const safe=()=>Boolean(ctx&&ctx.state==="running"&&!document.hidden);
  const vol=k=>mix[k]/100;
@@ -19,6 +21,7 @@ export function createArcadeSFX(){
    setMix();
   }
   if(ctx.state==="suspended")void ctx.resume().catch(()=>{});
+  if(!nextMelodyAt)nextMelodyAt=ctx.currentTime+.15;
   return true;
  }
  function setMix(){
@@ -80,12 +83,19 @@ export function createArcadeSFX(){
   roundStarted=true;
  }
  function updateMusic(active,remaining){
-  if(!ctx||!ambientGain)return;
-  const target=active&&roundStarted&&remaining>5?.033:active&&remaining<=5?.007:0;
-  ambientGain.gain.setTargetAtTime(target,ctx.currentTime,.14);
-  if(active&&remaining>5&&vol("music")>0){
-   const beat=Math.floor(ctx.currentTime*2);
-   if(beat!==lastBeat){lastBeat=beat;osc(140,90,.13,.055,"triangle","music");}
+  if(!safe()||!musicEnabled||vol("music")===0)return;
+  // Gentle original chiptune melody, no samples or copyrighted tune.
+  // Audio starts only after a tap, as required by mobile browsers.
+  if(!nextMelodyAt)nextMelodyAt=ctx.currentTime+.12;
+  const spacing=active?.43:.66;
+  if(nextMelodyAt<ctx.currentTime-.7)nextMelodyAt=ctx.currentTime+.08;
+  let scheduled=0;
+  while(nextMelodyAt<ctx.currentTime+.22&&scheduled++<2){
+   const note=melody[melodyStep%melody.length];
+   const delay=Math.max(0,nextMelodyAt-ctx.currentTime);
+   osc(note,note*.995,.27,active?.037:.029,"sine","music",delay);
+   if(melodyStep%4===0)osc(note/2,note/2,.48,.018,"triangle","music",delay);
+   melodyStep++;nextMelodyAt+=spacing;
   }
  }
  function explosion(){
@@ -129,7 +139,13 @@ export function createArcadeSFX(){
    init();whoosh();catchBomb();victory();
   });
   for(const e of ["pointerdown","keydown"])document.addEventListener(e,init,{capture:true,passive:true});
-  document.addEventListener("visibilitychange",()=>{if(document.hidden)updateMusic(false,0);});
+  const toggle=document.getElementById("bombMusicToggle");
+  const sync=()=>{if(toggle){toggle.textContent=musicEnabled?"🎵 Música tranquila: SÍ":"🎵 Música tranquila: NO";toggle.setAttribute("aria-pressed",String(musicEnabled));}};
+  try{musicEnabled=localStorage.getItem("js-bomba-calm-music")!=="off";}catch{}
+  sync();toggle?.addEventListener("click",()=>{musicEnabled=!musicEnabled;try{localStorage.setItem("js-bomba-calm-music",musicEnabled?"on":"off");}catch{}sync();init();});
+  document.addEventListener("visibilitychange",()=>{if(!document.hidden&&ctx)nextMelodyAt=ctx.currentTime+.15;});
+  const musicTick=()=>{updateMusic(false,0);requestAnimationFrame(musicTick);};
+  if(typeof requestAnimationFrame==="function")requestAnimationFrame(musicTick);
  }
  if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",bind,{once:true});else bind();
  return {init,whoosh,catchBomb,grunt,plof,beep,countdown,playStart,markRound,markWinner,updateMusic,explosion,getMix:()=>({...mix})};

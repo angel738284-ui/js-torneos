@@ -5,10 +5,10 @@
  */
 import * as THREE from "./vendor/three.module.js";
 import {createBombSFX} from "./sounds.js?v=1";
-import {createArcadeSFX} from "./arcade-sfx.js?v=1";
+import {createArcadeSFX} from "./arcade-sfx.js?v=2";
 window.JSBombSFX=createBombSFX();
 window.JSArcadeSFX=createArcadeSFX();
-import {preloadOriginalModel,hasOriginalModel,createOriginalRubberActor} from "./imported.js?v=7";
+import {preloadOriginalModel,hasOriginalModel,createOriginalRubberActor} from "./imported.js?v=8";
 import {
  createBombProp,handWorldPosition,makePassAnimation,HAND_OFFSET,roundFuseProgress
 } from "./bomb-effects.js?v=3";
@@ -24,24 +24,7 @@ let demoSecondPass=null,demoVictimId=null,demoExplodedAt=0,demoFinishedAt=0;
 const demoEliminated=new Set();
 let demoRound=0,demoChampionId=null;
 const DEMO_FULL_DURATION_MS=20000,DEMO_FALL_HOLD_MS=4600;
-const motionKey="js-bomba-character-motion-v1";
-let motionChoice="auto";
-try{motionChoice=localStorage.getItem(motionKey)||"auto";}catch{}
-const reducedMotion=()=>motionChoice==="on"?false:motionChoice==="off"?true:Boolean(window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches);
-function syncMotionButton(){
- const button=el("bomb3dMotionToggle");if(!button)return;
- const active=!reducedMotion();
- button.textContent=active?"🕺 Movimiento: ACTIVADO":"🧍 Movimiento: DESACTIVADO";
- button.setAttribute("aria-pressed",String(active));
-}
-function initMotionButton(){
- syncMotionButton();
- el("bomb3dMotionToggle")?.addEventListener("click",()=>{
-  motionChoice=reducedMotion()?"on":"off";
-  try{localStorage.setItem(motionKey,motionChoice);}catch{}
-  syncMotionButton();
- });
-}
+const reducedMotion=()=>true; // No idle movement.
 const status=text=>{const node=el("bomb3dStatus");if(node)node.textContent=text;};
 const supported=()=>typeof window.WebGLRenderingContext!=="undefined";
 
@@ -441,20 +424,9 @@ function animate(time){
     const holderId=demoHolder||(roomData?.estado==="playing"?roomData.bomba_de:null);
     const isHolder=holderId===id&&a.alive&&!flight;
     const playingAction=isHolder&&a.action==="idle"?"hold":a.action;
-    a.update(seconds,playingAction,reduced);
-    // Gentle idle sway: each character moves on a slightly different rhythm.
-    // Reset every frame so it never accumulates or disrupts throws/falls.
+    a.update(seconds,playingAction,playingAction==="idle"||playingAction==="hold");
     a.root.rotation.z=0;
-    if(a.alive&&!reduced&&(playingAction==="idle"||playingAction==="hold")){
-     const seed=Array.from(String(id)).reduce((n,ch)=>((n*31+ch.charCodeAt(0))>>>0),7);
-     const phase=(seed%628)/100;
-     const t=time*.001;
-     const intensity=playingAction==="hold"?.55:1;
-     a.root.rotation.z=Math.sin(t*1.45+phase)*.032*intensity;
-     a.root.rotation.y=Math.sin(t*.82+phase)*.055*intensity;
-     a.root.position.x+=Math.sin(t*1.45+phase)*.035*intensity;
-     a.root.position.y+=Math.sin(t*2.15+phase)*.015*intensity;
-    }
+    a.root.rotation.y=0;
    }
    animateHeldAndFlyingBomb(time,reduced);
    arena.renderer.render(arena.scene,arena.camera);
@@ -463,8 +435,8 @@ function animate(time){
    const view=el("preview");
    resize(studio,view?.clientWidth||290,view?.clientHeight||230,80);
    if(studio.actor){
-    studio.actor.update(seconds,previewData?.pose==="dance"?"dance":"idle",reduced);
-    studio.actor.root.rotation.y=reduced?0:Math.sin(time*.00033)*.08;
+    studio.actor.update(seconds,"idle",true);
+    studio.actor.root.rotation.y=0;
    }
    studio.renderer.render(studio.scene,studio.camera);
   }
@@ -492,7 +464,7 @@ export function set3DEnabled(){
    previewStamp="";
    syncPreview(previewData);
    if(!frameId)frameId=requestAnimationFrame(animate);
-   status("🟢 Modelo GLB listo · ropa y accesorios en 3D"+(reducedMotion()?" · movimiento reducido por configuración":" · animaciones activas"));
+   status("🟢 Modelo GLB listo · ropa y accesorios en 3D");
   }).catch(error=>{
    console.warn("No se pudo cargar el GLB original:",error);
    disposeStages();
@@ -510,7 +482,6 @@ export function set3DEnabled(){
 export function initBomb3D(){
  window.Bomb3D={syncRoom,syncPreview,onGameTransition,demoThrow,demoExplodeNow,set3DEnabled,isEnabled:()=>ready};
  previewData=Object.fromEntries([...document.querySelectorAll(".avatarEditor select")].map(x=>[x.id,x.value]));
- initMotionButton();
  set3DEnabled();
 }
 initBomb3D();

@@ -157,7 +157,7 @@ export function createOriginalRubberActor(options={}){
   deadAmount=Math.max(0,deadAmount-.12);
   const dancing=action==="dance"||options.pose==="dance";
   const throwing=action==="throw",catching=action==="catch";
-  const idleSway=Math.sin(elapsed*1.55)*(dancing?.22:.055);
+  const idleSway=0;
   // The GLB is unrigged, so throwing and catching use exaggerated
   // upper-body lean, not fabricated separate arm-bone animations.
   animatedRig.rotation.z=reduced?0:

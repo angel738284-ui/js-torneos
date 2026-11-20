@@ -37,8 +37,8 @@ const persons=[{id:"p1",vivo:true},{id:"p2",vivo:true}];
 const state=(holder,round=1)=>({estado:"playing",bomba_de:holder,ronda:round,jugadores:persons});
 const reset=()=>{clock=1000;for(const a of actors.values()){a.alive=true;a.action="idle";}vm.runInContext("flight=null",ctx);setRoom(state("p1"));onGameTransition(null,state("p1"));animateHeldAndFlyingBomb(1000,false);};
 
-test("The waiting character swings from side to side, with a distinct throw and catch lean",()=>{
- assert.match(imported,/const idleSway=Math\.sin\(elapsed\*1\.55\)/);
+test("Standing characters stay still, with distinct throw and catch actions",()=>{
+ assert.match(imported,/const idleSway=0;/);
  assert.match(imported,/throwing\?-\.(?:25|[0-9]+)/);
  assert.match(imported,/catching\?\.(?:22|[0-9]+)/);
  assert.match(imported,/animatedRig\.position\.x=/);
@@ -108,7 +108,7 @@ test("The old 2D projectile is suppressed while the GLB viewer is working",()=>{
  assert.match(page,/if\(!window\.Bomb3D\?\.isEnabled\(\)\)animateTransfer/);
  assert.match(page,/p_action:"pasar",p_target:target\.id/);
  assert.match(page,/id="passBomb"/);
- assert.match(page,/bomba3d\/game\.js\?v=17/);
+ assert.match(page,/bomba3d\/game\.js\?v=18/);
  assert.match(game,/actor\.bomb=createBombProp\(\)/);
  assert.match(game,/animateHeldAndFlyingBomb\(time,reduced\)/);
 });
