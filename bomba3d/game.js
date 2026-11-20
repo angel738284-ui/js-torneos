@@ -8,7 +8,7 @@ import {createBombSFX} from "./sounds.js?v=1";
 import {createArcadeSFX} from "./arcade-sfx.js?v=1";
 window.JSBombSFX=createBombSFX();
 window.JSArcadeSFX=createArcadeSFX();
-import {preloadOriginalModel,hasOriginalModel,createOriginalRubberActor} from "./imported.js?v=5";
+import {preloadOriginalModel,hasOriginalModel,createOriginalRubberActor} from "./imported.js?v=6";
 import {
  createBombProp,handWorldPosition,makePassAnimation,HAND_OFFSET,roundFuseProgress
 } from "./bomb-effects.js?v=3";
@@ -433,10 +433,10 @@ function animate(time){
      const phase=(seed%628)/100;
      const t=time*.001;
      const intensity=playingAction==="hold"?.55:1;
-     a.root.rotation.z=Math.sin(t*1.45+phase)*.048*intensity;
-     a.root.rotation.y=Math.sin(t*.82+phase)*.10*intensity;
-     a.root.position.x+=Math.sin(t*1.45+phase)*.045*intensity;
-     a.root.position.y+=Math.sin(t*2.15+phase)*.025*intensity;
+     a.root.rotation.z=Math.sin(t*1.45+phase)*.095*intensity;
+     a.root.rotation.y=Math.sin(t*.82+phase)*.15*intensity;
+     a.root.position.x+=Math.sin(t*1.45+phase)*.10*intensity;
+     a.root.position.y+=Math.sin(t*2.15+phase)*.045*intensity;
     }
    }
    animateHeldAndFlyingBomb(time,reduced);

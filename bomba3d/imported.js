@@ -157,16 +157,16 @@ export function createOriginalRubberActor(options={}){
   deadAmount=Math.max(0,deadAmount-.12);
   const dancing=action==="dance"||options.pose==="dance";
   const throwing=action==="throw",catching=action==="catch";
-  const idleSway=Math.sin(elapsed*1.9)*(dancing?.18:.085);
+  const idleSway=Math.sin(elapsed*1.55)*(dancing?.22:.16);
   // The GLB is unrigged, so throwing and catching use exaggerated
   // upper-body lean, not fabricated separate arm-bone animations.
   animatedRig.rotation.z=reduced?0:
    throwing?-.32+Math.sin(elapsed*10)*.07:
    catching?.19+Math.sin(elapsed*8)*.04:gripping?.045:idleSway;
   animatedRig.rotation.x=reduced?0:throwing?-.14:catching?.12:0;
-  animatedRig.position.y=reduced?0:Math.sin(elapsed*(dancing?7:2.55))*(dancing?.07:.045);
-  animatedRig.position.x=reduced?0:Math.sin(elapsed*1.55)*(dancing?.09:.055);
-  animatedRig.rotation.y=reduced?0:Math.sin(elapsed*1.6)*.09;
+  animatedRig.position.y=reduced?0:Math.sin(elapsed*(dancing?7:2.3))*(dancing?.09:.065);
+  animatedRig.position.x=reduced?0:Math.sin(elapsed*1.35)*(dancing?.12:.115);
+  animatedRig.rotation.y=reduced?0:Math.sin(elapsed*1.25)*.14;
  };
  const dispose=()=>{
   wardrobe.dispose();
