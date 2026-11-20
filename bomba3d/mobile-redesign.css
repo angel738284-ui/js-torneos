@@ -1,0 +1,31 @@
+/* Mobile-first play view: arena first, compact HUD and accessible floating communication. */
+@media(max-width:760px){
+ body{overflow-x:hidden}main{padding-left:6px!important;padding-right:6px!important;padding-bottom:100px!important}
+ header{padding:6px 10px!important}header small{display:none!important}
+ .hero{padding:2px 5px!important;margin:0 0 5px!important}.hero h1{font-size:17px!important;margin:2px 0!important}.hero p{display:none!important}.hero .phase{font-size:11px!important;padding:6px!important;margin:4px 0!important}
+ .bombaMainMenu{position:sticky!important;top:2px!important;z-index:30!important;margin:2px 0 6px!important;padding:4px!important;gap:5px!important;border-radius:12px!important}
+ .bombaMainMenu button{font-size:13px!important;min-height:38px!important;padding:6px!important;border-radius:9px!important}
+ #bombaGamePanel{padding:7px!important;border-radius:14px!important;overflow:visible!important}
+ #bombaGamePanel .hud{display:flex!important;flex-wrap:wrap!important;gap:5px!important;margin:0 0 5px!important;padding:5px!important;font-size:11px!important}
+ #bombaGamePanel .hud .timer{font-size:14px!important}
+ .bomb3dToolbar{padding:4px!important;margin:2px 0 5px!important;min-height:0!important;gap:4px!important;border-radius:10px!important}
+ .bomb3dToolbar #bomb3dStatus{font-size:10px!important}
+ .bomb3dToolbar .soundControls{display:flex!important;gap:5px!important;width:100%!important}
+ .bomb3dToolbar .soundControls button{flex:1!important;width:auto!important;min-width:0!important;min-height:31px!important;padding:5px!important;font-size:10px!important}
+ .bomb3dToolbar #bomb3dDemoThrow,.bomb3dToolbar #bomb3dDemoExplode{min-height:32px!important;padding:5px!important;font-size:11px!important}
+ #tableStage{width:100%!important;max-width:100%!important;margin:0!important;border-radius:16px!important;overflow:hidden!important}
+ #passControls{margin:8px 0 4px!important;padding:9px!important;border-radius:12px!important;gap:6px!important}
+ #passControls strong{font-size:12px!important}#passControls .passHelp{font-size:11px!important}
+ #passBomb{min-height:43px!important;padding:8px!important;font-size:14px!important}
+ #actionHint{font-size:10px!important;padding:5px!important;margin:3px 0!important}
+ /* Mic and chat live in a tiny fixed dock, never on top of the arena. */
+ #bombVoice{position:fixed!important;left:8px!important;bottom:calc(9px + env(safe-area-inset-bottom,0px))!important;z-index:65!important;width:132px!important;max-width:132px!important;margin:0!important;padding:5px!important;gap:3px!important;background:#102a3bf2!important;border:1px solid #4e8090!important;border-radius:16px!important;box-shadow:0 5px 20px #0008!important}
+ #bombVoice .voiceMode{gap:2px!important}#bombVoice .voiceMode button{font-size:9px!important;padding:4px 2px!important;min-height:24px!important;line-height:1.1!important}
+ #bombVoice .voiceMicRow{gap:8px!important}#bombVoice .voiceMic{width:43px!important;height:43px!important}#bombVoice .voiceMic svg{width:24px;height:24px}#bombVoice .voiceMute{width:32px!important;height:32px!important;font-size:16px!important}
+ #bombVoiceStatus{font-size:9px!important;line-height:1.15!important;max-height:26px!important;overflow:hidden!important}
+ #bombChat{position:fixed!important;right:8px!important;bottom:calc(9px + env(safe-area-inset-bottom,0px))!important;z-index:66!important;width:154px!important;max-width:calc(100vw - 154px)!important;margin:0!important;padding:5px!important;background:#102a3bf5!important;border-radius:14px!important;box-shadow:0 5px 20px #0008!important}
+ #bombChat summary{font-size:11px!important;padding:8px 4px!important;white-space:nowrap!important;list-style:none!important}#bombChat summary::-webkit-details-marker{display:none}#bombChat .bombChatHint{display:none!important}
+ #bombChat[open]{width:min(350px,calc(100vw - 16px))!important;max-width:calc(100vw - 16px)!important;bottom:calc(9px + env(safe-area-inset-bottom,0px))!important}
+ #bombChat[open] .bombChatMessages{height:min(34vh,220px)!important}#bombChat .bombChatForm input{font-size:13px!important}
+ #bombChat:not([open])>:not(summary){display:none!important}
+}
