@@ -18,7 +18,24 @@ const sphereGeometry=new THREE.SphereGeometry(1,16,12);
 const coneGeometry=new THREE.ConeGeometry(1,1,12);
 const boxGeometry=new THREE.BoxGeometry(1,1,1);
 const cylinderGeometry=new THREE.CylinderGeometry(1,1,1,28);
-const mat=(c,opts={})=>new THREE.MeshStandardMaterial({color:c,roughness:.68,metalness:.02,...opts});
+// Shared procedural woven texture: tiny GPU footprint even with 20 players.
+let fabricTexture=null;
+function clothTexture(){
+ if(fabricTexture)return fabricTexture;
+ const canvas=document.createElement('canvas');canvas.width=128;canvas.height=128;
+ const ctx=canvas.getContext('2d'),img=ctx.createImageData(128,128);
+ for(let y=0;y<128;y++)for(let x=0;x<128;x++){
+  const i=(y*128+x)*4,grain=((x*17+y*29+x*y*3)%13)-6;
+  const v=Math.max(205,Math.min(255,239+(x%4===0?-13:x%4===2?8:0)+(y%4===0?-12:y%4===2?8:0)+grain));
+  img.data[i]=img.data[i+1]=img.data[i+2]=v;img.data[i+3]=255;
+ }
+ ctx.putImageData(img,0,0);
+ fabricTexture=new THREE.CanvasTexture(canvas);fabricTexture.colorSpace=THREE.SRGBColorSpace;
+ fabricTexture.wrapS=fabricTexture.wrapT=THREE.RepeatWrapping;fabricTexture.anisotropy=2;
+ return fabricTexture;
+}
+const mat=(c,opts={})=>new THREE.MeshStandardMaterial({color:c,roughness:.83,metalness:0,...opts});
+const cloth=c=>mat(c,{map:clothTexture(),roughness:.92});
 function mesh(parent,geometry,material,name,pos=[0,0,0],scale=[1,1,1],rot=[0,0,0]){
  const object=new THREE.Mesh(geometry,material);
  object.name=name;
@@ -39,6 +56,7 @@ function makeShellGeometry(source,kind,bounds){
  const centerX=(baseMin.x+baseMax.x)*.5,centerZ=(baseMin.z+baseMax.z)*.5;
  const coords=[];
  const norm=[];
+ const uv=[];
  const count=idx?idx.count:position.count;
  const p=(i)=>[ (position.getX(i)-centerX)*factor,
                   (position.getY(i)-baseMin.y)*factor,
@@ -69,11 +87,13 @@ function makeShellGeometry(source,kind,bounds){
    const shift=kind==="shoes"?.025:.023;
    coords.push(x+nx*shift,y+ny*shift,z+nz*shift);
    norm.push(nx,ny,nz);
+   uv.push(x*6+3,y*6);
   }
  }
  const g=new THREE.BufferGeometry();
  g.setAttribute("position",new THREE.Float32BufferAttribute(coords,3));
  g.setAttribute("normal",new THREE.Float32BufferAttribute(norm,3));
+ g.setAttribute("uv",new THREE.Float32BufferAttribute(uv,2));
  g.computeBoundingSphere();
  // Sleeves deform with the original GLB arms, avoiding stiff clothing.
  if(kind==="sleeves"||kind==="shortSleeves")installTwoHandMorph(g,null,true);
@@ -104,8 +124,8 @@ export function dressOriginalRubber(root,rawAvatar,sourceGeometry,sourceBounds){
  group.name="JS_WARDROBE_3D";
  root.add(group);
  const own=(c,opts)=>{const m=mat(c,opts);materials.push(m);return m;};
- const main=own(safeColor(a.shirt,"#775de6"));
- const pant=own(safeColor(a.pants,"#273751"));
+ const main=cloth(safeColor(a.shirt,"#775de6"));materials.push(main);
+ const pant=cloth(safeColor(a.pants,"#273751"));materials.push(pant);
  const shoes=own(shoeColors[a.shoes]||shoeColors.white);
  const accent=own("#fff7e3");
  const dark=own("#243047");

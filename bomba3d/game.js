@@ -31,9 +31,9 @@ const supported=()=>typeof window.WebGLRenderingContext!=="undefined";
 function makeStage(parent,preview=false){
  const scene=new THREE.Scene();
  const renderer=new THREE.WebGLRenderer({
-  alpha:true,antialias:preview,powerPreference:"low-power"
+  alpha:true,antialias:true,powerPreference:"low-power"
  });
- renderer.setPixelRatio(Math.min(1.25,window.devicePixelRatio||1));
+ renderer.setPixelRatio(Math.min(preview?1.65:1.45,window.devicePixelRatio||1));
  renderer.setClearColor(0,0);
  renderer.outputColorSpace=THREE.SRGBColorSpace;
  renderer.toneMapping=THREE.ACESFilmicToneMapping;

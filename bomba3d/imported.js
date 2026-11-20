@@ -5,7 +5,7 @@
  */
 import * as THREE from "./vendor/three.module.js";
 import {GLTFLoader} from "./vendor/GLTFLoader.js";
-import {dressOriginalRubber} from "./wardrobe.js?v=4";
+import {dressOriginalRubber} from "./wardrobe.js?v=5";
 import {installTwoHandMorph,setTwoHandPose} from "./two-hand-pose.js";
 
 let sourcePromise=null,loaded=null;
@@ -157,16 +157,17 @@ export function createOriginalRubberActor(options={}){
   deadAmount=Math.max(0,deadAmount-.12);
   const dancing=action==="dance"||options.pose==="dance";
   const throwing=action==="throw",catching=action==="catch";
-  const idleSway=0;
+  const breathing=action==="idle"||action==="hold";
   // The GLB is unrigged, so throwing and catching use exaggerated
   // upper-body lean, not fabricated separate arm-bone animations.
-  animatedRig.rotation.z=reduced?0:
+  animatedRig.rotation.z=
    throwing?-.32+Math.sin(elapsed*10)*.07:
    catching?.19+Math.sin(elapsed*8)*.04:gripping?.045:idleSway;
-  animatedRig.rotation.x=reduced?0:throwing?-.14:catching?.12:0;
-  animatedRig.position.y=reduced?0:Math.sin(elapsed*(dancing?7:2.3))*(dancing?.09:.022);
-  animatedRig.position.x=reduced?0:Math.sin(elapsed*1.35)*(dancing?.12:.035);
-  animatedRig.rotation.y=reduced?0:Math.sin(elapsed*1.25)*(dancing?.14:.045);
+  animatedRig.rotation.x=throwing?-.14:catching?.12:0;
+  animatedRig.position.y=dancing?Math.sin(elapsed*7)*.07:0;
+  animatedRig.position.x=dancing?Math.sin(elapsed*1.35)*.09:0;
+  animatedRig.rotation.y=dancing?Math.sin(elapsed*1.25)*.10:0;
+  animatedRig.scale.y=breathing?1+Math.sin(elapsed*1.7)*.0035:1;
  };
  const dispose=()=>{
   wardrobe.dispose();
