@@ -237,6 +237,7 @@ select{width:100%;background:#25354d;border:1px solid #536a8f;border-radius:9px;
  .audioSliders input{grid-column:1/-1;width:100%;accent-color:#76efcf;min-height:26px}
  .audioSliders button{background:#31577a;min-height:42px}
  .bombVoice{padding:10px;border:1px solid #386d83;border-radius:12px;margin:10px 0;background:#102a3b;color:#e6f8ff}.bombVoiceButtons{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin:8px 0}.bombVoiceButtons button{min-width:0;padding:10px 5px;font-size:12px;border-radius:9px;background:#26526c;color:white;border:1px solid #497f92}.bombVoice small{font-size:11px;color:#b9d4df}
+ .bombChat{margin:12px 0 0;background:#102a3b;border:1px solid #3a627b;border-radius:13px;padding:9px;color:#e8f8ff}.bombChat summary{cursor:pointer;font-size:14px;font-weight:700;padding:7px;list-style-position:inside}.bombChatHint{float:right;font-size:10px;color:#aac5d2;font-weight:400}.bombChatCount{background:#e94b74;color:#fff;padding:2px 6px;border-radius:12px}.bombChatMessages{height:165px;overflow-y:auto;overflow-wrap:anywhere;background:#0c2031;border-radius:9px;padding:9px;font-size:12px}.bombChatLine{padding:5px 2px;border-bottom:1px solid #284255}.bombChatLine strong{color:#71e3c5}.bombChatForm{display:flex;gap:6px;margin-top:8px}.bombChatForm input{flex:1;min-width:0;font-size:14px;padding:10px;border:1px solid #44667e;border-radius:8px;background:#1b334a;color:#fff}.bombChatForm button{padding:9px 12px;border-radius:8px;background:#218d84;color:white;border:0}.bombChatForm button:disabled{opacity:.5}.bombChat small{color:#f4b8b8;font-size:11px}
 </style>
 <link rel="stylesheet" href="./bomba3d/game.css?v=5">
 <link rel="stylesheet" href="./bomba3d/wardrobe-ui.css?v=1">
@@ -285,6 +286,7 @@ select{width:100%;background:#25354d;border:1px solid #536a8f;border-radius:9px;
  <button type="button" id="passBomb" class="passBomb" disabled>💣 PASAR BOMBA</button>
 </div>
 <div id="actionHint" class="spectator" role="status">Preparando personajes…</div>
+<details id="bombChat" class="bombChat" open><summary>💬 Chat de la sala <span id="bombChatCount" class="bombChatCount" hidden>0</span><span class="bombChatHint">Tocá para minimizar</span></summary><div id="bombChatMessages" class="bombChatMessages" aria-live="polite"><p>Los mensajes aparecerán acá.</p></div><form id="bombChatForm" class="bombChatForm"><input id="bombChatInput" maxlength="180" autocomplete="off" aria-label="Mensaje al chat" placeholder="Escribí un mensaje…"/><button type="submit">Enviar</button></form><small id="bombChatStatus" role="status"></small></details>
 </section>
 <aside class="sidebar">
 <section class="panel controls avatarEditor" id="bombaDressPanel" hidden>
@@ -738,5 +740,6 @@ if(!/^[A-F0-9]{12}$/.test(code))showError("El enlace no tiene un código válido
 else{void identity().then(refresh);setInterval(()=>void refresh(),1400);setInterval(updateHud,90);}
 </script>
 <script type="module" src="./bomba3d/voice.js?v=1"></script>
+<script type="module" src="./bomba3d/chat.js?v=1"></script>
 </body>
 </html>
