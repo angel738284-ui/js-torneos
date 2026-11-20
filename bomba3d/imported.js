@@ -162,7 +162,7 @@ export function createOriginalRubberActor(options={}){
   // upper-body lean, not fabricated separate arm-bone animations.
   animatedRig.rotation.z=
    throwing?-.32+Math.sin(elapsed*10)*.07:
-   catching?.19+Math.sin(elapsed*8)*.04:gripping?.045:idleSway;
+   catching?.19+Math.sin(elapsed*8)*.04:gripping?.045:0;
   animatedRig.rotation.x=throwing?-.14:catching?.12:0;
   animatedRig.position.y=dancing?Math.sin(elapsed*7)*.07:0;
   animatedRig.position.x=dancing?Math.sin(elapsed*1.35)*.09:0;
