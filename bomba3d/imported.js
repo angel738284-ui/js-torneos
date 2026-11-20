@@ -6,7 +6,7 @@
 import * as THREE from "./vendor/three.module.js";
 import {GLTFLoader} from "./vendor/GLTFLoader.js";
 import {dressOriginalRubber} from "./wardrobe.js?v=5";
-import {installTwoHandMorph,setTwoHandPose} from "./two-hand-pose.js";
+import {installTwoHandMorph,setTwoHandPose,setHeadNod} from "./two-hand-pose.js";
 
 let sourcePromise=null,loaded=null;
 const tintedTextures=new Map();
@@ -144,7 +144,11 @@ export function createOriginalRubberActor(options={}){
   const gripping=action==="hold"||action==="catch";
   const target=gripping?1:action==="throw"?.02:0;
   gripPose+=(target-gripPose)*Math.min(1,Math.max(0,delta||0)*8);
-  setTwoHandPose(animatedRig,gripPose);
+  const calm=action==="idle";
+  const idlePhase=elapsed*1.35+(options.bodyColor3d||"").length*.31;
+  const armIdle=calm?.018*(.5+.5*Math.sin(idlePhase)):0;
+  setTwoHandPose(animatedRig,Math.max(gripPose,armIdle));
+  setHeadNod(animatedRig,calm?.5+.5*Math.sin(idlePhase*.65):0);
   grippingHands.visible=gripPose>.14||gripping;
   if(action==="death"){
    deadAmount=Math.min(1,deadAmount+Math.max(.045,(delta||.03)*1.8));
@@ -169,7 +173,7 @@ export function createOriginalRubberActor(options={}){
   animatedRig.position.x=dancing?Math.sin(elapsed*1.35)*.09:0;
   animatedRig.rotation.y=dancing?Math.sin(elapsed*1.25)*.10:0;
   // Shared gentle breathing, independent of costume and held bomb.
-  animatedRig.scale.y=1+Math.sin(elapsed*1.45)*.005;
+  animatedRig.scale.y=1+Math.sin(elapsed*1.45)*.002;
  };
  const dispose=()=>{
   wardrobe.dispose();
