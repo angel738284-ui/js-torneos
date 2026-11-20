@@ -289,6 +289,36 @@ export function onGameTransition(before,after){
  sender.action="throw";sender.until=now+Math.min(450,flight.duration*.58);
  receiver.action="catch";receiver.until=now+flight.duration+450;
 }
+// The demo never changes Supabase state. Show its locally simulated state
+// on the shared arena HUD instead of "Sala lista / Esperando inicio".
+let lastDemoHudUpdate=0;
+function updateDemoHud(now){
+ if(now-lastDemoHudUpdate<180)return;
+ lastDemoHudUpdate=now;
+ if(roomData?.estado!=="ready"||
+   !String(roomData?.titulo||"").startsWith("DEMO")||
+   !(demoRound||demoHolder||demoExplodedAt||demoChampionId))return;
+ const total=roomData.jugadores?.length||0;
+ const alive=Math.max(0,total-demoEliminated.size);
+ const isChampion=Boolean(demoChampionId);
+ const exploding=Boolean(demoExplodedAt);
+ const remaining=demoHolder&&demoFuseDeadlineAt>0
+   ?Math.max(0,Math.ceil((demoFuseDeadlineAt-now)/1000)):0;
+ const name=roomData.jugadores?.find(p=>p.id===
+   (isChampion?demoChampionId:exploding?demoVictimId:demoHolder))?.nombre;
+ const center=el("tableCenterName"),sub=el("tableCenterTimer"),mark=el("centerMark");
+ if(center)center.textContent=isChampion?("🏆 "+(name||"¡GANADOR!")):
+   exploding?"¡BOOM!":flight?"💣 EN EL AIRE":(name||"💣 BOMBA");
+ if(sub)sub.textContent=isChampion?"¡Fin de la DEMO!":
+   exploding?((name||"Jugador")+" eliminado · siguiente ronda"):
+   ("🔥 "+remaining+" s · ronda "+demoRound);
+ if(mark)mark.textContent=isChampion?"🏆":exploding?"💥":"💣";
+ const round=el("round"),count=el("alive"),timer=el("timer");
+ if(round)round.textContent="🎮 DEMO · Bomba Mortal JS Family · Ronda "+demoRound;
+ if(count)count.textContent=alive+" / "+total+" vivos";
+ if(timer){timer.textContent=isChampion?"FIN":exploding?"💥":remaining+" s";
+  timer.classList.toggle("urgent",!isChampion&&!exploding&&remaining<5);}
+}
 function animateHeldAndFlyingBomb(time,reduced){
  // Fictional demo: 20 seconds per round, two passes, one elimination.
  if(demoSecondPass&&time>=demoSecondPass.when&&!flight&&!demoPending&&!demoExplodedAt){
@@ -430,6 +460,7 @@ function animate(time){
     a.root.rotation.y=0;
    }
    animateHeldAndFlyingBomb(time,reduced);
+   updateDemoHud(time);
    arena.renderer.render(arena.scene,arena.camera);
   }
   if(studio){
