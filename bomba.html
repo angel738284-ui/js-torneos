@@ -251,7 +251,7 @@ select{width:100%;background:#25354d;border:1px solid #536a8f;border-radius:9px;
 <link rel="stylesheet" href="./bomba3d/wardrobe-mobile.css?v=1">
 <link rel="stylesheet" href="./bomba3d/mobile-redesign.css?v=2">
 
-<script type="module" src="./bomba3d/game.js?v=35"></script>
+<script type="module" src="./bomba3d/game.js?v=37"></script>
 <script defer src="./bomba3d/wardrobe-ui.js?v=3"></script>
 <script src="./config.js"></script>
 </head>
@@ -424,6 +424,7 @@ async function identity(){
   const result=await rpc("js_bomba_jugar",{p_code:code,p_access:personalToken,p_action:"soy"});
   me=result;el("yourName").textContent=result.nombre||"Jugador";
   for(const k of fields)el(k).value=avatarSafe(result.avatar)[k];
+  el("aura").value="none";
   el("save").disabled=false;preview();
   notice("✅ Tu avatar es editable. Guardá tus cambios para que todos los vean.");
  }catch(err){
@@ -432,12 +433,13 @@ async function identity(){
  }
 }
 function preview(){
+ el("aura").value="none";
  const avatar=Object.fromEntries(fields.map(k=>[k,el(k).value]));
  window.Bomb3D?.syncPreview(avatar);
  window.JSWardrobe?.sync?.();
 }
 for(const k of fields)el(k).addEventListener("change",preview);
-const wardrobeFields=["wear3d","bodyColor3d","topStyle","shirt","pattern","bottomStyle","pants","shoes","accessory","aura","pose"];
+const wardrobeFields=["wear3d","bodyColor3d","topStyle","shirt","pattern","bottomStyle","pants","shoes","accessory","pose"];
 el("avatarRandom").addEventListener("click",()=>{
  for(const k of wardrobeFields)el(k).value=allowed[k][Math.floor(Math.random()*allowed[k].length)];
  el("wear3d").value="yes";

@@ -61,8 +61,8 @@ export function rigRubber(model,bounds){
   joints[1].rotation.z=(idle?Math.sin(t*.7)*.018:0)+dance*Math.sin(t*3)*.055;
   joints[1].rotation.x=idle?Math.sin(t*.9)*.012:0;
   // Arm angles are deliberately restrained to protect the shoulder seam.
-  joints[2].rotation.z=(idle?Math.sin(t)*.012:0)+confidence*.10+dance*Math.sin(t*4)*.15;
-  joints[3].rotation.z=(idle?-Math.sin(t+.6)*.012:0)-wave*(.18+.10*Math.sin(t*7))-confidence*.12-dance*Math.sin(t*4+2)*.15;
+  joints[2].rotation.z=(idle?Math.sin(t)*.012:0)+confidence*.19+dance*Math.sin(t*4)*.15;
+  joints[3].rotation.z=(idle?-Math.sin(t+.6)*.012:0)-wave*(.38+.16*Math.sin(t*7))-confidence*.19-dance*Math.sin(t*4+2)*.15;
   joints[2].rotation.x=(action==='throw'?.15:0)+dance*Math.sin(t*4)*.08;
   joints[3].rotation.x=(action==='throw'?.15:0)+wave*.07+dance*Math.sin(t*4+2)*.08;
   joints[4].rotation.z=dance*Math.sin(t*3)*.055;

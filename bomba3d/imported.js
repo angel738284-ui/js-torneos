@@ -5,8 +5,8 @@
  */
 import * as THREE from "./vendor/three.module.js";
 import {GLTFLoader} from "./vendor/GLTFLoader.js";
-import {rigRubber} from "./skeleton.js";
-import {dressOriginalRubber} from "./wardrobe.js?v=5";
+import {rigRubber} from "./skeleton.js?v=3";
+import {dressOriginalRubber} from "./wardrobe.js?v=7";
 import {installTwoHandMorph,setTwoHandPose,setHeadNod} from "./two-hand-pose.js";
 
 let sourcePromise=null,loaded=null;

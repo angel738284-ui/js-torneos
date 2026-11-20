@@ -240,15 +240,7 @@ export function dressOriginalRubber(root,rawAvatar,sourceGeometry,sourceBounds){
    break;
   }
  }
- if(auraColors[a.aura]){
-  const glow=own(auraColors[a.aura],{
-   emissive:auraColors[a.aura],emissiveIntensity:.50,
-   transparent:true,opacity:.67,depthWrite:false
-  });
-  const geo=new THREE.TorusGeometry(.77,.035,8,40);
-  aura=mesh(group,geo,glow,"3d_aura",[0,.115,0],[1,1,1],[Math.PI/2,0,0]);
-  accessories.push(geo);
- }
+
  return {
   group,
   update:(elapsed,reduced)=>{
