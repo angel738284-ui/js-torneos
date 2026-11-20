@@ -13,7 +13,7 @@ export function createBombSFX(){
  let fuseClip=null,clipGain=null,clipStarted=false;
  async function loadClips(){
   if(!ctx)return;
-  for(const [kind,file] of [["fuse","mecha-hq.ogg"],["explosion","explosion.ogg"]]){
+  for(const [kind,file] of [["fuse","mecha-tnt-soft.ogg"],["explosion","explosion.ogg"]]){
    try{
     const response=await fetch("./bomba3d/audio/"+file,{cache:"force-cache"});
     if(!response.ok)continue;
@@ -103,10 +103,10 @@ export function createBombSFX(){
    if(!fuseClip){
     fuseClip=ctx.createBufferSource();fuseClip.buffer=clips.fuse;fuseClip.loop=true;
     clipGain=ctx.createGain();clipGain.gain.value=0;
-    clipGain.gain.setTargetAtTime(.38,ctx.currentTime,.10);
+    clipGain.gain.setTargetAtTime(.24,ctx.currentTime,.10);
     fuseClip.connect(clipGain);clipGain.connect(output);fuseClip.start();
    }
-   if(clipGain)clipGain.gain.setTargetAtTime(.35+.08*(1-clamp(progress)),ctx.currentTime,.15);
+   if(clipGain)clipGain.gain.setTargetAtTime(.22+.06*(1-clamp(progress)),ctx.currentTime,.15);
    if(hissGain)hissGain.gain.setTargetAtTime(0,ctx.currentTime,.02);
    fuseWasActive=true;
    return;
