@@ -8,7 +8,7 @@ import {createBombSFX} from "./sounds.js?v=9";
 import {createArcadeSFX} from "./arcade-sfx.js?v=4";
 window.JSBombSFX=createBombSFX();
 window.JSArcadeSFX=createArcadeSFX();
-import {preloadOriginalModel,hasOriginalModel,createOriginalRubberActor} from "./imported.js?v=20";
+import {preloadOriginalModel,hasOriginalModel,createOriginalRubberActor} from "./imported.js?v=21";
 import {
  createBombProp,handWorldPosition,makePassAnimation,HAND_OFFSET,roundFuseProgress
 } from "./bomb-effects.js?v=3";
@@ -511,8 +511,23 @@ export function set3DEnabled(){
   return false;
  }
 }
+export function getDemoState(){
+ const active=ready&&roomData?.estado==="ready"&&
+  String(roomData?.titulo||"").startsWith("DEMO")&&
+  Boolean(demoRound||demoHolder||demoExplodedAt||demoChampionId);
+ if(!active)return {active:false};
+ return {
+  active:true,round:demoRound,holderId:demoHolder,victimId:demoVictimId,
+  winnerId:demoChampionId,exploding:Boolean(demoExplodedAt),
+  inFlight:Boolean(flight),
+  remainingMs:demoHolder&&demoFuseDeadlineAt>0
+   ?Math.max(0,demoFuseDeadlineAt-performance.now()):0,
+  total:roomData.jugadores?.length||0,alive:Math.max(0,(roomData.jugadores?.length||0)-demoEliminated.size)
+ };
+}
 export function initBomb3D(){
- window.Bomb3D={syncRoom,syncPreview,onGameTransition,demoThrow,demoExplodeNow,set3DEnabled,isEnabled:()=>ready};
+ window.Bomb3D={syncRoom,syncPreview,onGameTransition,demoThrow,demoExplodeNow,
+  getDemoState,set3DEnabled,isEnabled:()=>ready};
  previewData=Object.fromEntries([...document.querySelectorAll(".avatarEditor select")].map(x=>[x.id,x.value]));
  set3DEnabled();
 }

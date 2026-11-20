@@ -251,7 +251,7 @@ select{width:100%;background:#25354d;border:1px solid #536a8f;border-radius:9px;
 <link rel="stylesheet" href="./bomba3d/wardrobe-mobile.css?v=1">
 <link rel="stylesheet" href="./bomba3d/mobile-redesign.css?v=2">
 
-<script type="module" src="./bomba3d/game.js?v=39"></script>
+<script type="module" src="./bomba3d/game.js?v=40"></script>
 <script defer src="./bomba3d/wardrobe-ui.js?v=3"></script>
 <script src="./config.js"></script>
 </head>
@@ -675,7 +675,28 @@ function updateHud(){
  if(!room)return;
  const timer=el("timer"),hint=el("actionHint");
  const centerTimer=el("tableCenterTimer");
- if(room.estado==="playing"){
+ // DEMO remains server-side "ready": its timer/holder/winner are local.
+ // Override the server waiting UI using the same state as the 3D animation.
+ const demo=room.estado==="ready"?window.Bomb3D?.getDemoState?.():null;
+ if(demo?.active){
+  const player=id=>room.jugadores?.find(p=>p.id===id)?.nombre||"Jugador";
+  const name=demo.winnerId?player(demo.winnerId):
+    demo.exploding?player(demo.victimId):demo.holderId?player(demo.holderId):"";
+  const seconds=Math.ceil(demo.remainingMs/1000);
+  el("round").textContent="🎮 DEMO · Bomba Mortal JS Family · Ronda "+demo.round;
+  el("alive").textContent=demo.alive+" / "+demo.total+" vivos";
+  timer.textContent=demo.winnerId?"FIN":demo.exploding?"💥":seconds+" s";
+  timer.classList.toggle("urgent",!demo.winnerId&&!demo.exploding&&seconds<=4);
+  el("tableCenterName").textContent=demo.winnerId?"🏆 "+name:
+    demo.exploding?"¡BOOM!":demo.inFlight?"💣 EN EL AIRE":name;
+  if(centerTimer)centerTimer.textContent=demo.winnerId?"¡Fin de la DEMO!":
+    demo.exploding?name+" eliminado · próxima ronda":
+    "🔥 "+seconds+" s · ronda "+demo.round;
+  el("centerMark").textContent=demo.winnerId?"🏆":demo.exploding?"💥":"💣";
+  hint.textContent=demo.winnerId?"🏆 ¡Tenemos ganador en la DEMO!":
+    demo.exploding?"💥 Eliminado: "+name:
+    "🎬 Prueba con bots · no afecta una partida real.";
+ }else if(room.estado==="playing"){
   const remain=remainingMs();
   timer.textContent=(remain/1000).toFixed(1)+" s";
   if(centerTimer)centerTimer.textContent="💥 "+timer.textContent;

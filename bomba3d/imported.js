@@ -154,23 +154,8 @@ export function createOriginalRubberActor(options={}){
  loaded.gltf.scene.traverse(o=>{if(o.isMesh&&!baseMesh)baseMesh=o;});
  if(!baseMesh)throw Error("El GLB no tiene una malla para diseñar ropa");
  const wardrobe=dressOriginalRubber(animatedRig,options,baseMesh.geometry,originalBounding);
- const palmMat=new THREE.MeshStandardMaterial({
-  color:options.bodyColor3d||defaultRed,roughness:.4,metalness:.02
- });
- const palmGeometry=new THREE.SphereGeometry(1,14,10);
- const grippingHands=new THREE.Group();
- grippingHands.name="JS_BOTH_HANDS_GRIPPING_HUGE_BOMB";
- // The source GLB arms are morphed forward, and the small rounded
- // fingertip/mitten tips make contact with both sides of the bomb.
- for(const side of [-1,1]){
-  const palm=new THREE.Mesh(palmGeometry,palmMat);
-  palm.name=side<0?"left_hand_gripping_bomb":"right_hand_gripping_bomb";
-  palm.position.set(side*.51,1.12,.91);
-  palm.scale.set(.14,.17,.14);
-  grippingHands.add(palm);
- }
- grippingHands.visible=false;
- animatedRig.add(grippingHands);
+ // Don't add palm-helper geometry: the animated GLB already contains two
+ // real arms/hands. Extra palm spheres looked like a second pair of arms.
  let elapsed=0,deadAmount=0;
  const update=(delta,action="idle",reduced=false)=>{
   const dt=Math.min(.10,Math.max(0,delta||0));
@@ -179,8 +164,6 @@ export function createOriginalRubberActor(options={}){
   const name=actionNames[action]||"Esperando";
   play(name);
   mixer.update(reduced?0:dt);
-  const holding=action==="hold"||action==="catch"||action==="receive";
-  grippingHands.visible=holding;
   // All spine bending is weighted in the source GLB, not a whole-torso morph.
   // One-shot defeat is held at the end so eliminated players stay down.
   if(name==="Explotar_Caer"){
@@ -197,9 +180,6 @@ export function createOriginalRubberActor(options={}){
  const dispose=()=>{
   mixer.stopAllAction();mixer.uncacheRoot(original);
   wardrobe.dispose();
-  palmMat.dispose();
-  // Palm geometry remains shared with this actor only.
-  palmGeometry.dispose();
   for(const m of materials)m.dispose();
  };
  return {root,handAnchor:animatedRig,update,dispose,costume:"plain",kind:"uploaded",alive:true,mixer};
