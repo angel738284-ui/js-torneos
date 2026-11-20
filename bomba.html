@@ -215,6 +215,19 @@ select{width:100%;background:#25354d;border:1px solid #536a8f;border-radius:9px;
  .flyingBomb,.bombExplosion,.tableStage.shock,.tableStage.shock:after{animation:none!important}
 }
 
+ [hidden]{display:none!important}
+ .bombaMainMenu{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:0 0 12px;position:sticky;top:4px;z-index:35;padding:8px;background:#0c2035ed;border:1px solid #34516c;border-radius:18px;backdrop-filter:blur(8px)}
+ .bombaMainMenu button{min-height:56px;border:1px solid #456783;border-radius:12px;background:#22374e;color:#e7f3ff;font-size:18px;font-weight:800}
+ .bombaMainMenu button.active{background:linear-gradient(110deg,#167b78,#4e508c);border-color:#75e4c9;box-shadow:0 0 0 1px #75e4c955}
+ .mainGrid{display:block}
+ .mainGrid>.arena,.mainGrid>.sidebar{width:100%;min-width:0}
+ .mainGrid>.sidebar{display:block}
+ .mainGrid>.sidebar>.panel{margin-bottom:10px}
+ .hero{padding-bottom:8px}
+ .hero p{display:none}
+ .avatarEditor{max-width:780px;margin-inline:auto}
+ .avatarEditor .editorNote{display:none}
+ .bomb3dToolbar .soundControls #openWardrobe{display:none}
  .bombAudioMixer{width:100%;background:#142f43;border:1px solid #3d7794;border-radius:12px;padding:9px 12px;margin:7px 0}
  .bombAudioMixer summary{font-size:12px;font-weight:800;cursor:pointer;min-height:26px}
  .audioSliders{display:grid;gap:10px;padding:12px 3px 3px}
@@ -235,15 +248,19 @@ select{width:100%;background:#25354d;border:1px solid #536a8f;border-radius:9px;
 <main>
 <section class="hero"><h1>💥 Bomba Mortal</h1><p>Todos juegan en la misma sala. ¡Pasá la bomba antes de que explote! El último sobreviviente gana.</p><div class="phase" id="phase" role="status" aria-live="polite">Conectando con el juego…</div></section>
 <div id="error" class="error" role="alert" hidden></div>
+<nav id="bombaMainMenu" class="bombaMainMenu" aria-label="Menú del juego" hidden>
+ <button id="menuPlay" type="button" class="active" aria-pressed="true">🎮 Jugar</button>
+ <button id="menuDress" type="button" aria-pressed="false">👕 Vestirse</button>
+</nav>
 <div id="content" class="mainGrid" hidden>
-<section class="panel arena">
+<section class="panel arena" id="bombaGamePanel">
 <div id="winner" class="winner" hidden></div>
 <div class="hud"><b id="round">🎮 Sala JS Family</b><span id="alive" class="pill">— jugadores</span><span id="timer" class="timer">00:00</span></div>
 <div class="bomb3dToolbar">
  <span id="bomb3dStatus" role="status" aria-live="polite">⏳ Cargando personajes GLB y ropa 3D…</span>
  <button type="button" id="bomb3dDemoThrow" hidden>🎬 Jugar 8 bots · hasta un ganador</button>
  <button type="button" id="bomb3dDemoExplode" hidden disabled>💥 Explotar ahora</button>
- <div class="soundControls"><button type="button" id="bombSoundToggle" aria-pressed="true">🔊 Sonidos activados</button><button type="button" id="openWardrobe">👕 Vestir muñeco</button></div>
+ <div class="soundControls"><button type="button" id="bombSoundToggle" aria-pressed="true">🔊 Sonidos activados</button><button type="button" id="openWardrobe">👕 Vestirse</button></div>
  <details id="bombAudioMixer" class="bombAudioMixer"><summary>🎛️ Mezclador de sonido · efectos, música y voces</summary>
  <div class="audioSliders">
  <label>💥 Efectos <output data-level="effects">78%</output><input type="range" data-mix="effects" min="0" max="100" step="1" value="78"></label>
@@ -273,7 +290,7 @@ select{width:100%;background:#25354d;border:1px solid #536a8f;border-radius:9px;
 <div id="actionHint" class="spectator" role="status">Preparando personajes…</div>
 </section>
 <aside class="sidebar">
-<section class="panel controls avatarEditor">
+<section class="panel controls avatarEditor" id="bombaDressPanel" hidden>
 <div class="avatarHero"><div><h2>🎨 Vestidor de muñequitos 3D</h2>
 <small>Un solo modelo GLB · armá tu ropa y accesorios</small></div><span class="edition">3D</span></div>
 <div class="editorHeader"><strong>Tu estilo</strong><span id="yourName" class="muted small">Espectador</span></div>
@@ -303,11 +320,39 @@ select{width:100%;background:#25354d;border:1px solid #536a8f;border-radius:9px;
 <div id="notice" role="status">Para guardar tu look, abrí tu enlace personal de JS Guardian.</div>
 <div class="editorNote">Todos usan el mismo muñeco GLB que elegiste. La ropa y los accesorios se construyen en 3D para este modelo. Las opciones antiguas quedan guardadas, pero ya no se muestran.</div>
 </section>
-<section class="panel"><h2>📣 Lo que está pasando</h2><ul id="events" class="events"></ul><button id="share" type="button" style="width:100%;margin-top:12px">🔗 Compartir sala pública</button></section>
+<section class="panel" id="bombaEventsPanel" hidden><h2>📣 Lo que está pasando</h2><ul id="events" class="events"></ul><button id="share" type="button" style="width:100%;margin-top:12px">🔗 Compartir sala pública</button></section>
 </aside>
 </div>
 <p class="footer">Juego organizado por JS Guardian · Los IDs y teléfonos de WhatsApp nunca aparecen en esta página · Solo tu enlace personal habilita controles</p>
 </main>
+<script>
+(function(){
+ "use strict";
+ const byId=id=>document.getElementById(id);
+ let current="play";
+ function show(tab){
+  current=tab==="dress"?"dress":"play";
+  const dressing=current==="dress";
+  byId("bombaGamePanel").hidden=dressing;
+  byId("bombaDressPanel").hidden=!dressing;
+  byId("bombaEventsPanel").hidden=true;
+  byId("menuPlay").classList.toggle("active",!dressing);
+  byId("menuDress").classList.toggle("active",dressing);
+  byId("menuPlay").setAttribute("aria-pressed",String(!dressing));
+  byId("menuDress").setAttribute("aria-pressed",String(dressing));
+  if(dressing)window.JSWardrobe?.sync?.();
+  byId("bombaMainMenu").scrollIntoView({behavior:"smooth",block:"start"});
+ }
+ byId("menuPlay").addEventListener("click",()=>show("play"));
+ byId("menuDress").addEventListener("click",()=>show("dress"));
+ byId("openWardrobe").addEventListener("click",()=>show("dress"));
+ window.JSBombaShowMenu=show;
+ const observer=new MutationObserver(()=>{
+  byId("bombaMainMenu").hidden=byId("content").hidden;
+ });
+ observer.observe(byId("content"),{attributes:true,attributeFilter:["hidden"]});
+})();
+</script>
 <script>
 "use strict";
 const cfg=window.JS_CONFIG||{}, params=new URLSearchParams(location.search);
