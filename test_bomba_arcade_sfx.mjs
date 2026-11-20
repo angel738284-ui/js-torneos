@@ -14,7 +14,7 @@ test("all eight arcade effects and mixer integrated",()=>{
  }
  for(const key of ["effects","music","voices"])assert.match(page,new RegExp('data-mix="'+key+'"'));
  assert.match(page,/id="bombAudioTest"/);
- assert.match(page,/game\.js\?v=16/);
+ assert.match(page,/game\.js\?v=17/);
  assert.match(game,/createArcadeSFX/);
  assert.match(game,/JSArcadeSFX\?\.whoosh/);
  assert.match(game,/JSArcadeSFX\?\.catchBomb/);
