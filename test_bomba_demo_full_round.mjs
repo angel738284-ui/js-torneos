@@ -161,7 +161,7 @@ test("HTML provides separate 20s test and manual explosion controls with existin
  assert.match(game,/demoExplodedAt=time/);
  assert.match(game,/actor\.action="death"/);
  assert.match(game,/demoFuseDeadlineAt=now\+DEMO_FULL_DURATION_MS/);
- assert.match(page,/bomba3d\/game\.js\?v=15/);
+ assert.match(page,/bomba3d\/game\.js\?v=16/);
  assert.match(page,/p_action:"pasar",p_target:target\.id/);
 });
 

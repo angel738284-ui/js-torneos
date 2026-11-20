@@ -84,5 +84,5 @@ test("Giant bomb stays in both hands before launch, then flies in a bigger arc",
  assert.match(game,/actor\.bomb\.root\.position\.set\(\.\.\.HAND_OFFSET\)/);
  assert.match(game,/projectile\.root\.position\.copy\(flight\.point\(time\)\)/);
  assert.match(page,/Jugar 8 bots · hasta un ganador/);
- assert.match(page,/bomba3d\/game\.js\?v=15/);
+ assert.match(page,/bomba3d\/game\.js\?v=16/);
 });

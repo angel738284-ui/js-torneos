@@ -24,7 +24,24 @@ let demoSecondPass=null,demoVictimId=null,demoExplodedAt=0,demoFinishedAt=0;
 const demoEliminated=new Set();
 let demoRound=0,demoChampionId=null;
 const DEMO_FULL_DURATION_MS=20000,DEMO_FALL_HOLD_MS=4600;
-const reducedMotion=()=>Boolean(window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches);
+const motionKey="js-bomba-character-motion-v1";
+let motionChoice="auto";
+try{motionChoice=localStorage.getItem(motionKey)||"auto";}catch{}
+const reducedMotion=()=>motionChoice==="on"?false:motionChoice==="off"?true:Boolean(window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches);
+function syncMotionButton(){
+ const button=el("bomb3dMotionToggle");if(!button)return;
+ const active=!reducedMotion();
+ button.textContent=active?"🕺 Movimiento: ACTIVADO":"🧍 Movimiento: DESACTIVADO";
+ button.setAttribute("aria-pressed",String(active));
+}
+function initMotionButton(){
+ syncMotionButton();
+ el("bomb3dMotionToggle")?.addEventListener("click",()=>{
+  motionChoice=reducedMotion()?"on":"off";
+  try{localStorage.setItem(motionKey,motionChoice);}catch{}
+  syncMotionButton();
+ });
+}
 const status=text=>{const node=el("bomb3dStatus");if(node)node.textContent=text;};
 const supported=()=>typeof window.WebGLRenderingContext!=="undefined";
 
@@ -475,7 +492,7 @@ export function set3DEnabled(){
    previewStamp="";
    syncPreview(previewData);
    if(!frameId)frameId=requestAnimationFrame(animate);
-   status("🟢 Modelo GLB listo · ropa y accesorios en 3D");
+   status("🟢 Modelo GLB listo · ropa y accesorios en 3D"+(reducedMotion()?" · movimiento reducido por configuración":" · animaciones activas"));
   }).catch(error=>{
    console.warn("No se pudo cargar el GLB original:",error);
    disposeStages();
@@ -493,6 +510,7 @@ export function set3DEnabled(){
 export function initBomb3D(){
  window.Bomb3D={syncRoom,syncPreview,onGameTransition,demoThrow,demoExplodeNow,set3DEnabled,isEnabled:()=>ready};
  previewData=Object.fromEntries([...document.querySelectorAll(".avatarEditor select")].map(x=>[x.id,x.value]));
+ initMotionButton();
  set3DEnabled();
 }
 initBomb3D();
