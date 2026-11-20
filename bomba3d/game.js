@@ -425,6 +425,19 @@ function animate(time){
     const isHolder=holderId===id&&a.alive&&!flight;
     const playingAction=isHolder&&a.action==="idle"?"hold":a.action;
     a.update(seconds,playingAction,reduced);
+    // Gentle idle sway: each character moves on a slightly different rhythm.
+    // Reset every frame so it never accumulates or disrupts throws/falls.
+    a.root.rotation.z=0;
+    if(a.alive&&!reduced&&(playingAction==="idle"||playingAction==="hold")){
+     const seed=Array.from(String(id)).reduce((n,ch)=>((n*31+ch.charCodeAt(0))>>>0),7);
+     const phase=(seed%628)/100;
+     const t=time*.001;
+     const intensity=playingAction==="hold"?.55:1;
+     a.root.rotation.z=Math.sin(t*1.45+phase)*.048*intensity;
+     a.root.rotation.y=Math.sin(t*.82+phase)*.10*intensity;
+     a.root.position.x+=Math.sin(t*1.45+phase)*.045*intensity;
+     a.root.position.y+=Math.sin(t*2.15+phase)*.025*intensity;
+    }
    }
    animateHeldAndFlyingBomb(time,reduced);
    arena.renderer.render(arena.scene,arena.camera);

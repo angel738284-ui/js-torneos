@@ -117,7 +117,7 @@ test("Held and flying bomb use the same synchronized percentage",()=>{
 });
 test("Renderer uses HUD server offset and DEMO has its own countdown",()=>{
  assert.match(page,/window\.Bomb3D\?\.syncRoom\(room,offset\)/);
- assert.match(page,/bomba3d\/game\.js\?v=13/);
+ assert.match(page,/bomba3d\/game\.js\?v=14/);
  assert.match(game,/roundFuseProgress\(roomData,Date\.now\(\)\+serverClockOffset\)/);
  assert.match(game,/actor\.bomb\.update\(time,reduced,fuseProgress\)/);
  assert.match(game,/projectile\.update\(time,reduced,fuseProgress\)/);

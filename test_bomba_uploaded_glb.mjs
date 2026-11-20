@@ -79,7 +79,7 @@ test("Three.js GLTFLoader bundle and all local module dependencies import",()=>{
  assert.ok(statSync(new URL("./bomba3d/utils/BufferGeometryUtils.js",import.meta.url)).size>10000);
 });
 test("Bomba Mortal game uses only the uploaded GLB with a 3D wardrobe",()=>{
- assert.match(page,/bomba3d\/game\.js\?v=13/);
+ assert.match(page,/bomba3d\/game\.js\?v=14/);
  assert.match(game,/preloadOriginalModel\(\)/);
  assert.match(game,/createOriginalRubberActor\(avatar\)/);
  assert.match(game,/studio\.actor=createOriginalRubberActor\(avatar\)/);
