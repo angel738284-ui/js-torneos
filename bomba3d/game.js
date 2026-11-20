@@ -24,7 +24,7 @@ let demoSecondPass=null,demoVictimId=null,demoExplodedAt=0,demoFinishedAt=0;
 const demoEliminated=new Set();
 let demoRound=0,demoChampionId=null;
 const DEMO_FULL_DURATION_MS=20000,DEMO_FALL_HOLD_MS=4600;
-const reducedMotion=()=>true; // No idle movement.
+const reducedMotion=()=>window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches??false;
 const status=text=>{const node=el("bomb3dStatus");if(node)node.textContent=text;};
 const supported=()=>typeof window.WebGLRenderingContext!=="undefined";
 
