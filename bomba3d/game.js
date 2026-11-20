@@ -5,7 +5,9 @@
  */
 import * as THREE from "./vendor/three.module.js";
 import {createBombSFX} from "./sounds.js?v=1";
+import {createArcadeSFX} from "./arcade-sfx.js?v=1";
 window.JSBombSFX=createBombSFX();
+window.JSArcadeSFX=createArcadeSFX();
 import {preloadOriginalModel,hasOriginalModel,createOriginalRubberActor} from "./imported.js?v=5";
 import {
  createBombProp,handWorldPosition,makePassAnimation,HAND_OFFSET,roundFuseProgress
@@ -215,12 +217,14 @@ function startDemoRound(now){
  const living=availableDemoPlayers();
  if(living.length<=1){
   demoChampionId=living[0]?.id||null;
+  window.JSArcadeSFX?.markWinner?.(demoChampionId);
   demoHolder=null;demoPending=null;demoSecondPass=null;
   demoFuseStartAt=0;demoFuseDeadlineAt=0;demoEndsAt=0;
   syncDemoCards();
   return false;
  }
  demoRound++;
+ window.JSArcadeSFX?.markRound?.("demo-"+demoRound,true);
  const firstIndex=(demoRound-1)%living.length;
  const first=living[firstIndex];
  const second=living[(firstIndex+1)%living.length];
@@ -240,6 +244,7 @@ export function demoThrow(){
     !String(roomData.titulo||"").startsWith("DEMO")||
     flight||demoPending||demoHolder||demoExplodedAt)return false;
  resetDemoVisuals();
+ window.JSArcadeSFX?.markWinner?.(null);
  return startDemoRound(performance.now());
 }
 /** Speed up the CURRENT demo round, not the real multiplayer timer. */
@@ -253,9 +258,10 @@ export function demoExplodeNow(){
 }
 export function onGameTransition(before,after){
  if(!ready||!before||!after)return;
+ if(after.estado==="finished"&&after.ganador)window.JSArcadeSFX?.markWinner?.(after.ganador);
  const old=new Map((before.jugadores||[]).map(p=>[p.id,p]));
  const newDeaths=(after.jugadores||[]).filter(p=>old.get(p.id)?.vivo&&!p.vivo);
- if(newDeaths.length)window.JSBombSFX?.playExplosion?.();
+ if(newDeaths.length){window.JSBombSFX?.playExplosion?.();window.JSArcadeSFX?.explosion?.();}
  for(const p of newDeaths){
   const actor=actors.get(p.id);
   if(actor){actor.alive=false;actor.action="death";}
@@ -279,6 +285,7 @@ export function onGameTransition(before,after){
   start:origin,end:destination,startTime:now
  });
  window.JSBombSFX?.playThrow?.();
+ window.JSArcadeSFX?.whoosh?.();window.JSArcadeSFX?.grunt?.();
  sender.action="throw";sender.until=now+Math.min(450,flight.duration*.58);
  receiver.action="catch";receiver.until=now+flight.duration+450;
 }
@@ -297,6 +304,7 @@ function animateHeldAndFlyingBomb(time,reduced){
    });
    demoHolder=recipient.playerId;
    window.JSBombSFX?.playThrow?.();
+   window.JSArcadeSFX?.whoosh?.();window.JSArcadeSFX?.grunt?.();
    sender.action="throw";sender.until=time+420;
    recipient.action="catch";recipient.until=time+flight.duration+450;
   }
@@ -314,6 +322,7 @@ function animateHeldAndFlyingBomb(time,reduced){
   demoExplodedAt=time;
   demoFinishedAt=time+DEMO_FALL_HOLD_MS;
   window.JSBombSFX?.playExplosion?.();
+  window.JSArcadeSFX?.explosion?.();
   window.JSBombDemoExplosion?.(demoVictimId);
  }
  if(demoExplodedAt&&time>=demoFinishedAt){
@@ -326,6 +335,13 @@ function animateHeldAndFlyingBomb(time,reduced){
   ?Math.max(0,Math.min(1,(demoFuseDeadlineAt-time)/(demoFuseDeadlineAt-demoFuseStartAt)))
   :roundFuseProgress(roomData,Date.now()+serverClockOffset);
  const current=demoHolder||(roomData?.estado==="playing"?roomData.bomba_de:null);
+ const activeRound=Boolean(current&&!demoExplodedAt);
+ const remainSeconds=demoHolder&&demoFuseDeadlineAt?Math.max(0,(demoFuseDeadlineAt-time)/1000):
+  Math.max(0,(Date.parse(roomData?.vencimiento||0)-(Date.now()+serverClockOffset))/1000);
+ const roundKey=demoHolder?"demo-"+demoRound:"real-"+String(roomData?.ronda||0);
+ if(!demoHolder)window.JSArcadeSFX?.markRound?.(roundKey,roomData?.estado==="playing"&&activeRound);
+ window.JSArcadeSFX?.countdown?.(remainSeconds,activeRound,roundKey);
+ window.JSArcadeSFX?.updateMusic?.(activeRound,remainSeconds);
  window.JSBombSFX?.setFuseActive?.(Boolean(current&&!flight&&!demoExplodedAt),fuseProgress);
  for(const [id,actor] of actors){
   if(actor.bomb){
@@ -372,6 +388,7 @@ function animateHeldAndFlyingBomb(time,reduced){
   const recipient=actors.get(flight.toId);
   if(recipient?.alive){recipient.action="catch";recipient.until=time+350;}
   flight=null;
+  window.JSArcadeSFX?.catchBomb?.();
   projectile.root.visible=false;
   if(recipient?.bomb&&current===recipient.playerId){
    recipient.bomb.root.visible=true;

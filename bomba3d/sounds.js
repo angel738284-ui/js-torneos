@@ -8,7 +8,7 @@ export function createBombSFX(){
  const STORE="js-bomba-sonidos-v1";
  let enabled=true;
  try{enabled=localStorage.getItem(STORE)!=="off";}catch{}
- let ctx=null,noise=null,hiss=null,hissGain=null,lastHiss=0,fuseWasActive=false;
+ let ctx=null,noise=null,hiss=null,hissGain=null,lastHiss=0,fuseWasActive=false,output=null;
  const clips={fuse:null,explosion:null};
  let fuseClip=null,clipGain=null,clipStarted=false;
  async function loadClips(){
@@ -28,6 +28,8 @@ export function createBombSFX(){
   try{
    if(!ctx){
     ctx=new Ctx();
+    output=ctx.createGain();output.connect(ctx.destination);
+    const n=window.JSArcadeSFX?.getMix?.().effects;output.gain.value=Number.isFinite(n)?Math.max(0,Math.min(1,n/100)):1;
     const seconds=2,rate=ctx.sampleRate;
     noise=ctx.createBuffer(1,Math.round(rate*seconds),rate);
     const data=noise.getChannelData(0);
@@ -53,7 +55,7 @@ export function createBombSFX(){
   amp.gain.setValueAtTime(.0001,t);
   amp.gain.exponentialRampToValueAtTime(Math.max(.0002,volume),t+.015);
   amp.gain.exponentialRampToValueAtTime(.0001,t+duration);
-  source.connect(filter);filter.connect(amp);amp.connect(ctx.destination);
+  source.connect(filter);filter.connect(amp);amp.connect(output);
   source.start(t);source.stop(t+duration+.03);
   source.onended=()=>{source.disconnect();filter.disconnect();amp.disconnect();};
  }
@@ -66,7 +68,7 @@ export function createBombSFX(){
   gain.gain.setValueAtTime(.0001,t);
   gain.gain.exponentialRampToValueAtTime(Math.max(.0002,volume),t+.012);
   gain.gain.exponentialRampToValueAtTime(.0001,t+duration);
-  osc.connect(gain);gain.connect(ctx.destination);
+  osc.connect(gain);gain.connect(output);
   osc.start(t);osc.stop(t+duration+.02);
   osc.onended=()=>{osc.disconnect();gain.disconnect();};
  }
@@ -76,7 +78,7 @@ export function createBombSFX(){
   const hi=ctx.createBiquadFilter();hi.type="highpass";hi.frequency.value=1100;
   const lo=ctx.createBiquadFilter();lo.type="lowpass";lo.frequency.value=7200;
   const gain=ctx.createGain();gain.gain.value=0;
-  source.connect(hi);hi.connect(lo);lo.connect(gain);gain.connect(ctx.destination);
+  source.connect(hi);hi.connect(lo);lo.connect(gain);gain.connect(output);
   source.start();
   hiss={source,hi,lo,gain};hissGain=gain;
  }
@@ -91,7 +93,7 @@ export function createBombSFX(){
   if(!running()||!buffer)return false;
   const src=ctx.createBufferSource(),gain=ctx.createGain();
   src.buffer=buffer;gain.gain.value=volume;
-  src.connect(gain);gain.connect(ctx.destination);
+  src.connect(gain);gain.connect(output);
   src.start();src.onended=()=>{src.disconnect();gain.disconnect();};
   return true;
  }
@@ -155,6 +157,8 @@ export function createBombSFX(){
  }
  function bind(){
   updateButton();
+  function updateMix(){if(!output)return;const n=window.JSArcadeSFX?.getMix?.().effects;output.gain.value=Number.isFinite(n)?Math.max(0,Math.min(1,n/100)):1;}
+  document.addEventListener("bomb-mix-change",updateMix);
   document.getElementById("bombSoundToggle")?.addEventListener("click",()=>{
    setEnabled(!enabled);
   });

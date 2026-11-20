@@ -215,11 +215,18 @@ select{width:100%;background:#25354d;border:1px solid #536a8f;border-radius:9px;
  .flyingBomb,.bombExplosion,.tableStage.shock,.tableStage.shock:after{animation:none!important}
 }
 
+ .bombAudioMixer{width:100%;background:#142f43;border:1px solid #3d7794;border-radius:12px;padding:9px 12px;margin:7px 0}
+ .bombAudioMixer summary{font-size:12px;font-weight:800;cursor:pointer;min-height:26px}
+ .audioSliders{display:grid;gap:10px;padding:12px 3px 3px}
+ .audioSliders label{display:grid;grid-template-columns:1fr auto;gap:6px;font-size:12px;font-weight:750}
+ .audioSliders output{color:#94ffe2;font-variant-numeric:tabular-nums}
+ .audioSliders input{grid-column:1/-1;width:100%;accent-color:#76efcf;min-height:26px}
+ .audioSliders button{background:#31577a;min-height:42px}
 </style>
 <link rel="stylesheet" href="./bomba3d/game.css?v=5">
 <link rel="stylesheet" href="./bomba3d/wardrobe-ui.css?v=1">
 
-<script type="module" src="./bomba3d/game.js?v=12"></script>
+<script type="module" src="./bomba3d/game.js?v=13"></script>
 <script defer src="./bomba3d/wardrobe-ui.js?v=1"></script>
 <script src="./config.js"></script>
 </head>
@@ -237,6 +244,13 @@ select{width:100%;background:#25354d;border:1px solid #536a8f;border-radius:9px;
  <button type="button" id="bomb3dDemoThrow" hidden>🎬 Jugar 8 bots · hasta un ganador</button>
  <button type="button" id="bomb3dDemoExplode" hidden disabled>💥 Explotar ahora</button>
  <div class="soundControls"><button type="button" id="bombSoundToggle" aria-pressed="true">🔊 Sonidos activados</button><button type="button" id="openWardrobe">👕 Vestir muñeco</button></div>
+ <details id="bombAudioMixer" class="bombAudioMixer"><summary>🎛️ Mezclador de sonido · efectos, música y voces</summary>
+ <div class="audioSliders">
+ <label>💥 Efectos <output data-level="effects">78%</output><input type="range" data-mix="effects" min="0" max="100" step="1" value="78"></label>
+ <label>🎵 Música <output data-level="music">35%</output><input type="range" data-mix="music" min="0" max="100" step="1" value="35"></label>
+ <label>🗣️ Voces / esfuerzo <output data-level="voices">45%</output><input type="range" data-mix="voices" min="0" max="100" step="1" value="45"></label>
+ <button type="button" id="bombAudioTest">▶ Probar sonidos arcade</button>
+ </div></details>
  <small id="bomb3dDemoStatus" class="demoStatus" aria-live="polite"></small>
  <div id="bomb3dDemoWinner" class="demoWinner" role="status" hidden></div>
 </div>
