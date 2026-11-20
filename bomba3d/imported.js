@@ -1,19 +1,17 @@
 /**
  * Uploaded JS Family rubber GLB: original geometry, embedded textures and normals.
- * The file is unrigged (one mesh, zero animations); this adapter provides non-bone
- * idle/receive/death body motions while preserving the source model and its eyes.
+ * Skinned mobile GLB: preserves the original eyes/texture and adds six bone animations.
+ * Each player gets an independent skeleton and animation mixer.
  */
 import * as THREE from "./vendor/three.module.js";
 import {GLTFLoader} from "./vendor/GLTFLoader.js";
-import {rigRubber} from "./skeleton.js?v=3";
 import {dressOriginalRubber} from "./wardrobe.js?v=7";
-import {installTwoHandMorph,setTwoHandPose,setHeadNod} from "./two-hand-pose.js";
 
 let sourcePromise=null,loaded=null;
 const tintedTextures=new Map();
 const defaultRed="#f83e50";
 const loader=new GLTFLoader();
-const filename="./models/js-rubber-mobile.glb";
+const filename="./models/js-rubber-animated.glb";
 
 export function hasOriginalModel(){return Boolean(loaded);}
 export function preloadOriginalModel(){
@@ -24,13 +22,8 @@ export function preloadOriginalModel(){
    gltf.scene.updateMatrixWorld(true);
    const bounds=new THREE.Box3().setFromObject(gltf.scene);
    if(!Number.isFinite(bounds.min.y)||bounds.isEmpty())throw Error("Geometría 3D inválida");
-   // Prepare a shared GPU morph target; each user's copy has its own pose.
-   gltf.scene.traverse(o=>{
-    if(o.isMesh){
-     installTwoHandMorph(o.geometry,bounds);
-     o.updateMorphTargets();
-    }
-   });
+   if(!gltf.animations?.length||!gltf.scene.getObjectByName("Hips"))
+    throw Error("El GLB no tiene articulaciones y clips");
    loaded={gltf,bounds};
    return loaded;
   }).catch(error=>{sourcePromise=null;throw error;});
@@ -80,6 +73,26 @@ function recolorMap(original,color){
  tintedTextures.set(key,recolored);
  return recolored;
 }
+/** Standard clone(true) keeps skeleton references to the SOURCE bones.
+ * Rebind each player's skinned copy to its own cloned bones, otherwise all
+ * players animate as one (and can deform in unexpected ways).
+ */
+function cloneIndependentSkeleton(source){
+ const copy=source.clone(true);
+ const src=[],dst=[];
+ source.traverse(o=>{if(o.isSkinnedMesh)src.push(o);});
+ copy.traverse(o=>{if(o.isSkinnedMesh)dst.push(o);});
+ if(!src.length||src.length!==dst.length)throw Error("Rig skinned inválido");
+ for(let i=0;i<src.length;i++){
+  const original=src[i],clone=dst[i];
+  const bones=original.skeleton.bones.map(b=>copy.getObjectByName(b.name));
+  if(bones.some(b=>!b))throw Error("Faltan huesos del rig");
+  clone.bind(new THREE.Skeleton(bones,original.skeleton.boneInverses.map(m=>m.clone())),original.bindMatrix.clone());
+  clone.frustumCulled=false;
+ }
+ return copy;
+}
+
 export function createOriginalRubberActor(options={}){
  if(!loaded)throw Error("El modelo original todavía no está cargado");
  const root=new THREE.Group();
@@ -87,7 +100,7 @@ export function createOriginalRubberActor(options={}){
  const animatedRig=new THREE.Group();
  animatedRig.name="JS_3D_ANIMATED_BODY_AND_CLOTHING";
  root.add(animatedRig);
- const original=loaded.gltf.scene.clone(true);
+ const original=cloneIndependentSkeleton(loaded.gltf.scene);
  const originalBounding=loaded.bounds;
  const size=originalBounding.max.y-originalBounding.min.y;
  // Match the height of our original JS Jelly game characters.
@@ -116,7 +129,27 @@ export function createOriginalRubberActor(options={}){
   o.material=Array.isArray(o.material)?o.material.map(customize):customize(o.material);
  });
  animatedRig.add(original);
- const bodyRig=rigRubber(original,originalBounding);
+ const mixer=new THREE.AnimationMixer(original);
+ const clipMap=new Map(loaded.gltf.animations.map(c=>[c.name,c]));
+ const actionNames={idle:"Esperando",hold:"Sostener_Bomba",throw:"Lanzar_Bomba",
+   catch:"Recibir_Bomba",receive:"Recibir_Bomba",death:"Explotar_Caer",
+   walk:"Caminar",wave:"Esperando",dance:"Caminar",confident:"Esperando"};
+ const loops=new Set(["Esperando","Sostener_Bomba","Caminar"]);
+ let current=null,currentName="",time=0;
+ function play(name){
+  if(currentName===name)return;
+  const clip=clipMap.get(name)||clipMap.get("Esperando");
+  if(!clip)return;
+  const next=mixer.clipAction(clip);
+  next.reset();next.enabled=true;
+  next.setLoop(loops.has(name)?THREE.LoopRepeat:THREE.LoopOnce,loops.has(name)?Infinity:1);
+  next.clampWhenFinished=!loops.has(name);
+  next.timeScale=name==="Lanzar_Bomba"?1.65:1;
+  if(current&&current!==next)current.fadeOut(.12);
+  next.fadeIn(.12).play();
+  current=next;currentName=name;
+ }
+ play("Esperando");
  let baseMesh=null;
  loaded.gltf.scene.traverse(o=>{if(o.isMesh&&!baseMesh)baseMesh=o;});
  if(!baseMesh)throw Error("El GLB no tiene una malla para diseñar ropa");
@@ -138,54 +171,36 @@ export function createOriginalRubberActor(options={}){
  }
  grippingHands.visible=false;
  animatedRig.add(grippingHands);
- let gripPose=0;
  let elapsed=0,deadAmount=0;
  const update=(delta,action="idle",reduced=false)=>{
-  elapsed+=Math.min(.10,delta||0);
+  const dt=Math.min(.10,Math.max(0,delta||0));
+  elapsed+=dt;
   wardrobe.update(elapsed,reduced);
-  bodyRig?.update(elapsed,action,reduced);
-  const gripping=action==="hold"||action==="catch";
-  // Limit the old whole-arm morph: at full strength it pinches the shoulders.
-  // The separate grip hands still show clearly around the bomb.
-  const target=gripping?.38:action==="throw"?.02:0;
-  gripPose+=(target-gripPose)*Math.min(1,Math.max(0,delta||0)*8);
-  const calm=action==="idle";
-  const idlePhase=elapsed*1.35+(options.bodyColor3d||"").length*.31;
-  const armIdle=calm?.018*(.5+.5*Math.sin(idlePhase)):0;
-  setTwoHandPose(animatedRig,Math.max(gripPose,armIdle));
-  setHeadNod(animatedRig,calm?.5+.5*Math.sin(idlePhase*.65):0);
-  grippingHands.visible=gripPose>.14||gripping;
-  if(action==="death"){
-   deadAmount=Math.min(1,deadAmount+Math.max(.045,(delta||.03)*1.8));
-   // Full tumble onto the floor, not just a slight lean.
-   animatedRig.rotation.z=-Math.PI*.5*deadAmount;
-   animatedRig.rotation.x=.12*deadAmount;
-   animatedRig.position.y=-.12*deadAmount;
-   return;
+  const name=actionNames[action]||"Esperando";
+  play(name);
+  mixer.update(reduced?0:dt);
+  const holding=action==="hold"||action==="catch"||action==="receive";
+  grippingHands.visible=holding;
+  // All spine bending is weighted in the source GLB, not a whole-torso morph.
+  // One-shot defeat is held at the end so eliminated players stay down.
+  if(name==="Explotar_Caer"){
+   deadAmount=Math.min(1,deadAmount+dt/1.6);
+   animatedRig.rotation.z=-.55*deadAmount;
+   animatedRig.position.y=-.10*deadAmount;
+  }else{
+   deadAmount=0;
+   animatedRig.rotation.set(0,0,0);
+   animatedRig.position.set(0,0,0);
   }
-  deadAmount=Math.max(0,deadAmount-.12);
-  // No automatic dance: all characters share a calm neutral idle pose.
-  const dancing=false;
-  const throwing=action==="throw",catching=action==="catch";
-  const breathing=action==="idle"||action==="hold";
-  // The GLB is unrigged, so throwing and catching use exaggerated
-  // upper-body lean, not fabricated separate arm-bone animations.
-  animatedRig.rotation.z=
-   throwing?-.14+Math.sin(elapsed*10)*.025:
-   catching?.10+Math.sin(elapsed*8)*.02:gripping?.02:0;
-  animatedRig.rotation.x=throwing?-.07:catching?.06:0;
-  animatedRig.position.y=dancing?Math.sin(elapsed*7)*.07:0;
-  animatedRig.position.x=dancing?Math.sin(elapsed*1.35)*.09:0;
-  animatedRig.rotation.y=dancing?Math.sin(elapsed*1.25)*.10:0;
-  // Shared gentle breathing, independent of costume and held bomb.
-  animatedRig.scale.y=1+Math.sin(elapsed*1.45)*.002;
+  animatedRig.scale.set(1,1,1);
  };
  const dispose=()=>{
+  mixer.stopAllAction();mixer.uncacheRoot(original);
   wardrobe.dispose();
   palmMat.dispose();
   // Palm geometry remains shared with this actor only.
   palmGeometry.dispose();
   for(const m of materials)m.dispose();
  };
- return {root,handAnchor:animatedRig,update,dispose,costume:"plain",kind:"uploaded",alive:true};
+ return {root,handAnchor:animatedRig,update,dispose,costume:"plain",kind:"uploaded",alive:true,mixer};
 }
