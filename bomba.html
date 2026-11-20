@@ -236,6 +236,7 @@ select{width:100%;background:#25354d;border:1px solid #536a8f;border-radius:9px;
  .audioSliders output{color:#94ffe2;font-variant-numeric:tabular-nums}
  .audioSliders input{grid-column:1/-1;width:100%;accent-color:#76efcf;min-height:26px}
  .audioSliders button{background:#31577a;min-height:42px}
+ .bombVoice{padding:10px;border:1px solid #386d83;border-radius:12px;margin:10px 0;background:#102a3b;color:#e6f8ff}.bombVoiceButtons{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin:8px 0}.bombVoiceButtons button{min-width:0;padding:10px 5px;font-size:12px;border-radius:9px;background:#26526c;color:white;border:1px solid #497f92}.bombVoice small{font-size:11px;color:#b9d4df}
 </style>
 <link rel="stylesheet" href="./bomba3d/game.css?v=5">
 <link rel="stylesheet" href="./bomba3d/wardrobe-ui.css?v=1">
@@ -263,6 +264,7 @@ select{width:100%;background:#25354d;border:1px solid #536a8f;border-radius:9px;
  <button type="button" id="bomb3dDemoThrow" hidden>🎬 Jugar 8 bots · hasta un ganador</button>
  <button type="button" id="bomb3dDemoExplode" hidden disabled>💥 Explotar ahora</button>
  <div class="soundControls"><button type="button" id="bombSoundToggle" aria-pressed="true">🔊 Sonidos activados</button><button type="button" id="openWardrobe">👕 Vestirse</button></div>
+ <section id="bombVoice" class="bombVoice"><strong>🎤 Chat de voz</strong><div class="bombVoiceButtons"><button type="button" id="bombVoiceMic">🎤 Encender micrófono</button><button type="button" id="bombVoiceMute">🔇 Silenciar jugadores</button></div><small id="bombVoiceStatus" role="status">Micrófono apagado · tocá para conectar</small></section>
  <small id="bomb3dDemoStatus" class="demoStatus" aria-live="polite"></small>
  <div id="bomb3dDemoWinner" class="demoWinner" role="status" hidden></div>
 </div>
@@ -735,5 +737,6 @@ if(typeof window.addEventListener==="function")window.addEventListener("resize",
 if(!/^[A-F0-9]{12}$/.test(code))showError("El enlace no tiene un código válido. Abrí el enlace de sala que te mande JS Guardian.");
 else{void identity().then(refresh);setInterval(()=>void refresh(),1400);setInterval(updateHud,90);}
 </script>
+<script type="module" src="./bomba3d/voice.js?v=1"></script>
 </body>
 </html>
