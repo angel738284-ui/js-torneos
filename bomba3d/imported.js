@@ -155,19 +155,21 @@ export function createOriginalRubberActor(options={}){
    return;
   }
   deadAmount=Math.max(0,deadAmount-.12);
-  const dancing=action==="dance"||options.pose==="dance";
+  // No automatic dance: all characters share a calm neutral idle pose.
+  const dancing=false;
   const throwing=action==="throw",catching=action==="catch";
   const breathing=action==="idle"||action==="hold";
   // The GLB is unrigged, so throwing and catching use exaggerated
   // upper-body lean, not fabricated separate arm-bone animations.
   animatedRig.rotation.z=
-   throwing?-.32+Math.sin(elapsed*10)*.07:
-   catching?.19+Math.sin(elapsed*8)*.04:gripping?.045:0;
-  animatedRig.rotation.x=throwing?-.14:catching?.12:0;
+   throwing?-.14+Math.sin(elapsed*10)*.025:
+   catching?.10+Math.sin(elapsed*8)*.02:gripping?.02:0;
+  animatedRig.rotation.x=throwing?-.07:catching?.06:0;
   animatedRig.position.y=dancing?Math.sin(elapsed*7)*.07:0;
   animatedRig.position.x=dancing?Math.sin(elapsed*1.35)*.09:0;
   animatedRig.rotation.y=dancing?Math.sin(elapsed*1.25)*.10:0;
-  animatedRig.scale.y=breathing?1+Math.sin(elapsed*1.7)*.0035:1;
+  // Shared gentle breathing, independent of costume and held bomb.
+  animatedRig.scale.y=1+Math.sin(elapsed*1.45)*.005;
  };
  const dispose=()=>{
   wardrobe.dispose();
