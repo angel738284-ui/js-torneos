@@ -4,7 +4,7 @@ if(root){
  const mic=root.querySelector('#bombVoiceMic'),mute=root.querySelector('#bombVoiceMute'),state=root.querySelector('#bombVoiceStatus');
  let room=null,enabled=false,deafened=false,connecting=false,mode='toggle',held=false,operation=Promise.resolve();
  const status=message=>{state.textContent=message;};
- const ui=()=>{mic.classList.toggle('talking',enabled);mic.classList.toggle('connecting',connecting);mic.setAttribute('aria-label',enabled?'Apagar micrófono':'Encender micrófono');mic.setAttribute('aria-pressed',String(enabled));mute.textContent=deafened?'🔇':'🔊';mute.setAttribute('aria-label',deafened?'Activar sonido de jugadores':'Silenciar sonido de jugadores');mute.setAttribute('aria-pressed',String(deafened));};
+ const ui=()=>{mic.classList.toggle('talking',enabled);mic.classList.toggle('connecting',connecting);mic.setAttribute('aria-label',enabled?'Apagar micrófono':'Encender micrófono');mic.setAttribute('aria-pressed',String(enabled));mute.classList.toggle('deafened',deafened);mute.setAttribute('aria-label',deafened?'Activar sonido de jugadores':'Silenciar sonido de jugadores');mute.setAttribute('aria-pressed',String(deafened));};
  async function connect(){
   if(room)return room;if(connecting)return null;connecting=true;ui();status('Conectando voz…');
   try{
