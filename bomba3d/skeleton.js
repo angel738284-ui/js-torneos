@@ -50,15 +50,21 @@ export function rigRubber(model,bounds){
   count++;
  });
  if(!count)return null;
+ let wave=0,confidence=0,dance=0;
  return {joints,update(t,action,reduced){
-  const idle=action==='idle'||action==='hold';
-  const gentle=idle&&!reduced;
-  joints[1].rotation.z=gentle?Math.sin(t*.7)*.025:0;
-  joints[1].rotation.x=gentle?Math.sin(t*.9)*.018:0;
-  joints[2].rotation.z=gentle?Math.sin(t*1.1)*.012:0;
-  joints[3].rotation.z=gentle?-Math.sin(t*1.1+.6)*.012:0;
-  joints[2].rotation.x=action==='throw'?.15:0;
-  joints[3].rotation.x=action==='throw'?.15:0;
-  joints[4].rotation.z=0;
+  // Small independent joint movements; no whole-character wobble.
+  const smoothTo=(v,target)=>v+(target-v)*.16;
+  wave=smoothTo(wave,action==='wave'&&!reduced?1:0);
+  confidence=smoothTo(confidence,action==='confident'&&!reduced?1:0);
+  dance=smoothTo(dance,action==='dance'&&!reduced?1:0);
+  const idle=(action==='idle'||action==='hold')&&!reduced;
+  joints[1].rotation.z=(idle?Math.sin(t*.7)*.018:0)+dance*Math.sin(t*3)*.055;
+  joints[1].rotation.x=idle?Math.sin(t*.9)*.012:0;
+  // Arm angles are deliberately restrained to protect the shoulder seam.
+  joints[2].rotation.z=(idle?Math.sin(t)*.012:0)+confidence*.10+dance*Math.sin(t*4)*.15;
+  joints[3].rotation.z=(idle?-Math.sin(t+.6)*.012:0)-wave*(.18+.10*Math.sin(t*7))-confidence*.12-dance*Math.sin(t*4+2)*.15;
+  joints[2].rotation.x=(action==='throw'?.15:0)+dance*Math.sin(t*4)*.08;
+  joints[3].rotation.x=(action==='throw'?.15:0)+wave*.07+dance*Math.sin(t*4+2)*.08;
+  joints[4].rotation.z=dance*Math.sin(t*3)*.055;
  }};
 }

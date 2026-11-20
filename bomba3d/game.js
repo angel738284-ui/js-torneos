@@ -424,7 +424,8 @@ function animate(time){
     const holderId=demoHolder||(roomData?.estado==="playing"?roomData.bomba_de:null);
     const isHolder=holderId===id&&a.alive&&!flight;
     const playingAction=isHolder&&a.action==="idle"?"hold":a.action;
-    a.update(seconds,playingAction,playingAction==="idle"||playingAction==="hold");
+    const chosenPose=playingAction==="idle"?(roomData?.jugadores||[]).find(p=>p.id===id)?.avatar?.pose||"idle":playingAction;
+    a.update(seconds,chosenPose,reduced);
     a.root.rotation.z=0;
     a.root.rotation.y=0;
    }
@@ -435,7 +436,7 @@ function animate(time){
    const view=el("preview");
    resize(studio,view?.clientWidth||290,view?.clientHeight||230,80);
    if(studio.actor){
-    studio.actor.update(seconds,"idle",true);
+    studio.actor.update(seconds,previewData?.pose||"idle",reduced);
     studio.actor.root.rotation.y=0;
    }
    studio.renderer.render(studio.scene,studio.camera);
