@@ -229,7 +229,6 @@ export function dressOriginalRubber(root,rawAvatar,sourceGeometry,sourceBounds){
   aura=mesh(group,geo,glow,"3d_aura",[0,.115,0],[1,1,1],[Math.PI/2,0,0]);
   accessories.push(geo);
  }
- }
  return {
   group,
   update:(elapsed,reduced)=>{
