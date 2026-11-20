@@ -9,7 +9,7 @@
   {id:"abajo",icon:"👖",name:"Abajo",fields:["bottomStyle","pants"]},
   {id:"zapatillas",icon:"👟",name:"Zapas",fields:["shoes"]},
   {id:"accesorios",icon:"👑",name:"Accesorios",fields:["accessory"]},
-  {id:"efectos",icon:"✨",name:"Efectos",fields:["aura","pose"]}
+  {id:"efectos",icon:"✨",name:"Efectos",fields:["pose"]}
  ];
  const labels={
   wear3d:"¿Querés vestirlo?",bodyColor3d:"Color del muñeco",
