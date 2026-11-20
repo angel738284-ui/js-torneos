@@ -61,7 +61,7 @@
    names.push("👖 "+optionName("bottomStyle",v("bottomStyle")));
    names.push("👟 "+optionName("shoes",v("shoes")));
   }
-  if(v("accessory")!=="none"&&v("wear3d")==="yes")
+  if(v("accessory")!=="none")
    names.push("👑 "+optionName("accessory",v("accessory")));
   summary.textContent="Tu look: "+names.join(" · ");
  }
@@ -80,7 +80,7 @@
   const select=document.getElementById(field);
   if(!select||!Array.from(select.options).some(o=>o.value===value))return;
   select.value=value;
-  if(!["wear3d","bodyColor3d"].includes(field)){
+  if(["topStyle","shirt","pattern","bottomStyle","pants","shoes"].includes(field)){
    // A garment automatically enables clothing, so it is always visible.
    document.getElementById("wear3d").value="yes";
   }

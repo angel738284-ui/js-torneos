@@ -5,7 +5,7 @@
  */
 import * as THREE from "./vendor/three.module.js";
 import {GLTFLoader} from "./vendor/GLTFLoader.js";
-import {dressOriginalRubber} from "./wardrobe.js?v=2";
+import {dressOriginalRubber} from "./wardrobe.js?v=3";
 import {installTwoHandMorph,setTwoHandPose} from "./two-hand-pose.js";
 
 let sourcePromise=null,loaded=null;

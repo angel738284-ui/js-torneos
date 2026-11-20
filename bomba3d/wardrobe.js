@@ -120,7 +120,6 @@ export function dressOriginalRubber(root,rawAvatar,sourceGeometry,sourceBounds){
  if(a.wear3d==="yes"){
  const style=a.topStyle||"tee";
  const lower=a.bottomStyle||"pants";
- const acc=a.accessory||"none";
  if(style==="tee"||style==="jersey") {
   draw("shirt",main,"3d_remera");
   draw("shortSleeves",main,"3d_mangas_cortas");
@@ -171,6 +170,8 @@ export function dressOriginalRubber(root,rawAvatar,sourceGeometry,sourceBounds){
   }
  }
  draw("shoes",shoes,"3d_zapatillas");
+ } // Clothing ends here: accessories never turn on a full outfit.
+ const acc=a.accessory||"none";
  switch(acc){
   case "glasses":{
    const lens=new THREE.TorusGeometry(.135,.023,8,24);
