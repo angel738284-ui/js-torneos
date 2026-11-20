@@ -4,8 +4,8 @@
  * The Supabase multiplayer game and WhatsApp registration are unchanged.
  */
 import * as THREE from "./vendor/three.module.js";
-import {createBombSFX} from "./sounds.js?v=3";
-import {createArcadeSFX} from "./arcade-sfx.js?v=2";
+import {createBombSFX} from "./sounds.js?v=4";
+import {createArcadeSFX} from "./arcade-sfx.js?v=3";
 window.JSBombSFX=createBombSFX();
 window.JSArcadeSFX=createArcadeSFX();
 import {preloadOriginalModel,hasOriginalModel,createOriginalRubberActor} from "./imported.js?v=8";

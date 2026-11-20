@@ -3,19 +3,19 @@
 export function createArcadeSFX(){
  const Ctx=window.AudioContext||window.webkitAudioContext;
  const STORE="js-bomba-mix-v1";
- const defaults={effects:78,music:35,voices:45};
+ const defaults={effects:100,music:100,voices:100};
  let mix={...defaults},ctx=null,master=null,fx=null,bgm=null,voice=null;
  let ambient=null,ambientGain=null,lastSecond=null,lastCountdown=null;
  let lastRound=null,lastWinner=null,lastFall=0,roundStarted=false,lastBeat=-1;
- let musicEnabled=true,nextMelodyAt=0,melodyStep=0;
+ let musicEnabled=true,audioEnabled=true,nextMelodyAt=0,melodyStep=0;
  const melody=[392,440,523.25,440,349.23,392,329.63,392,440,523.25,587.33,523.25,440,392,349.23,329.63];
- try{const saved=JSON.parse(localStorage.getItem(STORE)||"{}");for(const k of Object.keys(defaults))if(Number.isFinite(saved[k]))mix[k]=Math.max(0,Math.min(100,saved[k]));}catch{}
- const safe=()=>Boolean(ctx&&ctx.state==="running"&&!document.hidden);
+ // Fixed full in-game mix; ignore previously saved slider settings.
+ const safe=()=>Boolean(audioEnabled&&ctx&&ctx.state==="running"&&!document.hidden);
  const vol=k=>mix[k]/100;
  function init(){
   if(!Ctx||document.hidden)return false;
   if(!ctx){
-   ctx=new Ctx();master=ctx.createGain();master.gain.value=.64;master.connect(ctx.destination);
+   ctx=new Ctx();master=ctx.createGain();master.gain.value=.85;master.connect(ctx.destination);
    fx=ctx.createGain();bgm=ctx.createGain();voice=ctx.createGain();
    fx.connect(master);bgm.connect(master);voice.connect(master);
    setMix();
@@ -123,26 +123,16 @@ export function createArcadeSFX(){
   if(lastWinner!==id){lastWinner=id;victory();}
  }
  function bind(){
-  const root=document.getElementById("bombAudioMixer");if(!root)return;
-  for(const k of Object.keys(defaults)){
-   const input=root.querySelector('[data-mix="'+k+'"]');
-   const output=root.querySelector('[data-level="'+k+'"]');
-   if(!input)continue;
-   input.value=String(mix[k]);if(output)output.textContent=mix[k]+"%";
-   input.addEventListener("input",()=>{
-    mix[k]=Math.max(0,Math.min(100,Number(input.value)||0));
-    if(output)output.textContent=mix[k]+"%";
-    save();
-   });
-  }
-  document.getElementById("bombAudioTest")?.addEventListener("click",()=>{
-   init();whoosh();catchBomb();victory();
-  });
+  const root=document.getElementById("bombAudioMixer");
   for(const e of ["pointerdown","keydown"])document.addEventListener(e,init,{capture:true,passive:true});
-  const toggle=document.getElementById("bombMusicToggle");
-  const sync=()=>{if(toggle){toggle.textContent=musicEnabled?"🎵 Música tranquila: SÍ":"🎵 Música tranquila: NO";toggle.setAttribute("aria-pressed",String(musicEnabled));}};
-  try{musicEnabled=localStorage.getItem("js-bomba-calm-music")!=="off";}catch{}
-  sync();toggle?.addEventListener("click",()=>{musicEnabled=!musicEnabled;try{localStorage.setItem("js-bomba-calm-music",musicEnabled?"on":"off");}catch{}sync();init();});
+  document.addEventListener("bomb-sound-enabled",event=>{
+   audioEnabled=Boolean(event.detail);
+   musicEnabled=audioEnabled;
+   if(!audioEnabled&&ctx){bgm.gain.value=0;fx.gain.value=0;voice.gain.value=0;}
+   else{setMix();init();nextMelodyAt=ctx?ctx.currentTime+.15:0;}
+  });
+  try{audioEnabled=localStorage.getItem("js-bomba-sonidos-v1")!=="off";}catch{}
+  musicEnabled=audioEnabled;
   document.addEventListener("visibilitychange",()=>{if(!document.hidden&&ctx)nextMelodyAt=ctx.currentTime+.15;});
   const musicTick=()=>{updateMusic(false,0);requestAnimationFrame(musicTick);};
   if(typeof requestAnimationFrame==="function")requestAnimationFrame(musicTick);

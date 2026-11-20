@@ -29,7 +29,7 @@ export function createBombSFX(){
    if(!ctx){
     ctx=new Ctx();
     output=ctx.createGain();output.connect(ctx.destination);
-    const n=window.JSArcadeSFX?.getMix?.().effects;output.gain.value=Number.isFinite(n)?Math.max(0,Math.min(1,n/100)):1;
+    output.gain.value=1;
     const seconds=2,rate=ctx.sampleRate;
     noise=ctx.createBuffer(1,Math.round(rate*seconds),rate);
     const data=noise.getChannelData(0);
@@ -156,11 +156,12 @@ export function createBombSFX(){
    if(hissGain&&ctx){hissGain.gain.setTargetAtTime(0,ctx.currentTime,.015);fuseWasActive=false;}
   }
   if(enabled)unlock();
+  document.dispatchEvent(new CustomEvent("bomb-sound-enabled",{detail:enabled}));
   updateButton();
  }
  function bind(){
   updateButton();
-  function updateMix(){if(!output)return;const n=window.JSArcadeSFX?.getMix?.().effects;output.gain.value=Number.isFinite(n)?Math.max(0,Math.min(1,n/100)):1;}
+  function updateMix(){if(!output)return;output.gain.value=1;}
   document.addEventListener("bomb-mix-change",updateMix);
   document.getElementById("bombSoundToggle")?.addEventListener("click",()=>{
    setEnabled(!enabled);
