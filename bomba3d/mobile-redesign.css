@@ -29,3 +29,12 @@
  #bombChat[open] .bombChatMessages{height:min(34vh,220px)!important}#bombChat .bombChatForm input{font-size:13px!important}
  #bombChat:not([open])>:not(summary){display:none!important}
 }
+
+/* Voice controls: two recognizable icon tiles, no bulky text labels. */
+@media(max-width:760px){
+ #bombVoice{width:120px!important;max-width:120px!important;padding:6px!important}
+ #bombVoice .voiceMode{display:grid!important;grid-template-columns:1fr 1fr!important;gap:5px!important}
+ #bombVoice .voiceMode button{height:40px!important;min-height:40px!important;font-size:23px!important;line-height:1!important;padding:4px!important;display:grid!important;place-items:center!important;border-radius:10px!important}
+ #bombVoice .voiceMicRow{display:flex!important;justify-content:center!important;gap:8px!important}
+ #bombVoiceStatus{font-size:9px!important}
+}
