@@ -8,7 +8,7 @@ import {createBombSFX} from "./sounds.js?v=9";
 import {createArcadeSFX} from "./arcade-sfx.js?v=4";
 window.JSBombSFX=createBombSFX();
 window.JSArcadeSFX=createArcadeSFX();
-import {preloadOriginalModel,hasOriginalModel,createOriginalRubberActor} from "./imported.js?v=15";
+import {preloadOriginalModel,hasOriginalModel,createOriginalRubberActor} from "./imported.js?v=16";
 import {
  createBombProp,handWorldPosition,makePassAnimation,HAND_OFFSET,roundFuseProgress
 } from "./bomb-effects.js?v=3";

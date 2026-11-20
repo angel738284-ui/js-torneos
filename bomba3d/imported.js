@@ -5,6 +5,7 @@
  */
 import * as THREE from "./vendor/three.module.js";
 import {GLTFLoader} from "./vendor/GLTFLoader.js";
+import {rigRubber} from "./skeleton.js";
 import {dressOriginalRubber} from "./wardrobe.js?v=5";
 import {installTwoHandMorph,setTwoHandPose,setHeadNod} from "./two-hand-pose.js";
 
@@ -115,6 +116,7 @@ export function createOriginalRubberActor(options={}){
   o.material=Array.isArray(o.material)?o.material.map(customize):customize(o.material);
  });
  animatedRig.add(original);
+ const bodyRig=rigRubber(original,originalBounding);
  let baseMesh=null;
  loaded.gltf.scene.traverse(o=>{if(o.isMesh&&!baseMesh)baseMesh=o;});
  if(!baseMesh)throw Error("El GLB no tiene una malla para diseñar ropa");
@@ -141,6 +143,7 @@ export function createOriginalRubberActor(options={}){
  const update=(delta,action="idle",reduced=false)=>{
   elapsed+=Math.min(.10,delta||0);
   wardrobe.update(elapsed,reduced);
+  bodyRig?.update(elapsed,action,reduced);
   const gripping=action==="hold"||action==="catch";
   const target=gripping?1:action==="throw"?.02:0;
   gripPose+=(target-gripPose)*Math.min(1,Math.max(0,delta||0)*8);
