@@ -4,9 +4,9 @@ if(root){
  const mic=root.querySelector('#bombVoiceMic'),mute=root.querySelector('#bombVoiceMute'),state=root.querySelector('#bombVoiceStatus'),holdButton=root.querySelector('#bombVoiceHoldMode'),toggleButton=root.querySelector('#bombVoiceToggleMode');
  let room=null,enabled=false,deafened=false,connecting=false,mode='hold',held=false,operation=Promise.resolve();
  const status=message=>{state.textContent=message;};
- const ui=()=>{mic.classList.toggle('talking',enabled);mic.setAttribute('aria-label',mode==='hold'?'Mantené pulsado para hablar':enabled?'Apagar micrófono':'Encender micrófono');mic.setAttribute('aria-pressed',String(enabled));holdButton.classList.toggle('active',mode==='hold');toggleButton.classList.toggle('active',mode==='toggle');holdButton.setAttribute('aria-pressed',String(mode==='hold'));toggleButton.setAttribute('aria-pressed',String(mode==='toggle'));mute.textContent=deafened?'🔇':'🔊';mute.setAttribute('aria-pressed',String(deafened));};
+ const ui=()=>{mic.classList.toggle('talking',enabled);mic.classList.toggle('connecting',connecting);mic.setAttribute('aria-label',mode==='hold'?'Mantené pulsado para hablar':enabled?'Apagar micrófono':'Encender micrófono');mic.setAttribute('aria-pressed',String(enabled));holdButton.classList.toggle('active',mode==='hold');toggleButton.classList.toggle('active',mode==='toggle');holdButton.setAttribute('aria-pressed',String(mode==='hold'));toggleButton.setAttribute('aria-pressed',String(mode==='toggle'));mute.textContent=deafened?'🔇':'🔊';mute.setAttribute('aria-pressed',String(deafened));};
  async function connect(){
-  if(room)return room;if(connecting)return null;connecting=true;status('Conectando voz…');
+  if(room)return room;if(connecting)return null;connecting=true;ui();status('Conectando voz…');
   try{
    const params=new URLSearchParams(location.search),code=params.get('r');
    const access=code&&(params.get('t')||sessionStorage.getItem('js-bomba-access:'+code));
@@ -19,7 +19,7 @@ if(root){
    instance.on(LiveKit.RoomEvent.TrackUnsubscribed,track=>track.detach().forEach(el=>el.remove()));
    instance.on(LiveKit.RoomEvent.Disconnected,()=>{room=null;enabled=false;ui();status('Voz desconectada');});
    await instance.connect(data.url,data.token,{autoSubscribe:true});room=instance;status('🟢 Conectado · micrófono apagado');return room;
-  }catch(error){status('⚠️ '+String(error.message||error));return null;}finally{connecting=false;}
+  }catch(error){status('⚠️ '+String(error.message||error));return null;}finally{connecting=false;ui();}
  }
  async function setMic(value){
   if(value&&!room&&!(await connect()))return;
