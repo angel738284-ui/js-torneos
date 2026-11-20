@@ -26,7 +26,8 @@ export function rigRubber(model,bounds){
   for(let i=0;i<p.count;i++){
    const x=(p.getX(i)-centerX)/height,y=(p.getY(i)-bounds.min.y)/height;
    const head=smooth(.68,.79,y)*(1-smooth(.19,.31,Math.abs(x)));
-   const armBase=smooth(.20,.32,Math.abs(x))*(1-smooth(.78,.9,y))*smooth(.34,.46,y);
+   // Keep shoulder seam and upper torso anchored to the root.
+   const armBase=smooth(.28,.43,Math.abs(x))*(1-smooth(.66,.76,y))*smooth(.34,.48,y)*.70;
    const left=x<0?armBase:0,right=x>=0?armBase:0;
    const legs=(1-smooth(.28,.45,y))*.85;
    const base=Math.max(.001,1-head-left-right-legs);
@@ -54,10 +55,10 @@ export function rigRubber(model,bounds){
   const gentle=idle&&!reduced;
   joints[1].rotation.z=gentle?Math.sin(t*.7)*.025:0;
   joints[1].rotation.x=gentle?Math.sin(t*.9)*.018:0;
-  joints[2].rotation.z=gentle?Math.sin(t*1.1)*.025:0;
-  joints[3].rotation.z=gentle?-Math.sin(t*1.1+.6)*.025:0;
-  joints[2].rotation.x=action==='throw'?.35:action==='hold'?-.12:0;
-  joints[3].rotation.x=action==='throw'?.35:action==='hold'?-.12:0;
+  joints[2].rotation.z=gentle?Math.sin(t*1.1)*.012:0;
+  joints[3].rotation.z=gentle?-Math.sin(t*1.1+.6)*.012:0;
+  joints[2].rotation.x=action==='throw'?.15:0;
+  joints[3].rotation.x=action==='throw'?.15:0;
   joints[4].rotation.z=0;
  }};
 }

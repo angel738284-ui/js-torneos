@@ -145,7 +145,9 @@ export function createOriginalRubberActor(options={}){
   wardrobe.update(elapsed,reduced);
   bodyRig?.update(elapsed,action,reduced);
   const gripping=action==="hold"||action==="catch";
-  const target=gripping?1:action==="throw"?.02:0;
+  // Limit the old whole-arm morph: at full strength it pinches the shoulders.
+  // The separate grip hands still show clearly around the bomb.
+  const target=gripping?.38:action==="throw"?.02:0;
   gripPose+=(target-gripPose)*Math.min(1,Math.max(0,delta||0)*8);
   const calm=action==="idle";
   const idlePhase=elapsed*1.35+(options.bodyColor3d||"").length*.31;
