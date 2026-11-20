@@ -38,3 +38,11 @@
  #bombVoice .voiceMicRow{display:flex!important;justify-content:center!important;gap:8px!important}
  #bombVoiceStatus{font-size:9px!important}
 }
+
+@media(max-width:760px){
+ #bombVoice{width:116px!important;max-width:116px!important;padding:7px 5px!important}
+ #bombVoice .voiceMicRow{display:grid!important;grid-template-columns:1fr 1fr!important;gap:7px!important;align-items:center!important;justify-items:center!important;width:100%!important}
+ #bombVoice .voiceMic,#bombVoice .voiceMute{width:44px!important;height:44px!important;min-width:44px!important;min-height:44px!important;display:grid!important;place-items:center!important;border-radius:12px!important;padding:0!important}
+ #bombVoice .voiceMute{background:#26465f!important;border:1px solid #4d819b!important;color:white!important;font-size:22px!important}
+ #bombVoiceStatus{font-size:9px!important;min-height:12px!important;text-align:center!important}
+}

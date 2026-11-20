@@ -1,10 +1,10 @@
 // LiveKit voice controls: push-to-talk or tap-to-toggle, microphone always off by default.
 const root=document.getElementById('bombVoice');
 if(root){
- const mic=root.querySelector('#bombVoiceMic'),mute=root.querySelector('#bombVoiceMute'),state=root.querySelector('#bombVoiceStatus'),holdButton=root.querySelector('#bombVoiceHoldMode'),toggleButton=root.querySelector('#bombVoiceToggleMode');
- let room=null,enabled=false,deafened=false,connecting=false,mode='hold',held=false,operation=Promise.resolve();
+ const mic=root.querySelector('#bombVoiceMic'),mute=root.querySelector('#bombVoiceMute'),state=root.querySelector('#bombVoiceStatus');
+ let room=null,enabled=false,deafened=false,connecting=false,mode='toggle',held=false,operation=Promise.resolve();
  const status=message=>{state.textContent=message;};
- const ui=()=>{mic.classList.toggle('talking',enabled);mic.classList.toggle('connecting',connecting);mic.setAttribute('aria-label',mode==='hold'?'Mantené pulsado para hablar':enabled?'Apagar micrófono':'Encender micrófono');mic.setAttribute('aria-pressed',String(enabled));holdButton.classList.toggle('active',mode==='hold');toggleButton.classList.toggle('active',mode==='toggle');holdButton.setAttribute('aria-pressed',String(mode==='hold'));toggleButton.setAttribute('aria-pressed',String(mode==='toggle'));mute.textContent=deafened?'🔇':'🔊';mute.setAttribute('aria-pressed',String(deafened));};
+ const ui=()=>{mic.classList.toggle('talking',enabled);mic.classList.toggle('connecting',connecting);mic.setAttribute('aria-label',enabled?'Apagar micrófono':'Encender micrófono');mic.setAttribute('aria-pressed',String(enabled));mute.textContent=deafened?'🔇':'🔊';mute.setAttribute('aria-label',deafened?'Activar sonido de jugadores':'Silenciar sonido de jugadores');mute.setAttribute('aria-pressed',String(deafened));};
  async function connect(){
   if(room)return room;if(connecting)return null;connecting=true;ui();status('Conectando voz…');
   try{
@@ -24,17 +24,10 @@ if(root){
  async function setMic(value){
   if(value&&!room&&!(await connect()))return;
   if(!room)return;
-  try{await room.localParticipant.setMicrophoneEnabled(value);enabled=value;status(value?'🔴 Hablando ahora':'🟢 Micrófono apagado');ui();}catch(error){status('⚠️ Revisá el permiso del micrófono');}
+  try{await room.localParticipant.setMicrophoneEnabled(value);enabled=value;status(value?'Micrófono encendido':'Micrófono apagado');ui();}catch(error){status('⚠️ Revisá el permiso del micrófono');}
  }
  function queueMic(value){operation=operation.catch(()=>{}).then(()=>setMic(value));return operation;}
- function selectMode(next){held=false;mode=next;void queueMic(false);ui();}
- holdButton.addEventListener('click',()=>selectMode('hold'));toggleButton.addEventListener('click',()=>selectMode('toggle'));
- mic.addEventListener('pointerdown',event=>{if(mode!=='hold')return;event.preventDefault();held=true;try{mic.setPointerCapture(event.pointerId);}catch{}void queueMic(true).then(()=>{if(!held||mode!=='hold')void queueMic(false);});});
- function release(){if(mode==='hold'&&held){held=false;void queueMic(false);}}
- mic.addEventListener('pointerup',release);mic.addEventListener('pointercancel',release);mic.addEventListener('lostpointercapture',release);
- mic.addEventListener('click',()=>{if(mode==='toggle')void queueMic(!enabled);});
- mic.addEventListener('keydown',event=>{if(mode==='hold'&&(event.key===' '||event.key==='Enter')&&!event.repeat){event.preventDefault();held=true;void queueMic(true);}});
- mic.addEventListener('keyup',event=>{if(mode==='hold'&&(event.key===' '||event.key==='Enter')){event.preventDefault();release();}});
+ mic.addEventListener('click',()=>{void queueMic(!enabled);});
  mute.addEventListener('click',()=>{deafened=!deafened;document.querySelectorAll('[data-bomba-voice]').forEach(el=>el.muted=deafened);ui();});
  document.addEventListener('visibilitychange',()=>{if(document.hidden){held=false;void queueMic(false);}});
  window.addEventListener('pagehide',()=>{held=false;if(room)void room.disconnect();});ui();
