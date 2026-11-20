@@ -1,0 +1,62 @@
+/* Compact, strictly viewport-contained mobile wardrobe. */
+@media(max-width:760px){
+ html,body{max-width:100%;overflow-x:clip}
+ main,#content,.mainGrid,.sidebar,.avatarEditor,#bombaDressPanel,
+ .avatarEditor .preview,.avatarEditor .avatarTools,
+ #wardrobeCatalog,.wardTabs,.wardCategory,.wardBlock,.wardChoices,
+ .wardSummary,.wardInfo,.avatarEditor #save{
+  box-sizing:border-box;min-width:0;max-width:100%;width:100%;
+ }
+ .mainGrid,.sidebar{display:block!important}
+ .avatarEditor{padding:10px!important;overflow:hidden}
+ .avatarEditor .avatarHero{margin:0 0 6px}
+ .avatarEditor .avatarHero h2{font-size:15px;margin:0}
+ .avatarEditor .avatarHero small{font-size:10px}
+ .avatarEditor .editorHeader{font-size:12px}
+ .avatarEditor .preview{height:192px!important;min-height:192px!important;max-height:192px!important;padding:0!important;overflow:hidden!important}
+ .avatarEditor .preview .bomb3dStudioCanvas{
+  display:block!important;width:100%!important;max-width:100%!important;
+  height:100%!important;object-fit:contain;
+ }
+ .avatarEditor .preview:before{font-size:10px}
+ .avatarEditor .avatarTools{gap:6px}
+ .avatarEditor .avatarTools button{font-size:11px;padding:8px 5px;min-height:36px}
+ .avatarEditor .saveStatus{font-size:10px;line-height:1.35;margin:2px 0}
+ #wardrobeCatalog.ready{margin:6px 0!important}
+ .wardTabs{
+  display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:5px;padding:0 0 8px;overflow:visible;
+ }
+ .wardTab{
+  width:100%;min-width:0!important;min-height:38px!important;
+  padding:6px 2px!important;font-size:10px!important;
+  border-radius:9px!important;white-space:normal!important;
+  line-height:1.2!important;text-align:center;
+ }
+ .wardCategory{padding:9px!important;border-radius:12px}
+ .wardCategory h3{font-size:13px;margin-bottom:7px}
+ .wardBlock:not(:last-child){margin-bottom:10px;padding-bottom:10px}
+ .wardBlock h4{font-size:11px;margin-bottom:6px}
+ .wardChoices{grid-template-columns:repeat(3,minmax(0,1fr));gap:5px!important}
+ .wardChoices.wardColors{grid-template-columns:repeat(4,minmax(0,1fr))}
+ .wardTile{
+  min-height:65px!important;padding:5px 2px!important;
+  gap:2px!important;border-radius:9px!important;
+ }
+ .wardThumb{height:29px;width:32px;font-size:22px}
+ .wardSwatch{height:29px;width:29px;border-width:2px}
+ .wardName{font-size:9px;line-height:1.2}
+ .wardClassic:before{font-size:10px;padding:6px;margin-bottom:8px}
+ .wardSummary{font-size:11px;margin:7px 0 0}
+ .wardInfo{font-size:10px;line-height:1.3}
+ .avatarEditor #save{min-height:42px;font-size:12px}
+ .avatarEditor #notice{font-size:10px;min-height:0}
+ .bombaMainMenu{grid-template-columns:repeat(2,minmax(0,1fr));padding:6px}
+ .bombaMainMenu button{font-size:15px;min-height:46px}
+}
+@media(max-width:370px){
+ .wardChoices.wardColors{grid-template-columns:repeat(4,minmax(0,1fr))}
+ .wardTile{min-height:61px!important}
+ .wardName{font-size:8px}
+ .wardTab{font-size:9px!important}
+}
