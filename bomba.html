@@ -685,22 +685,22 @@ function updateHud(){
   const seconds=Math.ceil(demo.remainingMs/1000);
   el("round").textContent="🎮 DEMO · Bomba Mortal JS Family · Ronda "+demo.round;
   el("alive").textContent=demo.alive+" / "+demo.total+" vivos";
-  timer.textContent=demo.winnerId?"FIN":demo.exploding?"💥":seconds+" s";
-  timer.classList.toggle("urgent",!demo.winnerId&&!demo.exploding&&seconds<=4);
+  timer.textContent=demo.winnerId?"FIN":demo.exploding?"💥":"💣 Sorpresa";
+  timer.classList.remove("urgent");
   el("tableCenterName").textContent=demo.winnerId?"🏆 "+name:
     demo.exploding?"¡BOOM!":demo.inFlight?"💣 EN EL AIRE":name;
   if(centerTimer)centerTimer.textContent=demo.winnerId?"¡Fin de la DEMO!":
     demo.exploding?name+" eliminado · próxima ronda":
-    "🔥 "+seconds+" s · ronda "+demo.round;
+    "🔥 Mecha encendida · ronda "+demo.round;
   el("centerMark").textContent=demo.winnerId?"🏆":demo.exploding?"💥":"💣";
   hint.textContent=demo.winnerId?"🏆 ¡Tenemos ganador en la DEMO!":
     demo.exploding?"💥 Eliminado: "+name:
     "🎬 Prueba con bots · no afecta una partida real.";
  }else if(room.estado==="playing"){
   const remain=remainingMs();
-  timer.textContent=(remain/1000).toFixed(1)+" s";
-  if(centerTimer)centerTimer.textContent="💥 "+timer.textContent;
-  timer.classList.toggle("urgent",remain<4000);
+  timer.textContent="💣 Sorpresa";
+  if(centerTimer)centerTimer.textContent="🔥 ¡La mecha está encendida!";
+  timer.classList.remove("urgent");
   const holder=activeHolder();
   if(!me){hint.textContent="👀 Sos espectador. Para controlar tu personaje, abrí tu enlace personal.";}
   else if(!me.vivo)hint.textContent="💥 Estás eliminado. Podés seguir mirando hasta el final.";
