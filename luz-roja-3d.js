@@ -1,16 +1,16 @@
 import * as THREE from './bomba3d/vendor/three.module.js';
 import {preloadOriginalModel,createOriginalRubberActor} from './bomba3d/imported.js?v=21';
 const $=id=>document.getElementById(id),stage=$('scene'),status=$('status'),light=$('signal'),count=$('alive'),move=$('move'),start=$('start'),sound=$('sound');
-const scene=new THREE.Scene();scene.background=new THREE.Color('#85c9df');scene.fog=new THREE.Fog('#85c9df',24,95);
-const camera=new THREE.PerspectiveCamera(60,1,.1,120);const renderer=new THREE.WebGLRenderer({antialias:true,powerPreference:'low-power'});renderer.setPixelRatio(Math.min(devicePixelRatio,1.5));renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.shadowMap.enabled=false;stage.append(renderer.domElement);
+const scene=new THREE.Scene();scene.background=new THREE.Color('#85c9df');scene.fog=new THREE.Fog('#85c9df',65,220);
+const camera=new THREE.PerspectiveCamera(60,1,.1,260);const renderer=new THREE.WebGLRenderer({antialias:true,powerPreference:'low-power'});renderer.setPixelRatio(Math.min(devicePixelRatio,1.5));renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.shadowMap.enabled=false;stage.append(renderer.domElement);
 scene.add(new THREE.HemisphereLight(0xe6faff,0x4e6850,2));const sun=new THREE.DirectionalLight(0xffe7b3,2.2);sun.position.set(-12,25,15);scene.add(sun);
 const mat=(color,roughness=1)=>new THREE.MeshStandardMaterial({color,roughness});const grass=mat('#429b68'),track=mat('#d5b98c'),wall=mat('#9dcab8');
 function box(w,h,d,m,x,y,z){const mesh=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),m);mesh.position.set(x,y,z);scene.add(mesh);return mesh}
-box(26,.1,110,grass,0,-.08,-42);box(15,.07,100,track,0,-.02,-43);box(.6,4,100,wall,-8,2,-43);box(.6,4,100,wall,8,2,-43);
-for(let i=-3;i<=3;i++){box(.08,.04,90,mat('#fff4cf'),i*2,0,-45)}
-for(let z=-12;z>=-90;z-=14){for(const x of [-11,11]){const trunk=new THREE.Mesh(new THREE.CylinderGeometry(.35,.5,3,8),mat('#735239'));trunk.position.set(x,1.5,z);scene.add(trunk);const crown=new THREE.Mesh(new THREE.SphereGeometry(1.9,9,7),mat('#287d49'));crown.position.set(x,4,z);scene.add(crown)}}
-for(let i=0;i<12;i++)box(1.1,.045,1.1,mat(i%2?'#ffffff':'#202a30'),-6.05+i*1.1,.035,-88);
-const doll=new THREE.Group();scene.add(doll);doll.position.set(0,0,-94);
+box(38,.1,200,grass,0,-.08,-85);box(26,.07,185,track,0,-.02,-85);box(.6,4,190,wall,-13.5,2,-85);box(.6,4,190,wall,13.5,2,-85);
+for(let i=-3;i<=3;i++){box(.08,.04,165,mat('#fff4cf'),i*3.1,0,-83)}
+for(let z=-12;z>=-172;z-=14){for(const x of [-17,17]){const trunk=new THREE.Mesh(new THREE.CylinderGeometry(.35,.5,3,8),mat('#735239'));trunk.position.set(x,1.5,z);scene.add(trunk);const crown=new THREE.Mesh(new THREE.SphereGeometry(1.9,9,7),mat('#287d49'));crown.position.set(x,4,z);scene.add(crown)}}
+for(let i=0;i<20;i++)box(1.25,.045,1.25,mat(i%2?'#ffffff':'#202a30'),-12+i*1.25,.035,-166);
+const doll=new THREE.Group();scene.add(doll);doll.position.set(0,0,-173);
 const pink=mat('#e8799c'),skin=mat('#f2d1b2'),hair=mat('#292027'),black=mat('#171e24');
 function ball(parent,r,m,x,y,z){const o=new THREE.Mesh(new THREE.SphereGeometry(r,16,12),m);o.position.set(x,y,z);parent.add(o);return o}
 const torso=new THREE.Mesh(new THREE.CylinderGeometry(1.15,1.7,3,12),pink);torso.position.y=3.1;doll.add(torso);
@@ -20,7 +20,7 @@ for(const x of [-.5,.5])ball(headPivot,.14,black,x,.22,1);
 for(const x of [-.9,.9]){ball(doll,.38,skin,x,3.7,0);ball(doll,.4,pink,x,4.1,0)}
 for(const x of [-.7,.7]){const leg=new THREE.Mesh(new THREE.CylinderGeometry(.28,.3,2,10),skin);leg.position.set(x,1,0);doll.add(leg)}
 const song=new Audio("./assets/luz-roja-cancion.ogg");song.preload="auto";song.volume=.8;
-let actors=[],playing=false,red=false,pressed=false,clock=0,next=0,last=0,deadline=85,raf=0,enabledSound=true,audioCtx,loading=false;
+let actors=[],playing=false,red=false,pressed=false,clock=0,next=0,last=0,deadline=180,raf=0,enabledSound=true,audioCtx,loading=false;
 let phase='idle',phaseEnd=0,phaseToken=0,headTarget=0,headVelocity=0;
 const GREEN_FALLBACK=5.8,RED_DURATION=4.2,TURN_DURATION=.55;
 function stopSong(){song.pause();try{song.currentTime=0}catch{}}
@@ -39,7 +39,7 @@ const skins=['#ef4d62','#2dcab8','#ffd54f','#9c76e7','#f18b43','#57d97a','#45b7e
 function tone(f){if(!enabledSound)return;try{audioCtx??=new AudioContext();const o=audioCtx.createOscillator(),g=audioCtx.createGain();o.frequency.value=f;g.gain.value=.05;o.connect(g).connect(audioCtx.destination);o.start();o.stop(audioCtx.currentTime+.12)}catch{}}
 function resize(){const w=stage.clientWidth,h=stage.clientHeight;renderer.setSize(w,h,false);camera.aspect=w/h;camera.updateProjectionMatrix()}new ResizeObserver(resize).observe(stage);
 function clear(){actors.forEach(a=>{scene.remove(a.actor.root);a.actor.dispose()});actors=[]}
-function make(){clear();for(let i=0;i<8;i++){const a=createOriginalRubberActor({bodyColor3d:skins[i],clothesEnabled:true,topStyle:i%2?'hoodie':'shirt',topColor:skins[(i+3)%8],bottomStyle:'pants',bottomColor:'#26334b'});a.root.scale.setScalar(.73);a.root.position.set((i-3.5)*1.7,0,-1);a.root.rotation.y=Math.PI;scene.add(a.root);actors.push({actor:a,z:-1,x:(i-3.5)*1.7,dead:false,won:false,walking:false,pace:9+Math.random()*2,botMove:false,decisionAt:0})}}
+function make(){clear();for(let i=0;i<8;i++){const a=createOriginalRubberActor({bodyColor3d:skins[i],clothesEnabled:true,topStyle:i%2?'hoodie':'shirt',topColor:skins[(i+3)%8],bottomStyle:'pants',bottomColor:'#26334b'});a.root.scale.setScalar(.73);a.root.position.set((i-3.5)*2.7,0,-1);a.root.rotation.y=Math.PI;scene.add(a.root);actors.push({actor:a,z:-1,x:(i-3.5)*2.7,dead:false,won:false,walking:false,pace:9+Math.random()*2,botMove:false,decisionAt:0})}}
 function end(){phaseToken++;stopSong();playing=false;pressed=false;phase='idle';move.disabled=true;start.textContent='↻ Jugar otra vez';const me=actors[0];status.textContent=me.won?'🏆 ¡Llegaste a la meta!':me.dead?'💀 Te vio la muñeca':'⏰ Tiempo terminado';}
 function frame(now){
  const dt=Math.min((now-last)/1000,.05);last=now;
@@ -56,7 +56,7 @@ function frame(now){
    p.walking=running;
    if(running){
     if(phase==='red'){p.dead=true;p.walking=false;p.actor.root.visible=false;if(i===0)status.textContent='💀 ¡Te moviste con luz roja!';tone(130);}
-    else {p.z-=dt*(i===0?11:p.pace);if(p.z<=-88){p.z=-88;p.won=true;p.walking=false;if(i===0)status.textContent='🏆 ¡Llegaste!'}}
+    else {p.z-=dt*(i===0?11:p.pace);if(p.z<=-166){p.z=-166;p.won=true;p.walking=false;if(i===0)status.textContent='🏆 ¡Llegaste!'}}
    }
    p.actor.root.position.z=p.z;
   }
@@ -70,5 +70,5 @@ function frame(now){
  camera.lookAt(me?.x??0,2,(me?.z??-1)-13);
  renderer.render(scene,camera);raf=requestAnimationFrame(frame);
 }
-async function begin(){stopSong();if(loading)return;loading=true;start.disabled=true;status.textContent='Cargando personajes 3D…';try{await preloadOriginalModel();make();playing=true;clock=0;pressed=false;deadline=85;headPivot.rotation.y=0;headVelocity=0;startGreen();move.disabled=false;start.textContent='↻ Reiniciar';status.textContent='Mantené pulsado para correr';}catch(e){console.error(e);status.textContent='No se pudo cargar el modelo 3D. Recargá la página.'}finally{loading=false;start.disabled=false}}
+async function begin(){stopSong();if(loading)return;loading=true;start.disabled=true;status.textContent='Cargando personajes 3D…';try{await preloadOriginalModel();make();playing=true;clock=0;pressed=false;deadline=180;headPivot.rotation.y=0;headVelocity=0;startGreen();move.disabled=false;start.textContent='↻ Reiniciar';status.textContent='Mantené pulsado para correr';}catch(e){console.error(e);status.textContent='No se pudo cargar el modelo 3D. Recargá la página.'}finally{loading=false;start.disabled=false}}
 start.addEventListener('click',begin);move.addEventListener('pointerdown',e=>{if(!playing||actors[0]?.dead||actors[0]?.won)return;e.preventDefault();pressed=true;move.setPointerCapture(e.pointerId)});for(const ev of ['pointerup','pointercancel','lostpointercapture'])move.addEventListener(ev,()=>pressed=false);document.addEventListener('visibilitychange',()=>{pressed=false});sound.addEventListener('click',()=>{enabledSound=!enabledSound;if(!enabledSound)song.pause();else if(playing&&phase==='green'){song.play().catch(()=>{});}sound.textContent=enabledSound?'🔊 Sonido':'🔇 Silencio'});resize();last=performance.now();raf=requestAnimationFrame(frame);
