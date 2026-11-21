@@ -9,7 +9,7 @@ import {createArcadeSFX} from "./arcade-sfx.js?v=4";
 window.JSBombSFX=createBombSFX();
 window.JSArcadeSFX=createArcadeSFX();
 import {preloadOriginalModel,hasOriginalModel,createOriginalRubberActor} from "./imported.js?v=21";
-import {preloadKayKit,createKayKitActor} from "../kaykit-game.js?v=3";
+import {preloadKayKit,createKayKitActor} from "../kaykit-game.js?v=4";
 import {
  createBombProp,handWorldPosition,makePassAnimation,HAND_OFFSET,roundFuseProgress
 } from "./bomb-effects.js?v=3";
