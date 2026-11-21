@@ -154,6 +154,8 @@ export function syncRoom(data,clockOffsetMs){
    arena.scene.add(actor.root);actors.set(p.id,actor);
   }
   if(actor.alive&&!p.vivo){actor.alive=false;actor.action="death";}
+  if(!p.vivo)actor.root.visible=false;
+  else if(!demoEliminated.has(p.id))actor.root.visible=true;
   setPosition(actor,card,data.jugadores.length,w,h);
  }
  stage?.classList.add("is3d");

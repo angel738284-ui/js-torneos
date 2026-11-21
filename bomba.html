@@ -181,7 +181,9 @@ select{width:100%;background:#25354d;border:1px solid #536a8f;border-radius:9px;
  transform-origin:50% 50%}
 .tableStage .player .held-bomb{font-size:29px;right:-5px}
 .tableStage .player.held .char .held-bomb{animation:bombHop .25s infinite alternate}
-.tableStage .player.dead{opacity:.38;filter:grayscale(1)}
+.tableStage .player.dead{opacity:1;filter:none}
+.tableStage .player.dead .modelSpace,.tableStage .player.dead .char{visibility:hidden!important;opacity:0!important}
+.tableStage .player.dead .player-status{opacity:.75}
 .tableStage .player:disabled:not(.dead){opacity:1}
 .tableStage .player.selected:after{top:-6px;right:-4px;font-size:8px;z-index:6}
 .tableStage .tableFloor{position:absolute;inset:0;z-index:0;pointer-events:none;
@@ -799,6 +801,6 @@ if(!/^[A-F0-9]{12}$/.test(code))showError("El enlace no tiene un código válido
 else{void identity().then(refresh);setInterval(()=>void refresh(),1400);setInterval(updateHud,90);}
 </script>
 <script type="module" src="./bomba3d/voice.js?v=4"></script>
-<script type="module" src="./bomba3d/chat.js?v=3"></script>
+<script type="module" src="./bomba3d/chat.js?v=4"></script>
 </body>
 </html>
