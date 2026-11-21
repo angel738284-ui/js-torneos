@@ -30,10 +30,9 @@ function startGreen(){
   stopSong();phaseEnd=clock+GREEN_FALLBACK;
   if(enabledSound){const play=song.play();if(play)play.catch(()=>{});}
   // Audio timing is authoritative only when metadata provides a reasonable length.
-  if(Number.isFinite(song.duration)&&song.duration>1&&song.duration<18)phaseEnd=clock+song.duration;
+  // Duración fija: la reproducción del audio nunca puede bloquear el semáforo.
 }
-song.addEventListener('loadedmetadata',()=>{if(playing&&phase==='green'&&Number.isFinite(song.duration)&&song.duration>1&&song.duration<18)phaseEnd=Math.max(clock+.15,clock-song.currentTime+song.duration)});
-song.addEventListener('ended',()=>{if(playing&&phase==='green')beginTurn()});
+// El semáforo depende del reloj del juego, no de eventos del reproductor.
 function beginTurn(){if(!playing||phase!=='green')return;stopSong();phase='turn';phaseEnd=clock+TURN_DURATION;headTarget=Math.PI;for(const p of actors){if(p!==actors[0]){p.botMove=false;p.decisionAt=clock+.6}}light.textContent='🟠 ¡FRENÁ!';light.className='signal red';}
 function beginRed(){phase='red';red=true;phaseEnd=clock+RED_DURATION;light.textContent='🔴 LUZ ROJA';light.className='signal red';tone(260);}
 const skins=['#ef4d62','#2dcab8','#ffd54f','#9c76e7','#f18b43','#57d97a','#45b7ed','#f47cb0'];
