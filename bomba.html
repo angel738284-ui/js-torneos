@@ -260,10 +260,10 @@ select{width:100%;background:#25354d;border:1px solid #536a8f;border-radius:9px;
 <link rel="stylesheet" href="./bomba3d/wardrobe-mobile.css?v=1">
 <link rel="stylesheet" href="./bomba3d/mobile-redesign.css?v=2">
 
-<script type="module" src="./bomba3d/game.js?v=42"></script>
+<script type="module" src="./bomba3d/game.js?v=43"></script>
 <script defer src="./bomba3d/wardrobe-ui.js?v=3"></script>
 <script src="./config.js"></script>
-</head>
+<script defer src="./kaykit-selector.js?v=1"></script><style>.kaykit-picker{margin:12px 0;padding:13px;border:1px solid #4bb8a5;background:#142d40;border-radius:15px;color:#eafff8}.kaykit-picker label{display:block;font-weight:800;margin-bottom:8px}.kaykit-picker select{width:100%;min-height:48px;padding:10px;background:#24465c;border:1px solid #6bc9b8;border-radius:10px;color:#fff;font-size:16px}.kaykit-picker small{display:block;margin-top:8px;color:#afd5d3}</style></head>
 <body>
 <header><div class="brandIcon">💣</div><div><strong>JS FAMILY</strong><small>BOMBA MORTAL · MULTIJUGADOR</small></div></header>
 <main>
@@ -273,7 +273,7 @@ select{width:100%;background:#25354d;border:1px solid #536a8f;border-radius:9px;
  <button id="menuPlay" type="button" class="active" aria-pressed="true">🎮 Jugar</button>
  <button id="menuDress" type="button" aria-pressed="false">👕 Vestirse</button>
 </nav>
-<div id="content" class="mainGrid" hidden>
+<section class="kaykit-picker"><label for="kaykit-choice">🧍 Elegí tu personaje 3D</label><select id="kaykit-choice" aria-label="Elegí tu personaje"></select><small id="kaykit-notice">Tu elección queda guardada en este dispositivo y se comparte entre los dos juegos.</small></section><div id="content" class="mainGrid" hidden>
 <section class="panel arena" id="bombaGamePanel">
 <div id="winner" class="winner" hidden></div>
 <div class="hud"><b id="round">🎮 Sala JS Family</b><span id="alive" class="pill">— jugadores</span><span id="timer" class="timer">00:00</span></div>

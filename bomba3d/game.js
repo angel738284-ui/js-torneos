@@ -142,7 +142,7 @@ export function syncRoom(data,clockOffsetMs){
   let actor=actors.get(p.id);
   if(!actor||actor.stamp!==signature){
    if(actor)removeActor(actor,arena.scene);
-   actor=createKayKitActor(Array.from(String(p.id)).reduce((n,c)=>n+c.charCodeAt(0),0)%9);
+   actor=createKayKitActor(card.classList.contains("me")?(window.JSKayKitSelection?.getIndex()??0):Array.from(String(p.id)).reduce((n,c)=>n+c.charCodeAt(0),0)%9);
    actor.bomb=createBombProp();
    actor.bomb.root.position.set(...HAND_OFFSET);
    (actor.handAnchor||actor.root).add(actor.bomb.root);
@@ -170,7 +170,7 @@ export function syncPreview(avatar){
  if(stamp===previewStamp)return;
  previewStamp=stamp;
  removeActor(studio.actor,studio.scene);
- studio.actor=createKayKitActor(Array.from(String(p.id)).reduce((n,c)=>n+c.charCodeAt(0),0)%9);
+ studio.actor=createKayKitActor(window.JSKayKitSelection?.getIndex()??0);
  studio.scene.add(studio.actor.root);
  studio.actor.root.scale.setScalar(.84);
  studio.actor.root.position.set(0,-1.42*.84,0);
@@ -535,3 +535,5 @@ export function initBomb3D(){
  set3DEnabled();
 }
 initBomb3D();
+
+document.addEventListener("js-kaykit-changed",()=>{previewStamp="";if(previewData)syncPreview(previewData);const own=el("players")?.querySelector(".player.me");if(own){const old=actors.get(own.dataset.playerId);if(old){removeActor(old,arena?.scene);actors.delete(own.dataset.playerId)}if(roomData)syncRoom(roomData)}});
