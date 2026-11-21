@@ -1,5 +1,5 @@
 import * as THREE from './bomba3d/vendor/three.module.js';
-import {preloadKayKit,createKayKitActor} from './kaykit-game.js?v=2';
+import {preloadKayKit,createKayKitActor} from './kaykit-game.js?v=3';
 const $=id=>document.getElementById(id),stage=$('scene'),status=$('status'),light=$('signal'),count=$('alive'),move=null,start=$('start'),sound=$('sound'),hit=$('hit'),left=null,right=null,joystick=$('joystick'),stick=$('stick'),spectate=$('spectate');
 const scene=new THREE.Scene();scene.background=new THREE.Color('#85c9df');scene.fog=new THREE.Fog('#85c9df',110,340);
 const camera=new THREE.PerspectiveCamera(60,1,.1,450);const renderer=new THREE.WebGLRenderer({antialias:true,powerPreference:'low-power'});renderer.setPixelRatio(Math.min(devicePixelRatio,1.5));renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.shadowMap.enabled=false;stage.append(renderer.domElement);
@@ -49,7 +49,7 @@ if(kind==='impact'){beep(170,42,.4,.23,'sawtooth');beep(450,80,.24,.14,'triangle
 }catch(e){console.warn('Audio effect',e)}}
 function resize(){const w=stage.clientWidth,h=stage.clientHeight;renderer.setSize(w,h,false);camera.aspect=w/h;camera.updateProjectionMatrix()}new ResizeObserver(resize).observe(stage);
 function clear(){if(projectile){scene.remove(projectile.mesh);projectile.mesh.geometry.dispose();projectile.mesh.material.dispose();projectile=null}aiming=false;bombButton.textContent="🎯 APUNTAR";actors.forEach(a=>{scene.remove(a.actor.root);a.actor.dispose()});actors=[]}
-function selectedCharacter(){try{return Math.max(0,Math.min(8,Number(localStorage.getItem('jsfamily-kaykit-character-v1'))||0))}catch{return 0}}
+function selectedCharacter(){try{return Math.max(0,Math.min(9,Number(localStorage.getItem('jsfamily-kaykit-character-v1'))||0))}catch{return 0}}
 function make(){clear();watchIndex=0;for(let i=0;i<8;i++){const a=createKayKitActor(i===0?selectedCharacter():i);a.root.position.set((i-3.5)*2.7,0,-1);a.root.rotation.y=Math.PI;scene.add(a.root);actors.push({actor:a,z:-1,x:(i-3.5)*2.7,dead:false,won:false,walking:false,pace:6.4+Math.random()*1.2,botMove:false,decisionAt:0,downUntil:0,fallStart:0})}}
 
 function end(){resetJoy();phaseToken++;stopSong();playing=false;pressed=false;phase='idle';hit.disabled=true;bombButton.disabled=true;aiming=false;start.textContent='↻ Jugar otra vez';spectate.disabled=false;const me=actors[0];status.textContent=winner?('🏆 Ganó '+(winner===me?'¡VOS!':'el jugador '+(actors.indexOf(winner)+1))):me.dead?'💀 Te vio la muñeca':'⏰ Tiempo terminado';$('results').textContent=(winner?'🥇 Ganador: '+(winner===me?'Vos':'Jugador '+(actors.indexOf(winner)+1)):'Sin ganador')+' · Eliminados: '+actors.filter(p=>p.dead).length;}

@@ -1,5 +1,5 @@
 import * as THREE from './bomba3d/vendor/three.module.js';
-import {preloadKayKit,createKayKitActor} from './kaykit-game.js?v=2';
+import {preloadKayKit,createKayKitActor} from './kaykit-game.js?v=3';
 const $=id=>document.getElementById(id),names=['🛡️ Caballero','🗡️ Pícaro','🥷 Encapuchado','🧙 Mago','🪓 Bárbaro','💀 Mago esqueleto','💀 Esbirro','💀 Pícaro esqueleto','💀 Guerrero esqueleto','❄️ Frost Sprite Coral'];
 const key='jsfamily-kaykit-character-v1';const from=new URLSearchParams(location.search).get('from')==='bomba'?'bomba.html?v=44':'luz-roja.html?v=20';$('back').href=from;$('return').href=from;
 let chosen=Math.max(0,Math.min(9,Number(localStorage.getItem(key))||0)),actor=null,ready=false,last=performance.now(),yaw=0,drag=null;
