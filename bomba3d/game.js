@@ -9,7 +9,7 @@ import {createArcadeSFX} from "./arcade-sfx.js?v=4";
 window.JSBombSFX=createBombSFX();
 window.JSArcadeSFX=createArcadeSFX();
 import {preloadOriginalModel,hasOriginalModel,createOriginalRubberActor} from "./imported.js?v=21";
-import {preloadKayKit,createKayKitActor} from "../kaykit-game.js?v=1";
+import {preloadKayKit,createKayKitActor} from "../kaykit-game.js?v=2";
 import {
  createBombProp,handWorldPosition,makePassAnimation,HAND_OFFSET,roundFuseProgress
 } from "./bomb-effects.js?v=3";
@@ -142,7 +142,7 @@ export function syncRoom(data,clockOffsetMs){
   let actor=actors.get(p.id);
   if(!actor||actor.stamp!==signature){
    if(actor)removeActor(actor,arena.scene);
-   actor=createKayKitActor(Array.from(String(p.id)).reduce((n,c)=>n+c.charCodeAt(0),0)%5);
+   actor=createKayKitActor(Array.from(String(p.id)).reduce((n,c)=>n+c.charCodeAt(0),0)%9);
    actor.bomb=createBombProp();
    actor.bomb.root.position.set(...HAND_OFFSET);
    (actor.handAnchor||actor.root).add(actor.bomb.root);
@@ -170,7 +170,7 @@ export function syncPreview(avatar){
  if(stamp===previewStamp)return;
  previewStamp=stamp;
  removeActor(studio.actor,studio.scene);
- studio.actor=createKayKitActor(Array.from(String(p.id)).reduce((n,c)=>n+c.charCodeAt(0),0)%5);
+ studio.actor=createKayKitActor(Array.from(String(p.id)).reduce((n,c)=>n+c.charCodeAt(0),0)%9);
  studio.scene.add(studio.actor.root);
  studio.actor.root.scale.setScalar(.84);
  studio.actor.root.position.set(0,-1.42*.84,0);

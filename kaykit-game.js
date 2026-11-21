@@ -1,6 +1,6 @@
 import * as THREE from './bomba3d/vendor/three.module.js';
 import {GLTFLoader} from './bomba3d/vendor/GLTFLoader.js';
-const names=['Knight','Rogue','Rogue_Hooded','Mage','Barbarian'];
+const names=['Knight','Rogue','Rogue_Hooded','Mage','Barbarian','Skeleton_Mage','Skeleton_Minion','Skeleton_Rogue','Skeleton_Warrior'];
 const loader=new GLTFLoader();let models=null;
 export async function preloadKayKit(){if(models)return models;const results=await Promise.all(names.map(async name=>{const gltf=await loader.loadAsync('./kaykit/'+name+'.glb');return {scene:gltf.scene,animations:gltf.animations}}));models=results;return results}
 function cloneRig(source){const original=source.scene,copy=original.clone(true),sourceNodes={},copyNodes={};original.traverse(o=>sourceNodes[o.uuid]=o);copy.traverse(o=>{if(o.userData.__sourceUUID)copyNodes[o.userData.__sourceUUID]=o});

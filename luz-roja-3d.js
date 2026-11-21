@@ -1,5 +1,5 @@
 import * as THREE from './bomba3d/vendor/three.module.js';
-import {preloadKayKit,createKayKitActor} from './kaykit-game.js?v=1';
+import {preloadKayKit,createKayKitActor} from './kaykit-game.js?v=2';
 const $=id=>document.getElementById(id),stage=$('scene'),status=$('status'),light=$('signal'),count=$('alive'),move=$('move'),start=$('start'),sound=$('sound'),hit=$('hit'),left=$('left'),right=$('right'),joystick=$('joystick'),stick=$('stick'),spectate=$('spectate');
 const scene=new THREE.Scene();scene.background=new THREE.Color('#85c9df');scene.fog=new THREE.Fog('#85c9df',65,220);
 const camera=new THREE.PerspectiveCamera(60,1,.1,260);const renderer=new THREE.WebGLRenderer({antialias:true,powerPreference:'low-power'});renderer.setPixelRatio(Math.min(devicePixelRatio,1.5));renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.shadowMap.enabled=false;stage.append(renderer.domElement);
