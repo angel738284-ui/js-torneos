@@ -19,7 +19,7 @@ ball(headPivot,1.05,skin,0,.15,0);ball(headPivot,1.08,hair,0,.55,-.3);
 for(const x of [-.5,.5]){ball(headPivot,.18,black,x,.22,1.01);ball(headPivot,.06,mat('#ffffff'),x-.04,.27,1.16)}ball(headPivot,.13,mat('#c68e7b'),0,-.18,1.01);for(const x of [-.85,.85])ball(headPivot,.38,hair,x,.9,-.35);
 for(const x of [-.9,.9]){ball(doll,.38,skin,x,3.7,0);ball(doll,.4,pink,x,4.1,0)}
 for(const x of [-.7,.7]){const leg=new THREE.Mesh(new THREE.CylinderGeometry(.28,.3,2,10),skin);leg.position.set(x,1,0);doll.add(leg)}
-const song=new Audio("./assets/luz-roja-cancion.ogg");song.preload="auto";song.volume=.8;
+const song=new Audio("./assets/luz-roja-cancion.ogg");song.preload="auto";song.volume=.32;song.playbackRate=.92;
 let actors=[],playing=false,red=false,pressed=false,clock=0,next=0,last=0,deadline=180,raf=0,enabledSound=true,audioCtx,loading=false;
 let joyX=0,joyY=0,watchIndex=0,camYaw=0,phase='idle',phaseEnd=0,phaseToken=0,headTarget=0,headVelocity=0,winner=null,lastHit=-100;
 let bombUsed=false,aiming=false,projectile=null;const bombButton=$('bomb');
@@ -41,11 +41,11 @@ function tone(f){if(!enabledSound)return;try{audioCtx??=new AudioContext();const
 // Efectos sintetizados: sin descargas, optimizados para Android.
 let stepAt=0;
 function effect(kind){if(!enabledSound)return;try{audioCtx??=new (window.AudioContext||window.webkitAudioContext)();if(audioCtx.state==='suspended')audioCtx.resume().catch(()=>{});const t=audioCtx.currentTime;function beep(freq,end,duration,volume,type='sine',delay=0){const o=audioCtx.createOscillator(),g=audioCtx.createGain();o.type=type;o.frequency.setValueAtTime(freq,t+delay);o.frequency.exponentialRampToValueAtTime(Math.max(35,end),t+delay+duration);g.gain.setValueAtTime(.0001,t+delay);g.gain.exponentialRampToValueAtTime(Math.max(.001,volume),t+delay+.008);g.gain.exponentialRampToValueAtTime(.0001,t+delay+duration);o.connect(g).connect(audioCtx.destination);o.start(t+delay);o.stop(t+delay+duration+.01)}
-if(kind==='step')beep(110,65,.075,.025,'triangle');
-if(kind==='death'){beep(420,65,.6,.11,'sawtooth');beep(160,45,.45,.06,'triangle',.09)}
-if(kind==='punch'){beep(170,50,.17,.13,'triangle');beep(80,42,.13,.08,'square',.035)}
-if(kind==='throw'){beep(250,920,.32,.08,'sawtooth');beep(780,380,.25,.04,'sine',.11)}
-if(kind==='impact'){beep(170,42,.4,.14,'sawtooth');beep(450,80,.24,.07,'triangle',.045)}
+if(kind==='step'){beep(180,85,.11,.13,'triangle');beep(115,60,.09,.075,'square',.025)}
+if(kind==='death'){beep(540,65,.75,.23,'sawtooth');beep(210,45,.65,.16,'triangle',.09)}
+if(kind==='punch'){beep(170,50,.17,.19,'triangle');beep(80,42,.13,.12,'square',.035)}
+if(kind==='throw'){beep(250,920,.32,.14,'sawtooth');beep(780,380,.25,.09,'sine',.11)}
+if(kind==='impact'){beep(170,42,.4,.23,'sawtooth');beep(450,80,.24,.14,'triangle',.045)}
 }catch(e){console.warn('Audio effect',e)}}
 function resize(){const w=stage.clientWidth,h=stage.clientHeight;renderer.setSize(w,h,false);camera.aspect=w/h;camera.updateProjectionMatrix()}new ResizeObserver(resize).observe(stage);
 function clear(){if(projectile){scene.remove(projectile.mesh);projectile.mesh.geometry.dispose();projectile.mesh.material.dispose();projectile=null}aiming=false;bombButton.textContent="🎯 APUNTAR";actors.forEach(a=>{scene.remove(a.actor.root);a.actor.dispose()});actors=[]}
