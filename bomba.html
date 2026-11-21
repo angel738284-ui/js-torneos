@@ -407,6 +407,7 @@ const allowed={
 };
 const shoeColor={white:"#f5f5ff",black:"#252b3f",red:"#ff6275",gold:"#f4d57a",neon:"#75f8d5",pink:"#ffa6db"};
 const eyeColor={brown:"#674a3d",blue:"#42a0e5",green:"#56ac80",violet:"#a278db",grey:"#8996ab"};
+const offlineLookKey="js-bomba-offline-look-v1";
 let room=null,me=null,busy=false,offset=0,loading=false,seenEvents="",roomSignature="",selectedTargetId=null,actionMessage="",actionMessageUntil=0;
 function avatarSafe(obj){
  const result={};
@@ -430,13 +431,22 @@ async function identity(){
  try{
   const result=await rpc("js_bomba_jugar",{p_code:code,p_access:personalToken,p_action:"soy"});
   me=result;el("yourName").textContent=result.nombre||"Jugador";
-  for(const k of fields)el(k).value=avatarSafe(result.avatar)[k];
+  const pending=JSON.parse(localStorage.getItem(offlineLookKey)||"null");
+  let avatarToShow=result.avatar;
+  if(pending?.pending&&pending?.avatar){
+   try{
+    await rpc("js_bomba_jugar",{p_code:code,p_access:personalToken,p_action:"avatar",p_avatar:avatarSafe(pending.avatar)});
+    avatarToShow=pending.avatar;
+    localStorage.removeItem(offlineLookKey);
+   }catch(err){notice("⚠️ El look local no pudo sincronizarse: "+err.message,true);}
+  }
+  for(const k of fields)el(k).value=avatarSafe(avatarToShow)[k];
   el("aura").value="none";
   el("save").disabled=false;preview();
   notice("✅ Tu avatar es editable. Guardá tus cambios para que todos los vean.");
  }catch(err){
   me=null;personalToken="";sessionStorage.removeItem(storageKey);
-  el("save").disabled=true;notice("⚠️ "+err.message+" Pedí un enlace nuevo con .bomba jugar por privado.",true);
+  el("save").disabled=false;notice("🎨 Podés editar sin jugar. Tu look se sincronizará al abrir tu próximo enlace personal.");
  }
 }
 function preview(){
@@ -457,16 +467,25 @@ el("avatarReset").addEventListener("click",()=>{
  preview();notice("↺ Look 3D reiniciado. Guardalo para aplicar los cambios.");
 });
 preview();
+try{const saved=JSON.parse(localStorage.getItem(offlineLookKey)||"null");if(saved?.avatar){for(const k of fields)el(k).value=avatarSafe(saved.avatar)[k];preview();}}catch{}
+el("save").disabled=false;
+notice("🎨 Podés editar sin estar jugando. Guardá y el look se aplicará al entrar con tu enlace personal.");
 async function save(){
- if(!me||busy)return;
+ if(busy)return;
  busy=true;el("save").disabled=true;
  try{
   const value=Object.fromEntries(fields.map(k=>[k,el(k).value]));
-  await rpc("js_bomba_jugar",{p_code:code,p_access:personalToken,p_action:"avatar",p_avatar:value});
-  notice("✅ Tu personaje quedó guardado y los demás lo verán.");
-  await refresh();
+  if(me){
+   await rpc("js_bomba_jugar",{p_code:code,p_access:personalToken,p_action:"avatar",p_avatar:value});
+   localStorage.removeItem(offlineLookKey);
+   notice("✅ Look guardado en tu perfil para las próximas partidas.");
+   await refresh();
+  }else{
+   localStorage.setItem(offlineLookKey,JSON.stringify({avatar:value,pending:true}));
+   notice("✅ Look guardado en este celular. Se aplicará cuando abras tu enlace personal de jugador.");
+  }
  }catch(err){notice(err.message,true);}
- finally{busy=false;el("save").disabled=!me;}
+ finally{busy=false;el("save").disabled=false;}
 }
 el("save").addEventListener("click",save);
 function remainingMs(){return Math.max(0,Date.parse(room?.vencimiento||0)-(Date.now()+offset));}
