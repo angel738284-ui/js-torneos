@@ -21,7 +21,7 @@ for(const x of [-.9,.9]){ball(doll,.38,skin,x,3.7,0);ball(doll,.4,pink,x,4.1,0)}
 for(const x of [-.7,.7]){const leg=new THREE.Mesh(new THREE.CylinderGeometry(.28,.3,2,10),skin);leg.position.set(x,1,0);doll.add(leg)}
 const song=new Audio("./assets/luz-roja-cancion.ogg");song.preload="auto";song.volume=.8;
 let actors=[],playing=false,red=false,pressed=false,clock=0,next=0,last=0,deadline=180,raf=0,enabledSound=true,audioCtx,loading=false;
-let phase='idle',phaseEnd=0,phaseToken=0,headTarget=0,headVelocity=0;
+let phase='idle',phaseEnd=0,phaseToken=0,headTarget=0,headVelocity=0,winner=null;
 const GREEN_FALLBACK=5.8,RED_DURATION=4.2,TURN_DURATION=.55;
 function stopSong(){song.pause();try{song.currentTime=0}catch{}}
 function startGreen(){
@@ -40,7 +40,7 @@ function tone(f){if(!enabledSound)return;try{audioCtx??=new AudioContext();const
 function resize(){const w=stage.clientWidth,h=stage.clientHeight;renderer.setSize(w,h,false);camera.aspect=w/h;camera.updateProjectionMatrix()}new ResizeObserver(resize).observe(stage);
 function clear(){actors.forEach(a=>{scene.remove(a.actor.root);a.actor.dispose()});actors=[]}
 function make(){clear();for(let i=0;i<8;i++){const a=createOriginalRubberActor({bodyColor3d:skins[i],clothesEnabled:true,topStyle:i%2?'hoodie':'shirt',topColor:skins[(i+3)%8],bottomStyle:'pants',bottomColor:'#26334b'});a.root.scale.setScalar(.73);a.root.position.set((i-3.5)*2.7,0,-1);a.root.rotation.y=Math.PI;scene.add(a.root);actors.push({actor:a,z:-1,x:(i-3.5)*2.7,dead:false,won:false,walking:false,pace:9+Math.random()*2,botMove:false,decisionAt:0})}}
-function end(){phaseToken++;stopSong();playing=false;pressed=false;phase='idle';move.disabled=true;start.textContent='↻ Jugar otra vez';const me=actors[0];status.textContent=me.won?'🏆 ¡Llegaste a la meta!':me.dead?'💀 Te vio la muñeca':'⏰ Tiempo terminado';}
+function end(){phaseToken++;stopSong();playing=false;pressed=false;phase='idle';move.disabled=true;start.textContent='↻ Jugar otra vez';const me=actors[0];status.textContent=winner?('🏆 Ganó '+(winner===me?'¡VOS!':'el jugador '+(actors.indexOf(winner)+1))):me.dead?'💀 Te vio la muñeca':'⏰ Tiempo terminado';}
 function frame(now){
  const dt=Math.min((now-last)/1000,.05);last=now;
  if(playing){
@@ -56,13 +56,13 @@ function frame(now){
    p.walking=running;
    if(running){
     if(phase==='red'){p.dead=true;p.walking=false;p.actor.root.visible=false;if(i===0)status.textContent='💀 ¡Te moviste con luz roja!';tone(130);}
-    else {p.z-=dt*(i===0?11:p.pace);if(p.z<=-166){p.z=-166;p.won=true;p.walking=false;if(i===0)status.textContent='🏆 ¡Llegaste!'}}
+    else {p.z-=dt*(i===0?11:p.pace);if(p.z<=-166){p.z=-166;p.won=true;p.walking=false;if(!winner){winner=p;status.textContent=i===0?'🏆 ¡GANASTE!':'🏆 Ganó el jugador '+(i+1);end();}}}
    }
    p.actor.root.position.z=p.z;
   }
   count.textContent=actors.filter(p=>!p.dead&&!p.won).length+' en carrera';
   $('clock').textContent=Math.max(0,Math.ceil(deadline-clock))+' s';
-  if(clock>=deadline||actors.every(p=>p.dead||p.won))end();
+  if(playing&&(clock>=deadline||actors.every(p=>p.dead||p.won)))end();
  }
  for(const p of actors)p.actor.update(dt,p.walking&&!p.dead&&!p.won?'walk':'idle',false);
  const me=actors[0],desiredZ=(me?.z??-1)+8;
@@ -70,5 +70,5 @@ function frame(now){
  camera.lookAt(me?.x??0,2,(me?.z??-1)-13);
  renderer.render(scene,camera);raf=requestAnimationFrame(frame);
 }
-async function begin(){stopSong();if(loading)return;loading=true;start.disabled=true;status.textContent='Cargando personajes 3D…';try{await preloadOriginalModel();make();playing=true;clock=0;pressed=false;deadline=180;headPivot.rotation.y=0;headVelocity=0;startGreen();move.disabled=false;start.textContent='↻ Reiniciar';status.textContent='Mantené pulsado para correr';}catch(e){console.error(e);status.textContent='No se pudo cargar el modelo 3D. Recargá la página.'}finally{loading=false;start.disabled=false}}
+async function begin(){stopSong();if(loading)return;loading=true;start.disabled=true;status.textContent='Cargando personajes 3D…';try{await preloadOriginalModel();make();playing=true;clock=0;pressed=false;winner=null;deadline=180;headPivot.rotation.y=0;headVelocity=0;startGreen();move.disabled=false;start.textContent='↻ Reiniciar';status.textContent='Mantené pulsado para correr';}catch(e){console.error(e);status.textContent='No se pudo cargar el modelo 3D. Recargá la página.'}finally{loading=false;start.disabled=false}}
 start.addEventListener('click',begin);move.addEventListener('pointerdown',e=>{if(!playing||actors[0]?.dead||actors[0]?.won)return;e.preventDefault();pressed=true;move.setPointerCapture(e.pointerId)});for(const ev of ['pointerup','pointercancel','lostpointercapture'])move.addEventListener(ev,()=>pressed=false);document.addEventListener('visibilitychange',()=>{pressed=false});sound.addEventListener('click',()=>{enabledSound=!enabledSound;if(!enabledSound)song.pause();else if(playing&&phase==='green'){song.play().catch(()=>{});}sound.textContent=enabledSound?'🔊 Sonido':'🔇 Silencio'});resize();last=performance.now();raf=requestAnimationFrame(frame);
