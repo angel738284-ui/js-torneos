@@ -1,7 +1,7 @@
 import * as THREE from './bomba3d/vendor/three.module.js';
 import {preloadKayKit,createKayKitActor} from './kaykit-game.js?v=2';
 const $=id=>document.getElementById(id),names=['🛡️ Caballero','🗡️ Pícaro','🥷 Encapuchado','🧙 Mago','🪓 Bárbaro','💀 Mago esqueleto','💀 Esbirro','💀 Pícaro esqueleto','💀 Guerrero esqueleto'];
-const key='jsfamily-kaykit-character-v1';const from=new URLSearchParams(location.search).get('from')==='bomba'?'bomba.html':'luz-roja.html';$('back').href=from;$('return').href=from;
+const key='jsfamily-kaykit-character-v1';const from=new URLSearchParams(location.search).get('from')==='bomba'?'bomba.html?v=44':'luz-roja.html?v=20';$('back').href=from;$('return').href=from;
 let chosen=Math.max(0,Math.min(8,Number(localStorage.getItem(key))||0)),actor=null,ready=false,last=performance.now(),yaw=0,drag=null;
 const scene=new THREE.Scene(),camera=new THREE.PerspectiveCamera(38,1,.1,100),renderer=new THREE.WebGLRenderer({alpha:true,antialias:true,powerPreference:'low-power'});
 renderer.setPixelRatio(Math.min(devicePixelRatio,1.3));renderer.outputColorSpace=THREE.SRGBColorSpace;$('viewer').prepend(renderer.domElement);scene.add(new THREE.HemisphereLight(0xffffff,0x637c89,2));const light=new THREE.DirectionalLight(0xffe2c1,2.4);light.position.set(-3,7,7);scene.add(light);camera.position.set(0,2,7.5);camera.lookAt(0,1.25,0);
