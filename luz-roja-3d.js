@@ -1,16 +1,16 @@
 import * as THREE from './bomba3d/vendor/three.module.js';
 import {preloadKayKit,createKayKitActor} from './kaykit-game.js?v=2';
-const $=id=>document.getElementById(id),stage=$('scene'),status=$('status'),light=$('signal'),count=$('alive'),move=$('move'),start=$('start'),sound=$('sound'),hit=$('hit'),left=null,right=null,joystick=$('joystick'),stick=$('stick'),spectate=$('spectate');
-const scene=new THREE.Scene();scene.background=new THREE.Color('#85c9df');scene.fog=new THREE.Fog('#85c9df',65,220);
-const camera=new THREE.PerspectiveCamera(60,1,.1,260);const renderer=new THREE.WebGLRenderer({antialias:true,powerPreference:'low-power'});renderer.setPixelRatio(Math.min(devicePixelRatio,1.5));renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.shadowMap.enabled=false;stage.append(renderer.domElement);
+const $=id=>document.getElementById(id),stage=$('scene'),status=$('status'),light=$('signal'),count=$('alive'),move=null,start=$('start'),sound=$('sound'),hit=$('hit'),left=null,right=null,joystick=$('joystick'),stick=$('stick'),spectate=$('spectate');
+const scene=new THREE.Scene();scene.background=new THREE.Color('#85c9df');scene.fog=new THREE.Fog('#85c9df',110,340);
+const camera=new THREE.PerspectiveCamera(60,1,.1,450);const renderer=new THREE.WebGLRenderer({antialias:true,powerPreference:'low-power'});renderer.setPixelRatio(Math.min(devicePixelRatio,1.5));renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.shadowMap.enabled=false;stage.append(renderer.domElement);
 scene.add(new THREE.HemisphereLight(0xe6faff,0x4e6850,2));const sun=new THREE.DirectionalLight(0xffe7b3,2.2);sun.position.set(-12,25,15);scene.add(sun);
 const mat=(color,roughness=1)=>new THREE.MeshStandardMaterial({color,roughness});const grass=mat('#429b68'),track=mat('#d5b98c'),wall=mat('#9dcab8');
 function box(w,h,d,m,x,y,z){const mesh=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),m);mesh.position.set(x,y,z);scene.add(mesh);return mesh}
-box(38,.1,200,grass,0,-.08,-85);box(26,.07,185,track,0,-.02,-85);box(.6,4,190,wall,-13.5,2,-85);box(.6,4,190,wall,13.5,2,-85);
-for(let i=-3;i<=3;i++){box(.08,.04,165,mat('#fff4cf'),i*3.1,0,-83)}
-for(let z=-12;z>=-172;z-=14){for(const x of [-17,17]){const trunk=new THREE.Mesh(new THREE.CylinderGeometry(.35,.5,3,8),mat('#735239'));trunk.position.set(x,1.5,z);scene.add(trunk);const crown=new THREE.Mesh(new THREE.SphereGeometry(1.9,9,7),mat('#287d49'));crown.position.set(x,4,z);scene.add(crown)}}
-for(let i=0;i<20;i++)box(1.25,.045,1.25,mat(i%2?'#ffffff':'#202a30'),-12+i*1.25,.035,-166);
-const doll=new THREE.Group();scene.add(doll);doll.position.set(0,0,-173);
+box(38,.1,850,grass,0,-.08,-410);box(26,.07,850,track,0,-.02,-410);box(.6,4,850,wall,-13.5,2,-410);box(.6,4,850,wall,13.5,2,-410);
+for(let i=-3;i<=3;i++){box(.08,.04,820,mat('#fff4cf'),i*3.1,0,-410)}
+for(let z=-12;z>=-825;z-=28){for(const x of [-17,17]){const trunk=new THREE.Mesh(new THREE.CylinderGeometry(.35,.5,3,8),mat('#735239'));trunk.position.set(x,1.5,z);scene.add(trunk);const crown=new THREE.Mesh(new THREE.SphereGeometry(1.9,9,7),mat('#287d49'));crown.position.set(x,4,z);scene.add(crown)}}
+for(let i=0;i<20;i++)box(1.25,.045,1.25,mat(i%2?'#ffffff':'#202a30'),-12+i*1.25,.035,-816);
+const doll=new THREE.Group();scene.add(doll);doll.position.set(0,0,-824);
 const pink=mat('#e8799c'),skin=mat('#f2d1b2'),hair=mat('#292027'),black=mat('#171e24');
 function ball(parent,r,m,x,y,z){const o=new THREE.Mesh(new THREE.SphereGeometry(r,16,12),m);o.position.set(x,y,z);parent.add(o);return o}
 const torso=new THREE.Mesh(new THREE.CylinderGeometry(1.15,1.7,3,12),pink);torso.position.y=3.1;doll.add(torso);
@@ -20,7 +20,7 @@ for(const x of [-.5,.5]){ball(headPivot,.18,black,x,.22,1.01);ball(headPivot,.06
 for(const x of [-.9,.9]){ball(doll,.38,skin,x,3.7,0);ball(doll,.4,pink,x,4.1,0)}
 for(const x of [-.7,.7]){const leg=new THREE.Mesh(new THREE.CylinderGeometry(.28,.3,2,10),skin);leg.position.set(x,1,0);doll.add(leg)}
 const song=new Audio("./assets/luz-roja-cancion.ogg");song.preload="auto";song.volume=.32;song.playbackRate=.92;
-let actors=[],playing=false,red=false,pressed=false,clock=0,next=0,last=0,deadline=180,raf=0,enabledSound=true,audioCtx,loading=false;
+let actors=[],playing=false,red=false,pressed=false,clock=0,next=0,last=0,deadline=240,raf=0,enabledSound=true,audioCtx,loading=false;
 let joyX=0,joyY=0,watchIndex=0,camYaw=0,phase='idle',phaseEnd=0,phaseToken=0,headTarget=0,headVelocity=0,winner=null,lastHit=-100;
 let bombUsed=false,aiming=false,projectile=null;const bombButton=$('bomb');
 const GREEN_FALLBACK=5.8,RED_DURATION=4.2,TURN_DURATION=.55;
@@ -50,9 +50,9 @@ if(kind==='impact'){beep(170,42,.4,.23,'sawtooth');beep(450,80,.24,.14,'triangle
 function resize(){const w=stage.clientWidth,h=stage.clientHeight;renderer.setSize(w,h,false);camera.aspect=w/h;camera.updateProjectionMatrix()}new ResizeObserver(resize).observe(stage);
 function clear(){if(projectile){scene.remove(projectile.mesh);projectile.mesh.geometry.dispose();projectile.mesh.material.dispose();projectile=null}aiming=false;bombButton.textContent="🎯 APUNTAR";actors.forEach(a=>{scene.remove(a.actor.root);a.actor.dispose()});actors=[]}
 function selectedCharacter(){try{return Math.max(0,Math.min(8,Number(localStorage.getItem('jsfamily-kaykit-character-v1'))||0))}catch{return 0}}
-function make(){clear();watchIndex=0;for(let i=0;i<8;i++){const a=createKayKitActor(i===0?selectedCharacter():i);a.root.position.set((i-3.5)*2.7,0,-1);a.root.rotation.y=Math.PI;scene.add(a.root);actors.push({actor:a,z:-1,x:(i-3.5)*2.7,dead:false,won:false,walking:false,pace:9+Math.random()*2,botMove:false,decisionAt:0,downUntil:0,fallStart:0})}}
+function make(){clear();watchIndex=0;for(let i=0;i<8;i++){const a=createKayKitActor(i===0?selectedCharacter():i);a.root.position.set((i-3.5)*2.7,0,-1);a.root.rotation.y=Math.PI;scene.add(a.root);actors.push({actor:a,z:-1,x:(i-3.5)*2.7,dead:false,won:false,walking:false,pace:6.4+Math.random()*1.2,botMove:false,decisionAt:0,downUntil:0,fallStart:0})}}
 
-function end(){resetJoy();phaseToken++;stopSong();playing=false;pressed=false;phase='idle';move.disabled=true;hit.disabled=true;bombButton.disabled=true;aiming=false;start.textContent='↻ Jugar otra vez';spectate.disabled=false;const me=actors[0];status.textContent=winner?('🏆 Ganó '+(winner===me?'¡VOS!':'el jugador '+(actors.indexOf(winner)+1))):me.dead?'💀 Te vio la muñeca':'⏰ Tiempo terminado';$('results').textContent=(winner?'🥇 Ganador: '+(winner===me?'Vos':'Jugador '+(actors.indexOf(winner)+1)):'Sin ganador')+' · Eliminados: '+actors.filter(p=>p.dead).length;}
+function end(){resetJoy();phaseToken++;stopSong();playing=false;pressed=false;phase='idle';hit.disabled=true;bombButton.disabled=true;aiming=false;start.textContent='↻ Jugar otra vez';spectate.disabled=false;const me=actors[0];status.textContent=winner?('🏆 Ganó '+(winner===me?'¡VOS!':'el jugador '+(actors.indexOf(winner)+1))):me.dead?'💀 Te vio la muñeca':'⏰ Tiempo terminado';$('results').textContent=(winner?'🥇 Ganador: '+(winner===me?'Vos':'Jugador '+(actors.indexOf(winner)+1)):'Sin ganador')+' · Eliminados: '+actors.filter(p=>p.dead).length;}
 function frame(now){
  const dt=Math.min((now-last)/1000,.05);last=now;
  if(playing){
@@ -66,13 +66,13 @@ function frame(now){
   for(let i=0;i<actors.length;i++){
    const p=actors[i];if(p.dead||p.won)continue;if(p.downUntil>clock){p.walking=false;const elapsed=clock-p.fallStart;const tilt=Math.min(1,elapsed/.25);p.actor.root.rotation.z=.95*tilt;p.actor.root.position.y=-.28*tilt;p.actor.root.position.z=p.z;p.actor.root.position.x+=(p.x-p.actor.root.position.x)*Math.min(1,dt*12);continue;}else {p.actor.root.rotation.z+=(0-p.actor.root.rotation.z)*Math.min(1,dt*10);p.actor.root.position.y+=(0-p.actor.root.position.y)*Math.min(1,dt*10);}
    if(i>0&&clock>=p.decisionAt){p.botMove=phase==='green'&&Math.random()>.12;p.decisionAt=clock+.35+Math.random()*.9;}
-   const running=i===0?(pressed||joyY<-.2):p.botMove;
-   p.walking=running;if(i===0&&running&&phase==='green'&&clock-stepAt>.29){stepAt=clock;effect('step');}
-   if(i===0&&(Math.abs(joyX)>.12||joyY>.2)){ if(phase==='red'){p.dead=true;p.actor.root.visible=false;status.textContent='💀 Te moviste con luz roja';effect('death');}else{p.z=Math.min(-1,p.z+Math.max(0,joyY)*dt*7);p.x=Math.max(-11.5,Math.min(11.5,p.x+joyX*dt*9));p.walking=true;}}
+   const running=i===0?(joyY<-.16):p.botMove;
+   p.walking=running;if(i===0&&running&&phase==='green'&&clock-stepAt>.36){stepAt=clock;effect('step');}
+   if(i===0&&(Math.abs(joyX)>.12||Math.abs(joyY)>.16)){ if(phase==='red'){p.dead=true;p.actor.root.visible=false;status.textContent='💀 Te moviste con luz roja';effect('death');}else{p.z=Math.min(-1,p.z+Math.max(0,joyY)*dt*5);p.x=Math.max(-11.5,Math.min(11.5,p.x+joyX*dt*9));p.walking=true;}}
    if(p.dead)continue;
    if(running){
     if(phase==='red'){p.dead=true;p.walking=false;p.actor.root.visible=false;if(i===0)status.textContent='💀 ¡Te moviste con luz roja!';effect('death');}
-    else {p.z-=dt*(i===0?11:p.pace);if(p.z<=-166){p.z=-166;p.won=true;p.walking=false;if(!winner){winner=p;status.textContent=i===0?'🏆 ¡GANASTE!':'🏆 Ganó el jugador '+(i+1);end();}}}
+    else {p.z-=dt*(i===0?8.5:p.pace);if(p.z<=-816){p.z=-816;p.won=true;p.walking=false;if(!winner){winner=p;status.textContent=i===0?'🏆 ¡GANASTE!':'🏆 Ganó el jugador '+(i+1);end();}}}
    }
    p.actor.root.position.z=p.z;p.actor.root.position.x+=(p.x-p.actor.root.position.x)*Math.min(1,dt*12);
   }
@@ -87,7 +87,7 @@ function frame(now){
  camera.lookAt(me?.x??0,2,(me?.z??-1)-13);
  renderer.render(scene,camera);raf=requestAnimationFrame(frame);
 }
-async function begin(){stopSong();if(loading)return;previewRequest++;loading=true;start.disabled=true;status.textContent='Cargando personajes KayKit con esqueleto…';try{await preloadKayKit();make();playing=true;clock=0;stepAt=0;pressed=false;winner=null;lastHit=-100;bombUsed=false;aiming=false;bombButton.textContent='🎯 APUNTAR';joyX=joyY=0;deadline=180;headPivot.rotation.y=0;headVelocity=0;startGreen();spectate.disabled=false;move.disabled=false;hit.disabled=false;bombButton.disabled=false;spectate.disabled=false;start.textContent='↻ Reiniciar';status.textContent='Joystick o CORRER para avanzar · evitá moverte en rojo';}catch(e){console.error(e);status.textContent='No se pudo cargar el modelo 3D. Recargá la página.'}finally{loading=false;start.disabled=false}}
+async function begin(){stopSong();if(loading)return;previewRequest++;loading=true;start.disabled=true;status.textContent='Cargando personajes KayKit con esqueleto…';try{await preloadKayKit();make();playing=true;clock=0;stepAt=0;pressed=false;winner=null;lastHit=-100;bombUsed=false;aiming=false;bombButton.textContent='🎯 APUNTAR';joyX=joyY=0;deadline=240;headPivot.rotation.y=0;headVelocity=0;startGreen();spectate.disabled=false;hit.disabled=false;bombButton.disabled=false;spectate.disabled=false;start.textContent='↻ Reiniciar';status.textContent='Mové el joystick hacia arriba para correr · frená en rojo';}catch(e){console.error(e);status.textContent='No se pudo cargar el modelo 3D. Recargá la página.'}finally{loading=false;start.disabled=false}}
 function changeLane(dir){const me=actors[0];if(!playing||!me||me.dead||me.won||me.downUntil>clock)return;if(phase!=='green'){me.dead=true;me.actor.root.visible=false;status.textContent='💀 ¡Te moviste con luz roja!';tone(130);return;}me.x=Math.max(-11.5,Math.min(11.5,me.x+dir*2.7));}
 
 let dragX=null;stage.addEventListener('pointerdown',e=>dragX=e.clientX);stage.addEventListener('pointermove',e=>{if(dragX===null||!(e.buttons&1))return;camYaw=Math.max(-.7,Math.min(.7,camYaw+(e.clientX-dragX)*.006));dragX=e.clientX;});for(const ev of ['pointerup','pointercancel','pointerleave'])stage.addEventListener(ev,()=>dragX=null);
@@ -102,7 +102,7 @@ $('quality').addEventListener('change',e=>{renderer.setPixelRatio(Math.min(devic
 const chatLog=$('chat-log'),chatInput=$('chat-input'),bubble=$('bubble');let bubbleTimer;
 function postChat(){const message=chatInput.value.trim().slice(0,65);if(!message)return;const item=document.createElement('div');item.textContent='Vos: '+message;chatLog.append(item);chatLog.scrollTop=chatLog.scrollHeight;chatInput.value='';bubble.textContent=message;bubble.style.display='block';clearTimeout(bubbleTimer);bubbleTimer=setTimeout(()=>bubble.style.display='none',4000);}
 $('chat-send').addEventListener('click',postChat);chatInput.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();postChat();}});for(const em of ['😂','👋','😱','🏆']){const btn=document.createElement('button');btn.textContent=em;btn.className='btn';btn.style.flex='0 0 auto';btn.addEventListener('click',()=>{chatInput.value=em;postChat();});$('reactions').append(btn);}
-start.addEventListener('click',begin);move.addEventListener('pointerdown',e=>{if(!playing||actors[0]?.dead||actors[0]?.won||actors[0]?.downUntil>clock)return;e.preventDefault();pressed=true;move.setPointerCapture(e.pointerId)});for(const ev of ['pointerup','pointercancel','lostpointercapture'])move.addEventListener(ev,()=>pressed=false);document.addEventListener('visibilitychange',()=>{pressed=false});sound.addEventListener('click',()=>{enabledSound=!enabledSound;if(!enabledSound)song.pause();else if(playing&&phase==='green'){song.play().catch(()=>{});}sound.textContent=enabledSound?'🔊 Sonido':'🔇 Silencio'});resize();last=performance.now();raf=requestAnimationFrame(frame);
+start.addEventListener('click',begin);document.addEventListener('visibilitychange',()=>{pressed=false});sound.addEventListener('click',()=>{enabledSound=!enabledSound;if(!enabledSound)song.pause();else if(playing&&phase==='green'){song.play().catch(()=>{});}sound.textContent=enabledSound?'🔊 Sonido':'🔇 Silencio'});resize();last=performance.now();raf=requestAnimationFrame(frame);
 let previewRequest=0;async function ensurePreview(){const request=++previewRequest;if(playing||loading)return;status.textContent='⏳ Preparando los personajes 3D…';try{await preloadKayKit();if(request!==previewRequest||playing||loading)return;make();status.textContent='🏃 Personajes listos en la salida · tocá Iniciar partida';}catch(e){console.error('KayKit preview',e);status.textContent='⚠️ No cargaron los personajes. Tocá Iniciar para reintentar.'}}
 ensurePreview();window.addEventListener('pageshow',()=>{if(!playing&&!loading)ensurePreview()});document.addEventListener('visibilitychange',()=>{if(!document.hidden&&!playing&&!loading&&!actors.length)ensurePreview()});
 
