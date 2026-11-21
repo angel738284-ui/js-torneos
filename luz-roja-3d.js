@@ -21,7 +21,7 @@ for(const x of [-.9,.9]){ball(doll,.38,skin,x,3.7,0);ball(doll,.4,pink,x,4.1,0)}
 for(const x of [-.7,.7]){const leg=new THREE.Mesh(new THREE.CylinderGeometry(.28,.3,2,10),skin);leg.position.set(x,1,0);doll.add(leg)}
 const song=new Audio("./assets/luz-roja-cancion.ogg");song.preload="auto";song.volume=.8;
 let actors=[],playing=false,red=false,pressed=false,clock=0,next=0,last=0,deadline=180,raf=0,enabledSound=true,audioCtx,loading=false;
-let lane=3,phase='idle',phaseEnd=0,phaseToken=0,headTarget=0,headVelocity=0,winner=null,lastHit=-100;
+let lane=0,phase='idle',phaseEnd=0,phaseToken=0,headTarget=0,headVelocity=0,winner=null,lastHit=-100;
 const GREEN_FALLBACK=5.8,RED_DURATION=4.2,TURN_DURATION=.55;
 function stopSong(){song.pause();try{song.currentTime=0}catch{}}
 function startGreen(){
@@ -71,7 +71,7 @@ function frame(now){
  camera.lookAt(me?.x??0,2,(me?.z??-1)-13);
  renderer.render(scene,camera);raf=requestAnimationFrame(frame);
 }
-async function begin(){stopSong();if(loading)return;loading=true;start.disabled=true;status.textContent='Cargando personajes 3D…';try{await preloadOriginalModel();make();playing=true;clock=0;pressed=false;winner=null,lastHit=-100;deadline=180;headPivot.rotation.y=0;headVelocity=0;startGreen();move.disabled=false;start.textContent='↻ Reiniciar';status.textContent='Mantené pulsado para correr';}catch(e){console.error(e);status.textContent='No se pudo cargar el modelo 3D. Recargá la página.'}finally{loading=false;start.disabled=false}}
+async function begin(){stopSong();if(loading)return;loading=true;start.disabled=true;status.textContent='Cargando personajes 3D…';try{await preloadOriginalModel();make();playing=true;clock=0;pressed=false;winner=null;lastHit=-100;lane=0;deadline=180;headPivot.rotation.y=0;headVelocity=0;startGreen();move.disabled=false;hit.disabled=false;left.disabled=false;right.disabled=false;start.textContent='↻ Reiniciar';status.textContent='Mantené pulsado para correr';}catch(e){console.error(e);status.textContent='No se pudo cargar el modelo 3D. Recargá la página.'}finally{loading=false;start.disabled=false}}
 function changeLane(dir){const me=actors[0];if(!playing||!me||me.dead||me.won)return;if(phase==='red'){me.dead=true;me.actor.root.visible=false;status.textContent='💀 ¡Te moviste con luz roja!';tone(130);return;}lane=Math.max(0,Math.min(7,lane+dir));me.x=(lane-3.5)*2.7;}
 left.addEventListener('click',()=>changeLane(-1));right.addEventListener('click',()=>changeLane(1));
 let touchX=null;stage.addEventListener('touchstart',e=>{touchX=e.changedTouches[0]?.clientX??null},{passive:true});stage.addEventListener('touchend',e=>{if(touchX===null)return;const dx=(e.changedTouches[0]?.clientX??touchX)-touchX;if(Math.abs(dx)>35)changeLane(dx>0?1:-1);touchX=null},{passive:true});
