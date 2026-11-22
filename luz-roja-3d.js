@@ -1,8 +1,8 @@
 import * as THREE from './bomba3d/vendor/three.module.js';
-import {preloadKayKit,createKayKitActor} from './kaykit-game.js?v=4';
+import {preloadKayKit,createKayKitActor} from './kaykit-game.js?v=5';
 const $=id=>document.getElementById(id),stage=$('scene'),status=$('status'),light=$('signal'),count=$('alive'),move=null,start=$('start'),sound=$('sound'),hit=$('hit'),left=null,right=null,joystick=$('joystick'),stick=$('stick'),spectate=$('spectate');
 const scene=new THREE.Scene();scene.background=new THREE.Color('#85c9df');scene.fog=new THREE.Fog('#85c9df',110,340);
-const camera=new THREE.PerspectiveCamera(60,1,.1,450);const renderer=new THREE.WebGLRenderer({antialias:true,powerPreference:'low-power'});renderer.setPixelRatio(Math.min(devicePixelRatio,1.5));renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.shadowMap.enabled=false;stage.append(renderer.domElement);
+const camera=new THREE.PerspectiveCamera(60,1,.1,450);const renderer=new THREE.WebGLRenderer({antialias:true,powerPreference:'low-power'});renderer.setPixelRatio(Math.min(devicePixelRatio,1.5));renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.shadowMap.enabled=false;stage.append(renderer.domElement);document.getElementById('game-load-info')?.remove();
 scene.add(new THREE.HemisphereLight(0xe6faff,0x4e6850,2));const sun=new THREE.DirectionalLight(0xffe7b3,2.2);sun.position.set(-12,25,15);scene.add(sun);
 const mat=(color,roughness=1)=>new THREE.MeshStandardMaterial({color,roughness});const grass=mat('#429b68'),track=mat('#d5b98c'),wall=mat('#9dcab8');
 function box(w,h,d,m,x,y,z){const mesh=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),m);mesh.position.set(x,y,z);scene.add(mesh);return mesh}
